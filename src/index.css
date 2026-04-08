@@ -1,0 +1,96 @@
+@import "tailwindcss";
+
+@theme {
+  /* --- BASE ABYSSALE NATURE (Légère teinte émeraude dans le noir) --- */
+  --color-background: oklch(12% 0.015 160); /* Un noir profond avec une âme verte */
+  --color-foreground: oklch(100% 0 0); /* Blanc Pur et Gras */
+
+  /* --- ACCENTS AGRICONNECT --- */
+  /* Vert "Elite" : Vibrant, évoquant la croissance et la tech */
+  --color-primary: hsl(142, 76%, 36%); 
+  --color-primary-foreground: oklch(100% 0 0);
+
+  /* Jaune "Harvest" : Pour les notifications, les prix et les alertes cool */
+  --color-accent: hsl(48, 100%, 50%);
+  --color-accent-foreground: oklch(10% 0.02 160);
+
+  /* --- SURFACES & CARTES --- */
+  --color-card: oklch(16% 0.02 160);
+  --color-card-foreground: oklch(95% 0.01 160);
+
+  /* --- BORDURES & INPUTS --- */
+  /* Une lueur verte très subtile sur les bordures */
+  --color-border: oklch(25% 0.03 160 / 0.5);
+  --color-input: oklch(18% 0.02 160);
+  
+  /* --- ÉTATS --- */
+  --color-success: hsl(142, 70%, 45%);
+  --color-warning: var(--color-accent);
+  --color-destructive: hsl(0, 85%, 60%);
+
+  /* --- RADIUS --- */
+  --radius-lg: 0.75rem;
+  --radius-xl: 1.25rem;
+  --radius-2xl: 2rem;
+}
+
+@layer base {
+  *, ::after, ::before {
+    border-color: var(--color-border);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    -webkit-font-smoothing: antialiased;
+    font-weight: 500; /* Rend le texte plus "gras" et lisible */
+    letter-spacing: -0.02em;
+  }
+
+  /* SCROLLBAR AGRICONNECT : Vert Bio-Lumineux */
+  ::-webkit-scrollbar {
+    width: 5px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: oklch(30% 0.04 160);
+    border-radius: 100px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-primary);
+    box-shadow: 0 0 15px var(--color-primary);
+  }
+}
+
+/* --- UTILITIES D'ÉLITE --- */
+@utility bg-glass-agri {
+  /* Effet verre givré : Très premium pour les formulaires */
+  background-color: hsla(160, 20%, 8%, 0.75);
+  backdrop-filter: blur(20px) saturate(190%);
+  border: 1px solid hsla(142, 76%, 36%, 0.1);
+}
+
+@utility text-glow-green {
+  /* Pour faire briller les titres ou les montants financiers */
+  text-shadow: 0 0 25px hsla(142, 76%, 36%, 0.4);
+}
+
+@utility text-glow-yellow {
+  /* Pour le jaune "cool" */
+  text-shadow: 0 0 20px hsla(48, 100%, 50%, 0.3);
+}
+
+@utility border-active-green {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 20px hsla(142, 76%, 36%, 0.15);
+}
+
+@utility btn-elite {
+  /* Un bouton qui impose le respect */
+  @apply px-6 py-3 font-bold uppercase tracking-widest transition-transform active:scale-95;
+  background: linear-gradient(135deg, var(--color-primary), #065f46);
+  border-radius: var(--radius-lg);
+}

@@ -1,0 +1,54 @@
+[
+  {
+    "id": 1,
+    "numeroFiche": "REC-2026-001",
+    "dateReception": "2026-03-14",
+    "motifVisite": "Diagnostic Moteur",
+    "etatVehicule": "Rayure légère aile gauche",
+    "niveauCarburant": "1/2",
+    "accessoiresLaisses": "Roue de secours, Cric",
+    "statut": "EN_ATTENTE",
+    "client": {
+      "id": 101,
+      "nom": "Kambale",
+      "prenom": "Jean",
+      "telephone": "+243 812 345 678",
+      "email": "jean.k@email.com",
+      "adresse": "Bunia, Quartier Lumumba"
+    },
+    "vehicule": {
+      "id": 201,
+      "immatriculation": "8890 BC 01",
+      "marque": "TOYOTA",
+      "modele": "PRADO",
+      "annee": 2018,
+      "kilometrage": 125000
+    }
+  },
+  {
+    "id": 2,
+    "numeroFiche": "REC-2026-002",
+    "dateReception": "2026-03-14",
+    "motifVisite": "Entretien Périodique",
+    "etatVehicule": "Parfait état",
+    "niveauCarburant": "PLEIN",
+    "accessoiresLaisses": "Aucun",
+    "statut": "EN_COURS",
+    "client": {
+      "id": 102,
+      "nom": "Kasereka",
+      "prenom": "Luc",
+      "telephone": "+243 990 123 456",
+      "email": "luc.kas@email.com",
+      "adresse": "Bunia, Centre-ville"
+    },
+    "vehicule": {
+      "id": 202,
+      "immatriculation": "4567 AF 01",
+      "marque": "MERCEDES",
+      "modele": "G-WAGON",
+      "annee": 2022,
+      "kilometrage": 15400
+    }
+  }
+]
