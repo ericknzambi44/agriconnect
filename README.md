@@ -1,56 +1,56 @@
 # 🌾 AgriConnect v1.0.0
-> **Plateforme Intégrée de Mise en Relation Agricole : Producteurs, Acheteurs & Transporteurs.**
+> **Solution de mise en relation agricole intelligente pour la RDC.**
 
-![Version](https://img.shields.io/badge/Version-1.0.0-00FF88?style=for-the-badge&logo=semver&logoColor=black)
 ![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
 ![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)
 ![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)
-![Status](https://img.shields.io/badge/Status-Project_Stage-FFA500?style=for-the-badge)
+![Clean Arch](https://img.shields.io/badge/Architecture-DDD_%26_Clean-FF4500?style=for-the-badge)
 
 ---
 
-## 📑 Présentation du Projet
-**AgriConnect** est une solution numérique conçue pour transformer l'écosystème agricole en République Démocratique du Congo, particulièrement dans la région de Bunia. L'application résout le problème de la fragmentation du marché en connectant directement trois piliers essentiels :
+## 🛠️ Stack Technique Globale
+L'application utilise une architecture moderne pour garantir la séparation des préoccupations (SoC) et une scalabilité optimale.
 
-1.  **👨‍🌾 Vendeurs (Producteurs) :** Mise en ligne des récoltes, gestion des stocks et fixation des prix.
-2.  **🛒 Acheteurs :** Accès à des produits frais, comparaison des prix et commandes directes.
-3.  **🚚 Transporteurs :** Optimisation des flux logistiques pour l'acheminement des produits des champs vers les centres de consommation.
+![Python](https://img.shields.io/badge/Python-3776AB?style=flat-square&logo=python&logoColor=white) ![Django](https://img.shields.io/badge/Django-092E20?style=flat-square&logo=django&logoColor=white) ![Rust](https://img.shields.io/badge/Rust-000000?style=flat-square&logo=rust&logoColor=white) ![Flutter](https://img.shields.io/badge/Flutter-02569B?style=flat-square&logo=flutter&logoColor=white) ![Java](https://img.shields.io/badge/Java-ED8B00?style=flat-square&logo=openjdk&logoColor=white) ![PHP](https://img.shields.io/badge/PHP-777BB4?style=flat-square&logo=php&logoColor=white)
 
 ---
 
-## 🚀 Fonctionnalités Clés
-* **Tableau de bord dynamique :** Statistiques en temps réel selon le rôle de l'utilisateur.
-* **Gestion Multi-Tenant :** Interface personnalisée pour chaque acteur (Vendeur/Acheteur/Transporteur).
-* **Géolocalisation des Flux :** Suivi des besoins logistiques pour les transporteurs.
-* **Persistance Active :** Optimisation des données pour les zones à connectivité limitée.
+## 👥 Équipe de Développement & Rôles
+Le projet est le fruit d'une collaboration multidisciplinaire entre les ingénieurs de l'**Université Shalom de Bunia**.
+
+| Avatar | Ingénieur | Spécialisation & Contributions | Expertise |
+| :--- | :--- | :--- | :--- |
+| 🛡️ | **Ir Erick Nzambi** | **Lead Full-Stack & Architect**<br>Implémentation de la Clean Architecture & DDD. Connexion React/TypeScript vers Supabase. | `React` `TS` `Rust` `DDD` |
+| 📱 | **Ir Asianzu Azima** | **Mobile & Database Developer**<br>Conception de la base de données et développement des interfaces mobiles. | `Flutter` `SQL` `Web` |
+| 🌐 | **Ir Sifa Fwacan** | **Web Developer & DB Designer**<br>Conception de la base de données et logique métier frontend. | `JavaScript` `SQL` |
+| 📊 | **Ir Aimé Muziabaku** | **Business Analyst & Web Dev**<br>Collecte et analyse des besoins fonctionnels et développement backend. | `PHP` `Analyse` |
+| 🎨 | **Ir Faya Gracian** | **UI/UX & Mobile Contributor**<br>Expertise en responsive design et développement mobile/web. | `Flutter` `Responsive` |
+| 🏗️ | **Ir Benjamin Kahongya** | **Backend Engineer**<br>Modélisation technique et élaboration du diagramme de classe. | `Java` `Spring` `UML` |
 
 ---
 
-## 🛠️ Stack Technique
-L'architecture repose sur des technologies modernes pour garantir performance, typage robuste et scalabilité.
-
-* **Frontend :** `React.js` avec `TypeScript` pour un code maintenable et sécurisé.
-* **Backend & Database :** `Supabase` (PostgreSQL) pour l'authentification, le stockage et les fonctions temps réel.
-* **Styling :** Glassmorphism UI (Tailwind CSS) pour une esthétique "Elite Agri".
+## 📐 Ingénierie Logicielle (UML)
+L'équipe a collaboré étroitement sur la phase de conception pour produire une documentation technique rigoureuse :
+* **Modélisation Globale :** Élaboration collective des diagrammes de cas d'utilisation (Use Case) et de séquences.
+* **Modélisation Structurelle :** Diagrammes de classes pilotés par la logique métier.
 
 ---
 
-## 👥 L'Équipe de Développement
-Projet réalisé dans le cadre du stage à l'**Université Shalom de Bunia (USB)**.
-
-| Nom & Post-Nom | Rôle / Titre |
-| :--- | :--- |
-| **Ir Erick Nzambi** | Team Lead / Software Architect |
-| **Ir Asianzu Azima** | Full-Stack Developer |
-| **Ir Sifa Fwacan** | UI/UX Designer & Dev |
-| **Ir Faya Gracian** | Backend Specialist |
-| **Ir Aime Muziabaku** | QA Engineer |
-| **Ir Benjamin Kahongya** | Frontend Specialist |
+## 🚀 Architecture & Intégration
+Le projet repose sur une séparation stricte entre la couche présentation et la persistance des données :
+1.  **Frontend :** SPA (Single Page Application) sous React avec typage fort TypeScript.
+2.  **BaaS (Backend as a Service) :** Supabase pour la gestion en temps réel des transactions agricoles.
+3.  **Pattern :** Application des principes SOLID pour un code robuste.
 
 ---
 
-## ⚙️ Installation & Configuration
+## 📦 Installation
+```bash
+# Cloner le projet
+git clone [https://github.com/votre-repo/agriconnect.git](https://github.com/votre-repo/agriconnect.git)
 
-1. **Cloner le repository**
-   ```bash
-   git clone [https://github.com/votre-compte/agriconnect.git](https://github.com/votre-compte/agriconnect.git)
+# Installer les dépendances
+npm install
+
+# Lancement
+npm run dev
