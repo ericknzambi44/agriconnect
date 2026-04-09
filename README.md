@@ -10,7 +10,7 @@
 ---
 
 ## 🏛️ Contexte Académique
-Ce projet constitue le travail de fin de cycle (Bac +3) en **Génie Logiciel** au sein de l'**Université Shalom de Bunia (USB)**. Il vise à dynamiser l'économie locale en facilitant les échanges entre les acteurs de la chaîne agricole de l'Ituri.
+Ce projet constitue le travail de fin de cycle (Bac +3) en **Génie Logiciel** au sein de l'**Université Shalom de Bunia (USB)**. Il vise à dynamiser l'économie en RDC en facilitant les échanges entre les acteurs de la chaîne agricole.
 
 ## 🎯 Vision du Projet
 AgriConnect est une solution web interconnectée permettant de gérer trois flux essentiels :
@@ -33,7 +33,7 @@ L'application utilise des technologies modernes pour garantir performance et ré
 
 | Ingénieur | Rôle & Responsabilités | Profil & Expertises |
 | :--- | :--- | :--- |
-| **Ir Erick Nzambi** | **Lead Full-Stack**<br>Développement React/TS et connexion Supabase. | `Full-stack`, `Clean Arch/DDD`, `Python`, `Rust` |
+| **Ir Erick Nzambi** | **Lead Full-Stack**<br>Développement React/TS et connexion Supabase. | `Full-stack`, `Clean Arch/DDD`, `Python/django`, `Rust`, `React`  |
 | **Ir Asianzu Azima** | **DB Lead & Mobile Dev**<br>Conception de la base de données et interfaces mobiles. | `Flutter`, `SQL`, `Web` |
 | **Ir Sifa Fwacan** | **Web Dev & Designer DB**<br>Co-conception de la base de données et intégration frontend. | `JavaScript`, `SQL` |
 | **Ir Aimé Muziabaku** | **Analyste & Web Dev**<br>Collecte des besoins et développement backend. | `PHP`, `Analyse de données` |
