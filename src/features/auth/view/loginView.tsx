@@ -5,12 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, LogIn, ArrowRight } from "lucide-react";
+import { Loader2, LogIn, ArrowRight, Activity, Lock } from "lucide-react";
 import { Link } from 'react-router-dom';
 
 export default function LoginView() {
   const { login, isLoading, error } = useAuthLogin();
-  const [identifier, setIdentifier] = useState(''); // Email ou Téléphone
+  const [identifier, setIdentifier] = useState(''); 
   const [password, setPassword] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -19,80 +19,119 @@ export default function LoginView() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-background">
-      <Card className="w-full max-w-md bg-glass-agri border-none shadow-[0_0_50px_rgba(0,0,0,0.5)] overflow-hidden animate-in fade-in zoom-in-95 duration-500">
-        {/* Ligne de style néon en haut */}
-        <div className="h-1.5 w-full bg-gradient-to-r from-primary via-accent to-primary shadow-[0_0_15px_var(--color-primary)]"></div>
+    <div className="min-h-screen w-full bg-[#050505] grid place-items-center p-4 selection:bg-[#bef264] selection:text-black relative overflow-hidden">
+      
+      {/* EFFETS DE FOND IMMERSIFS */}
+      <div className="fixed inset-0 pointer-events-none">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-emerald-500/5 blur-[140px] rounded-full animate-pulse" />
+      </div>
 
-        <CardHeader className="text-center pt-12">
-          <CardTitle className="text-5xl font-black text-glow-green tracking-tighter uppercase italic">
-            Agri<span className="text-accent text-glow-yellow">Connect</span>
+      {/* CARTE CARRÉE & CENTRÉE */}
+      <Card className="w-full max-w-[480px] bg-white/[0.02] border border-white/5 rounded-[3rem] shadow-[0_40px_100px_rgba(0,0,0,0.8)] overflow-hidden animate-in fade-in zoom-in-95 duration-700 relative z-10">
+        
+        {/* INDICATEUR DE CHARGE SUPÉRIEUR */}
+        <div className="h-1 w-full bg-gradient-to-r from-transparent via-emerald-500/20 to-transparent"></div>
+
+        <CardHeader className="text-center pt-14 pb-6">
+          {/* ICON MODERNE STYLE PROFILE */}
+          <div className="flex justify-center mb-8">
+            <div className="relative">
+              <div className="w-20 h-20 rounded-[2rem] bg-white/[0.02] border-2 border-emerald-500/30 flex items-center justify-center shadow-[0_0_40px_rgba(16,185,129,0.1)] transition-transform hover:scale-105 duration-500">
+                <Lock className="w-8 h-8 text-emerald-500 stroke-[1.5px]" />
+              </div>
+              {/* Badge d'activité comme sur le profil */}
+              <div className="absolute -bottom-1 -right-1 p-1 bg-[#050505] rounded-full border-2 border-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]">
+                 <Activity className="w-3.5 h-3.5 text-emerald-500 animate-pulse" />
+              </div>
+            </div>
+          </div>
+
+          <CardTitle className="text-4xl md:text-5xl font-black uppercase italic tracking-tighter leading-none text-white">
+            AGRI<span className="text-[#bef264]">CONNECT</span>
           </CardTitle>
-          <CardDescription className="text-foreground/70 font-black uppercase tracking-[0.3em] text-[10px] mt-2">
-            Authentification • Système • Sécurisé
+          <CardDescription className="text-white/20 font-black uppercase tracking-[0.5em] text-[9px] mt-4 italic">
+            Authentification_Système
           </CardDescription>
         </CardHeader>
 
-        <CardContent className="px-8 pb-12 pt-6">
+        <CardContent className="px-10 md:px-14 pb-14">
+          {/* ALERTES ERREUR STYLE PROFILEVIEW */}
           {error && (
-            <div className="mb-6 p-4 bg-destructive/20 border-l-4 border-destructive text-white rounded-r-lg text-xs font-bold animate-shake">
-              <span className="opacity-70">ACCÈS REFUSÉ:</span> {error}
+            <div className="mb-8 p-4 bg-red-500/5 border-l-4 border-red-500 text-red-500 rounded-r-xl text-[10px] font-black uppercase tracking-widest animate-in slide-in-from-top-2">
+              <span className="opacity-50">Erreur_Accès :</span> {error}
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-2">
-              <Label className="text-xs font-black uppercase tracking-widest text-primary/80">Email ou Téléphone</Label>
+          <form onSubmit={handleSubmit} className="space-y-7">
+            {/* IDENTIFIANT */}
+            <div className="space-y-2.5">
+              <Label className="text-[10px] font-black uppercase tracking-[0.3em] text-emerald-500/50 ml-1">Terminal_ID</Label>
               <Input 
                 value={identifier}
                 onChange={(e) => setIdentifier(e.target.value)}
-                placeholder="erick@agri.cd ou +243..." 
-                className="h-14 bg-input/50 border-none font-bold placeholder:text-foreground/10 focus:ring-1 focus:ring-primary"
+                placeholder="EMAIL OU TÉLÉPHONE" 
+                className="h-14 bg-[#050505] border-white/5 rounded-2xl font-bold text-white placeholder:text-white/5 focus:border-emerald-500/50 focus:ring-0 transition-all uppercase text-[11px] tracking-widest px-6"
                 required
               />
             </div>
 
-            <div className="space-y-2">
-              <div className="flex justify-between items-center">
-                <Label className="text-xs font-black uppercase tracking-widest text-primary/80">Mot de passe</Label>
+            {/* MOT DE PASSE */}
+            <div className="space-y-2.5">
+              <div className="flex justify-between items-center ml-1">
+                <Label className="text-[10px] font-black uppercase tracking-[0.3em] text-emerald-500/50">Clé_Privée</Label>
                 <Link 
-  to="/forgot-password" 
-  className="text-[10px] font-black uppercase text-accent/50 hover:text-accent transition-colors"
->
-  Oublié ?
-</Link>
+                  to="/forgot-password" 
+                  className="text-[9px] font-black uppercase text-white/20 hover:text-[#bef264] transition-colors italic tracking-wider"
+                >
+                  Perdu ?
+                </Link>
               </div>
               <Input 
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••••••" 
-                className="h-14 bg-input/50 border-none font-bold placeholder:text-foreground/10 focus:ring-1 focus:ring-primary"
+                className="h-14 bg-[#050505] border-white/5 rounded-2xl font-bold text-white placeholder:text-white/5 focus:border-emerald-500/50 focus:ring-0 transition-all text-xs px-6"
                 required
               />
             </div>
 
-            <Button type="submit" disabled={isLoading} className="w-full btn-elite h-16 group shadow-lg shadow-primary/20">
-              {isLoading ? (
-                <Loader2 className="animate-spin mr-2" />
-              ) : (
-                <LogIn className="mr-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              )}
-              <span className="drop-shadow-[0_2px_2px_rgba(0,0,0,0.5)] text-lg">Se Connecter</span>
+            {/* BOUTON ÉLITE */}
+            <Button 
+              type="submit" 
+              disabled={isLoading} 
+              className={`w-full h-16 rounded-2xl font-black uppercase tracking-[0.2em] text-[11px] italic transition-all relative overflow-hidden group
+                ${isLoading 
+                  ? 'bg-white/10 text-white/20' 
+                  : 'bg-emerald-500 text-black shadow-[0_20px_40px_rgba(16,185,129,0.15)] hover:shadow-[0_20px_50px_rgba(16,185,129,0.3)] hover:scale-[1.02]'}`}
+            >
+              <span className="relative z-10 flex items-center justify-center gap-3">
+                {isLoading ? (
+                  <Loader2 className="animate-spin w-5 h-5" />
+                ) : (
+                  <>
+                    Établir la connexion
+                    <LogIn className="w-4 h-4 group-hover:translate-x-1 transition-transform stroke-[3px]" />
+                  </>
+                )}
+              </span>
             </Button>
           </form>
 
-          <div className="mt-8 pt-8 border-t border-white/5 text-center">
-            <p className="text-foreground/40 text-xs font-bold uppercase tracking-widest">
-              Pas encore de compte ?
-            </p>
-            <Link to="/signup" className="inline-flex items-center mt-2 text-primary font-black uppercase italic tracking-tighter hover:text-white transition-colors group">
-              Créer un accès système
-              <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
+          {/* ACCÈS EXTERNE */}
+          <div className="mt-12 pt-8 border-t border-white/5 text-center">
+            <Link to="/signup" className="inline-flex items-center gap-2 text-[#bef264] font-black uppercase italic tracking-tighter hover:text-white transition-all group text-[11px]">
+              Générer un nouvel accès système
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </Link>
           </div>
         </CardContent>
       </Card>
+      
+      {/* STATUS BAR FIXE */}
+      <div className="fixed bottom-6 text-[8px] font-black text-white/5 uppercase tracking-[0.8em] italic">
+        AgriConnect secure
+      </div>
     </div>
   );
 }

@@ -5,17 +5,10 @@ import { useAuthSession } from '@/features/auth/hooks/use-auth-session';
 import { toast } from 'sonner';
 
 // --- INTERFACES POUR TYPESCRIPT ---
-export interface Produit {
+
+export interface Categorie {
   id: string;
-  nom_prod: string;
-  prix_prod: number;
-  quantite_prod: number;
-  unite: string;
-  date_recolte: string;
-  user_id: string;
-  categorie_id?: string;
-  created_at: string;
-  annonce?: Annonce[]; // Relation avec la table annonce
+  libelle_categorie: string;
 }
 
 export interface Annonce {
@@ -27,65 +20,92 @@ export interface Annonce {
   user_id: string;
 }
 
+export interface Produit {
+  id: string;
+  nom_prod: string;
+  prix_prod: number;
+  quantite_prod: number;
+  unite: string;
+  date_recolte: string;
+  user_id: string;
+  categorie_id?: string;
+  created_at: string;
+  // Relations jointes
+  annonce?: Annonce[];
+  categorie?: Categorie; 
+}
+
 export function useRecoltes() {
   const { profile } = useAuthSession();
   const [loading, setLoading] = useState(false);
-  
-  // -: On définit le type dans le useState ---
   const [produits, setProduits] = useState<Produit[]>([]);
 
+  // --- RÉCUPÉRATION DU STOCK (Jointure avec Annonce et Categorie) ---
   const fetchInventory = async () => {
     if (!profile?.id) return;
     setLoading(true);
     try {
       const { data, error } = await supabase
         .from('produit')
-        .select('*, annonce(*)') 
+        .select(`
+          *,
+          annonce(*),
+          categorie(*)
+        `) 
         .eq('user_id', profile.id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
       
-      // Ici, le cast "as Produit[]" rassure TypeScript
-      setProduits((data as Produit[]) || []);
+      setProduits((data as unknown as Produit[]) || []);
     } catch (error: any) {
-      toast.error("Erreur de synchronisation");
+      console.error(error);
+      toast.error("Erreur de synchronisation du stock");
     } finally {
       setLoading(false);
     }
   };
 
-  // --- AJOUT PRODUIT ---
+  // --- AJOUT PRODUIT (Prend en compte categorie_id) ---
   const addProduit = async (payload: Partial<Produit>) => {
     if (!profile?.id) return;
     setLoading(true);
     try {
       const { data, error } = await supabase
         .from('produit')
-        .insert([{ ...payload, user_id: profile.id }])
-        .select()
+        .insert([{ 
+          ...payload, 
+          user_id: profile.id 
+        }])
+        .select(`*, categorie(*)`) // On récupère la catégorie direct pour l'affichage UI immédiat
         .single();
 
       if (error) throw error;
+      
       setProduits(prev => [data as Produit, ...prev]);
-      toast.success("Stock mis à jour");
+      toast.success("Produit ajouté à votre récolte");
       return data;
     } catch (error: any) {
-      toast.error(error.message);
+      toast.error(error.message || "Erreur lors de l'ajout");
     } finally {
       setLoading(false);
     }
   };
 
-  // --- DELETE ---
+  // --- SUPPRESSION ---
   const deleteProduit = async (id: string) => {
     try {
-      const { error } = await supabase.from('produit').delete().eq('id', id);
+      const { error } = await supabase
+        .from('produit')
+        .delete()
+        .eq('id', id);
+
       if (error) throw error;
+      
       setProduits(prev => prev.filter(p => p.id !== id));
-      toast.success("Produit retiré");
+      toast.success("Produit retiré du stock");
     } catch (error: any) {
-      toast.error("Erreur lors de la suppression");
+      toast.error("Impossible de supprimer ce produit");
     }
   };
 

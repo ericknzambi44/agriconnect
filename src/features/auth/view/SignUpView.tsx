@@ -70,7 +70,7 @@ export default function SignUpView() {
   if (isSuccess) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4 bg-background">
-        <Card className="w-full max-w-md bg-glass-agri border-active-green animate-in zoom-in-95 duration-500">
+        <Card className="w-full max-w-md bg-glass-agri/50 border-none shadow-[0_0_50px_rgba(0,0,0,0.8)] overflow-hidden animate-in fade-in zoom-in-95 duration-500">
           <CardContent className="pt-12 pb-12 text-center space-y-6">
             <div className="flex justify-center">
               <div className="rounded-full bg-primary/20 p-6 shadow-[0_0_50px_rgba(34,197,94,0.3)] animate-bounce">

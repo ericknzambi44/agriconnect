@@ -9,6 +9,8 @@ import { Topbar } from "./components/dashboard/Topbar";
 import DashboardOverview from "./view/dashboard/Overview";
 import App from "./App";
 import ProfileView from "./features/profile/view/ProfileView";
+import MarketView from "./features/marcher/view/MarketView";
+import { AppWindow } from "lucide-react";
 
 
 
@@ -26,7 +28,7 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
     {/* 2. On enveloppe l'application avec le Provider obligatoire */}
     <QueryClientProvider client={queryClient}>
-      <App />
+      <App/>
     </QueryClientProvider>
   </React.StrictMode>,
 );
