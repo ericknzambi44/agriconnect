@@ -1,10 +1,9 @@
-// src/features/marcher/hooks/useMarketplace.ts
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/supabase';
 import { useAuthSession } from '@/features/auth/hooks/use-auth-session';
 import { toast } from 'sonner';
 
-// --- TYPES ET INTERFACES MIS À JOUR ---
+// --- TYPES ET INTERFACES ---
 
 export interface MarketAnnonce {
   id: string;
@@ -13,14 +12,15 @@ export interface MarketAnnonce {
   statut: string;
   prod_id: string;
   user_id: string;
-  quantite_vendre: number;    // Le volume total mis en ligne
-  quantite_restante: number;  // Le volume encore disponible pour les acheteurs
+  quantite_vendre: number;
+  quantite_restante: number;
   produit: {
     id: string;
     nom_prod: string;
     prix_prod: number;
-    quantite_prod: number;    // Stock physique global du vendeur
+    quantite_prod: number;
     unite: string;
+    image: string; // Ajouté pour l'esthétique du marché
     categorie: {
       id: string;
       libelle_categorie: string;
@@ -45,7 +45,7 @@ export function useMarketplace() {
   const [annonces, setAnnonces] = useState<MarketAnnonce[]>([]);
   const [mesCommandes, setMesCommandes] = useState<Commande[]>([]);
 
-  // --- 1. RÉCUPÉRER LES ANNONCES (Filtrées sur ce qu'il reste à vendre) ---
+  // --- 1. RÉCUPÉRER LES ANNONCES (Filtrées sur le stock disponible) ---
   const fetchMarket = useCallback(async (categorieId?: string) => {
     setLoading(true);
     try {
@@ -59,13 +59,15 @@ export function useMarketplace() {
             prix_prod,
             quantite_prod,
             unite,
+            image,
             categorie_id,
             categorie:categorie_id (id, libelle_categorie)
           )
         `)
         .eq('statut', 'en_attente')
-        .gt('quantite_restante', 0); // Logique : On ne montre que s'il reste quelque chose
+        .gt('quantite_restante', 0);
 
+      // Filtre optionnel par catégorie
       if (categorieId && categorieId !== 'all') {
         query = query.filter('produit.categorie_id', 'eq', categorieId);
       }
@@ -75,13 +77,14 @@ export function useMarketplace() {
       if (error) throw error;
       setAnnonces((data as any) || []);
     } catch (error: any) {
+      console.error("Erreur Marché:", error);
       toast.error("Échec de connexion au marché");
     } finally {
       setLoading(false);
     }
   }, []);
 
-  // --- 2. RÉCUPÉRER L'HISTORIQUE ---
+  // --- 2. RÉCUPÉRER L'HISTORIQUE DES COMMANDES ---
   const fetchMesCommandes = useCallback(async () => {
     if (!profile?.id) return;
     try {
@@ -96,6 +99,7 @@ export function useMarketplace() {
               nom_prod,
               prix_prod,
               unite,
+              image,
               categorie:categorie_id (id, libelle_categorie)
             )
           )
@@ -110,14 +114,13 @@ export function useMarketplace() {
     }
   }, [profile?.id]);
 
-  // --- 3. PASSER UNE COMMANDE (Postuler sur une partie de l'annonce) ---
+  // --- 3. PASSER UNE COMMANDE ---
   const passerCommande = async (annonce: MarketAnnonce, quantiteSouhaitee: number) => {
     if (!profile?.id) {
       toast.error("Veuillez vous connecter");
       return null;
     }
 
-    // LOGIQUE DE VÉRIFICATION : Ne pas commander plus que le lot disponible
     if (quantiteSouhaitee > annonce.quantite_restante) {
       toast.error(`Volume insuffisant. Disponible: ${annonce.quantite_restante} ${annonce.produit.unite}`);
       return null;
@@ -140,13 +143,13 @@ export function useMarketplace() {
       if (error) throw error;
       
       toast.success("DEMANDE ENVOYÉE", {
-        description: `Vous avez postulé pour ${quantiteSouhaitee} ${annonce.produit.unite}.`
+        description: `Réservation pour ${quantiteSouhaitee} ${annonce.produit.unite} effectuée.`
       });
       
       fetchMesCommandes(); 
       return data;
     } catch (error: any) {
-      toast.error("Erreur lors de la postulation");
+      toast.error("Erreur lors de la commande");
       return null;
     } finally {
       setLoading(false);
@@ -171,7 +174,7 @@ export function useMarketplace() {
         .eq('statut', 'en_attente');
 
       if (error) throw error;
-      toast.success("MODIFICATION ENREGISTRÉE");
+      toast.success("COMMANDE MISE À JOUR");
       fetchMesCommandes();
     } catch (error: any) {
       toast.error("Échec de la modification");
@@ -189,7 +192,7 @@ export function useMarketplace() {
 
       if (error) throw error;
       setMesCommandes(prev => prev.filter(c => c.id !== commandeId));
-      toast.success("POSTULATION RÉVOQUÉE");
+      toast.success("COMMANDE ANNULÉE");
     } catch (error: any) {
       toast.error("Action impossible");
     }

@@ -1,111 +1,108 @@
-// src/features/recolte/hooks/useRecoltes.ts
 import { useState, useEffect } from 'react';
 import { supabase } from '@/supabase';
 import { useAuthSession } from '@/features/auth/hooks/use-auth-session';
 import { toast } from 'sonner';
+import { Produit } from '../types';
 
-// --- INTERFACES POUR TYPESCRIPT ---
-
-export interface Categorie {
-  id: string;
-  libelle_categorie: string;
-}
-
-export interface Annonce {
-  id: string;
-  prix_total: number;
-  date_pub: string;
-  statut: string;
-  prod_id: string;
-  user_id: string;
-}
-
-export interface Produit {
-  id: string;
-  nom_prod: string;
-  prix_prod: number;
-  quantite_prod: number;
-  unite: string;
-  date_recolte: string;
-  user_id: string;
-  categorie_id?: string;
-  created_at: string;
-  // Relations jointes
-  annonce?: Annonce[];
-  categorie?: Categorie; 
-}
 
 export function useRecoltes() {
   const { profile } = useAuthSession();
   const [loading, setLoading] = useState(false);
   const [produits, setProduits] = useState<Produit[]>([]);
 
-  // --- RÉCUPÉRATION DU STOCK (Jointure avec Annonce et Categorie) ---
   const fetchInventory = async () => {
     if (!profile?.id) return;
     setLoading(true);
     try {
       const { data, error } = await supabase
         .from('produit')
-        .select(`
-          *,
-          annonce(*),
-          categorie(*)
-        `) 
-        .eq('user_id', profile.id)
+        .select(`*, annonce(*), categorie(*)`) 
+        .eq('user_id', profile.id) // 🔴 CORRECTION ICI : user_id au lieu de id_utilisateur
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      
+      if (error) {
+        console.error("Détails Erreur Sync:", error);
+        throw error;
+      }
       setProduits((data as unknown as Produit[]) || []);
     } catch (error: any) {
-      console.error(error);
-      toast.error("Erreur de synchronisation du stock");
+      toast.error("ERREUR DE SYNCHRONISATION");
     } finally {
       setLoading(false);
     }
   };
 
-  // --- AJOUT PRODUIT (Prend en compte categorie_id) ---
-  const addProduit = async (payload: Partial<Produit>) => {
-    if (!profile?.id) return;
+  const addProduit = async (payload: Partial<Produit>, imageFile?: File) => {
+    if (!profile?.id) return null;
     setLoading(true);
+
     try {
+      let finalImageUrl = payload.image || "";
+
+      // --- GESTION ROBUSTE DE L'IMAGE ---
+      if (imageFile) {
+        const fileExt = imageFile.name.split('.').pop();
+        const cleanFileName = `${Date.now()}-${Math.random().toString(36).substring(2, 7)}.${fileExt}`;
+        const filePath = `${profile.id}/${cleanFileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('produits') 
+          .upload(filePath, imageFile, {
+            cacheControl: '3600',
+            upsert: false
+          });
+
+        if (uploadError) {
+          console.error("Détails Upload Error:", uploadError);
+          throw new Error(`Échec de l'envoi : ${uploadError.message}`);
+        }
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('produits')
+          .getPublicUrl(filePath);
+        
+        finalImageUrl = publicUrl;
+      }
+
+      // --- INSERTION DANS LA TABLE PRODUIT ---
       const { data, error } = await supabase
         .from('produit')
         .insert([{ 
           ...payload, 
-          user_id: profile.id 
+          user_id: profile.id, // On utilise bien user_id ici
+          image: finalImageUrl 
         }])
-        .select(`*, categorie(*)`) // On récupère la catégorie direct pour l'affichage UI immédiat
+        .select(`*, categorie(*)`)
         .single();
 
       if (error) throw error;
       
-      setProduits(prev => [data as Produit, ...prev]);
-      toast.success("Produit ajouté à votre récolte");
-      return data;
+      const newProduit = data as Produit;
+      setProduits(prev => [newProduit, ...prev]);
+      toast.success("RESSOURCE ENREGISTRÉE");
+      
+      return newProduit;
     } catch (error: any) {
-      toast.error(error.message || "Erreur lors de l'ajout");
+      console.error("Erreur complète:", error);
+      toast.error("ERREUR CRITIQUE", {
+        description: error.message || "Impossible de finaliser l'opération"
+      });
+      return null;
     } finally {
       setLoading(false);
     }
   };
 
-  // --- SUPPRESSION ---
   const deleteProduit = async (id: string) => {
     try {
-      const { error } = await supabase
-        .from('produit')
-        .delete()
-        .eq('id', id);
-
+      const { error } = await supabase.from('produit').delete().eq('id', id);
       if (error) throw error;
-      
       setProduits(prev => prev.filter(p => p.id !== id));
-      toast.success("Produit retiré du stock");
+      toast.success("PRODUIT RETIRÉ");
+      return true;
     } catch (error: any) {
-      toast.error("Impossible de supprimer ce produit");
+      toast.error("ERREUR DE SUPPRESSION");
+      return false;
     }
   };
 

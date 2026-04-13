@@ -1,8 +1,8 @@
-// src/components/dashboard/Topbar.tsx
 import React from 'react';
-import { Search, Bell, Command, Menu } from "lucide-react";
+import { Search, Bell, Command, Menu, ShieldCheck } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { cn } from "@/lib/utils";
 
 interface TopbarProps {
   user: {
@@ -18,60 +18,73 @@ export function Topbar({ user, onMenuClick }: TopbarProps) {
   const initials = `${user.prenom[0]}${user.nom[0]}`.toUpperCase();
 
   return (
-    <header className="fixed top-0 right-0 z-40 flex h-20 items-center justify-between border-b border-white/5 bg-[#050505]/80 px-4 backdrop-blur-xl transition-all sm:px-8 
-      left-0 lg:left-72">
+    <header className="fixed top-0 right-0 z-40 flex h-20 items-center justify-between border-b border-white/5 bg-[#050505]/60 px-6 backdrop-blur-2xl transition-all sm:px-10 left-0 lg:left-72">
       
-      {/* 1. SECTION GAUCHE : MENU MOBILE + RECHERCHE */}
-      <div className="flex items-center gap-4 flex-1">
-        {/* BOUTON BURGER (Mobile) */}
+      {/* 1. RECHERCHE & COMMANDES */}
+      <div className="flex items-center gap-6 flex-1">
+        {/* BOUTON MOBILE (Mobile Only) */}
         <button 
           onClick={onMenuClick}
-          className="p-2.5 bg-white/5 rounded-xl border border-white/10 text-emerald-500 hover:bg-emerald-500/10 transition-all lg:hidden active:scale-95"
+          className="p-3 bg-white/5 rounded-2xl border border-white/10 text-emerald-500 hover:bg-emerald-500/10 transition-all lg:hidden active:scale-90"
         >
           <Menu className="w-5 h-5" />
         </button>
 
-        {/* BARRE DE RECHERCHE - Visibilité Améliorée */}
-        <div className="relative w-full max-w-[180px] group sm:max-w-md">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 group-focus-within:text-emerald-500 transition-colors" />
+        {/* BARRE DE RECHERCHE - Look "Terminal" */}
+        <div className="relative w-full max-w-[200px] group sm:max-w-md hidden sm:block">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20 group-focus-within:text-emerald-500 transition-colors duration-500" />
           <Input 
-            placeholder="RECHERCHER DANS LE RÉSEAU..." 
-            className="h-10 bg-white/[0.05] border border-white/10 pl-11 font-black text-[9px] tracking-[0.2em] text-white placeholder:text-white/30 focus-visible:ring-2 focus-visible:ring-emerald-500/30 focus-visible:border-emerald-500/50 rounded-xl transition-all hover:bg-white/[0.08] shadow-sm"
+            placeholder="Rechercher dans le systeme" 
+            className="h-11 bg-white/[0.03] border-white/5 pl-12 font-tech text-[10px] tracking-[0.1em] text-white placeholder:text-white/20 focus-visible:ring-emerald-500/20 focus-visible:border-emerald-500/30 rounded-2xl transition-all hover:bg-white/[0.06] shadow-inner"
           />
-          <div className="absolute right-3 top-1/2 -translate-y-1/2 hidden items-center gap-1.5 opacity-40 group-focus-within:opacity-100 sm:flex transition-opacity">
-            <Command className="w-3.5 h-3.5 text-emerald-500" />
-            <span className="text-[10px] font-black italic text-emerald-500 uppercase tracking-tighter">K</span>
+          <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-1.5 px-2 py-1 bg-black/40 border border-white/5 rounded-lg opacity-40 group-focus-within:opacity-100 transition-all">
+            <Command className="w-3 h-3 text-emerald-500" />
+         
           </div>
         </div>
       </div>
 
-      {/* 2. SECTION DROITE : ACTIONS & PROFIL */}
-      <div className="flex items-center gap-3 sm:gap-6">
+      {/* 2. ACTIONS ET PROFIL */}
+      <div className="flex items-center gap-4 sm:gap-8">
         
-        {/* NOTIFICATIONS */}
-        <button className="relative p-2 sm:p-2.5 bg-white/[0.03] rounded-xl hover:bg-white/[0.06] transition-all border border-white/5 group hover:border-white/10">
-          <Bell className="w-4 h-4 sm:w-5 h-5 group-hover:rotate-12 transition-transform text-white/40 group-hover:text-emerald-500" />
-          <span className="absolute top-2 right-2 w-2 h-2 bg-emerald-500 rounded-full border-2 border-[#050505] animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.6)]"></span>
+        {/* NOTIFICATIONS - Glow subtil */}
+        <button className="relative p-3 bg-white/[0.02] rounded-2xl hover:bg-white/[0.05] transition-all border border-white/5 group active:scale-95">
+          <Bell className="w-4 h-4 text-white/30 group-hover:text-emerald-500 group-hover:rotate-[15deg] transition-all duration-300" />
+          <span className="absolute top-3 right-3 w-2 h-2 bg-emerald-500 rounded-full border-2 border-[#050505] shadow-[0_0_15px_rgba(16,185,129,0.4)] animate-pulse" />
         </button>
 
-        {/* PROFILE INFO */}
-        <div className="flex items-center gap-3 pl-3 border-l border-white/10 sm:gap-4 sm:pl-6">
+        {/* USER PROFILE SECTION */}
+        <div className="flex items-center gap-4 pl-6 border-l border-white/5 h-10">
           <div className="text-right hidden md:block">
-            <p className="text-[11px] font-black uppercase tracking-tighter leading-none text-white italic">
-              {user.prenom} {user.nom}
-            </p>
-            <p className="text-[8px] font-black text-emerald-500 uppercase tracking-[0.2em] mt-1 opacity-80 flex items-center justify-end gap-1">
-              {user.role} <span className="w-1 h-1 bg-emerald-500 rounded-full"></span> VÉRIFIÉ
-            </p>
+            <h4 className="text-[12px] font-display uppercase italic tracking-tight text-white leading-none">
+              {user.prenom} <span className="text-white/50">{user.nom}</span>
+            </h4>
+            <div className="flex items-center justify-end gap-1.5 mt-1.5">
+              <span className="font-tech text-[8px] font-black text-emerald-500/60 uppercase tracking-widest">
+                {user.role}
+              </span>
+              <ShieldCheck className="w-3 h-3 text-emerald-500/40" />
+            </div>
           </div>
           
-          {/* AVATAR */}
-          <Avatar className="h-9 w-9 sm:h-11 sm:w-11 border-2 border-white/10 hover:border-emerald-500/50 transition-all cursor-pointer ring-offset-[#050505] hover:ring-2 ring-emerald-500/20 ring-offset-2">
-            <AvatarImage src={user.avatar_url || ""} alt={user.nom} className="object-cover" />
-            <AvatarFallback className="bg-emerald-500/10 text-emerald-500 font-black text-[10px] sm:text-xs tracking-tighter italic border border-emerald-500/20">
-              {initials}
-            </AvatarFallback>
-          </Avatar>
+          {/* AVATAR D'ÉLITE */}
+          <div className="relative group cursor-pointer">
+            <div className="absolute -inset-1 bg-emerald-500/20 rounded-2xl blur opacity-0 group-hover:opacity-100 transition duration-500" />
+            <Avatar className="h-10 w-10 sm:h-12 sm:w-12 border border-white/10 rounded-2xl relative bg-[#080808]">
+              <AvatarImage 
+                src={user.avatar_url || ""} 
+                alt={user.nom} 
+                className="object-cover" 
+              />
+              <AvatarFallback className="bg-emerald-500/5 text-emerald-500 font-display italic text-xs border border-emerald-500/10">
+                {initials}
+              </AvatarFallback>
+            </Avatar>
+            {/* Indicateur de Statut Online */}
+            <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-[#050505] rounded-lg flex items-center justify-center border border-white/5">
+                <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full shadow-[0_0_8px_rgba(16,185,129,0.8)]" />
+            </div>
+          </div>
         </div>
       </div>
     </header>

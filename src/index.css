@@ -1,16 +1,25 @@
 @import "tailwindcss";
 
+/* --- IMPORTATION DES POLICES GOOGLE --- */
+/* - Inter : Le standard du SaaS moderne (pour le corps du texte)
+   - Archivo Black : Pour des titres massifs et brutaux
+   - JetBrains Mono : Pour les données techniques et les IDs (style Terminal)
+*/
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Archivo+Black&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap');
+
 @theme {
-  /* --- BASE ABYSSALE NATURE (Légère teinte émeraude dans le noir) --- */
-  --color-background: oklch(12% 0.015 160); /* Un noir profond avec une âme verte */
-  --color-foreground: oklch(100% 0 0); /* Blanc Pur et Gras */
+  /* --- TYPOGRAPHIE --- */
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Archivo Black", sans-serif; /* Pour les titres AgriMarket */
+  --font-mono: "JetBrains Mono", monospace;    /* Pour les IDs et volumes */
+
+  /* --- BASE ABYSSALE NATURE --- */
+  --color-background: oklch(12% 0.015 160); 
+  --color-foreground: oklch(100% 0 0);
 
   /* --- ACCENTS AGRICONNECT --- */
-  /* Vert "Elite" : Vibrant, évoquant la croissance et la tech */
   --color-primary: hsl(142, 76%, 36%); 
   --color-primary-foreground: oklch(100% 0 0);
-
-  /* Jaune "Harvest" : Pour les notifications, les prix et les alertes cool */
   --color-accent: hsl(48, 100%, 50%);
   --color-accent-foreground: oklch(10% 0.02 160);
 
@@ -19,7 +28,6 @@
   --color-card-foreground: oklch(95% 0.01 160);
 
   /* --- BORDURES & INPUTS --- */
-  /* Une lueur verte très subtile sur les bordures */
   --color-border: oklch(25% 0.03 160 / 0.5);
   --color-input: oklch(18% 0.02 160);
   
@@ -32,6 +40,7 @@
   --radius-lg: 0.75rem;
   --radius-xl: 1.25rem;
   --radius-2xl: 2rem;
+  --radius-3xl: 3rem;
 }
 
 @layer base {
@@ -43,18 +52,22 @@
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
+    font-family: var(--font-sans); /* Police par défaut */
     -webkit-font-smoothing: antialiased;
-    font-weight: 500; /* Rend le texte plus "gras" et lisible */
-    letter-spacing: -0.02em;
+    font-weight: 500;
+    letter-spacing: -0.01em;
   }
 
-  /* SCROLLBAR AGRICONNECT : Vert Bio-Lumineux */
-  ::-webkit-scrollbar {
-    width: 5px;
+  /* Style des titres par défaut */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+    text-transform: uppercase;
+    letter-spacing: -0.04em;
+    font-style: italic;
   }
-  ::-webkit-scrollbar-track {
-    background: transparent;
-  }
+
+  ::-webkit-scrollbar { width: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb {
     background: oklch(30% 0.04 160);
     border-radius: 100px;
@@ -66,31 +79,31 @@
 }
 
 /* --- UTILITIES D'ÉLITE --- */
+
+/* Applique la police technique aux IDs ou volumes */
+@utility font-tech {
+  font-family: var(--font-mono);
+  letter-spacing: 0.05em;
+}
+
 @utility bg-glass-agri {
-  /* Effet verre givré : Très premium pour les formulaires */
   background-color: hsla(160, 20%, 8%, 0.75);
   backdrop-filter: blur(20px) saturate(190%);
   border: 1px solid hsla(142, 76%, 36%, 0.1);
 }
 
 @utility text-glow-green {
-  /* Pour faire briller les titres ou les montants financiers */
   text-shadow: 0 0 25px hsla(142, 76%, 36%, 0.4);
 }
 
 @utility text-glow-yellow {
-  /* Pour le jaune "cool" */
   text-shadow: 0 0 20px hsla(48, 100%, 50%, 0.3);
 }
 
-@utility border-active-green {
-  border-color: var(--color-primary);
-  box-shadow: 0 0 20px hsla(142, 76%, 36%, 0.15);
-}
-
 @utility btn-elite {
-  /* Un bouton qui impose le respect */
-  @apply px-6 py-3 font-bold uppercase tracking-widest transition-transform active:scale-95;
-  background: linear-gradient(135deg, var(--color-primary), #065f46);
-  border-radius: var(--radius-lg);
+  @apply px-8 py-4 font-bold uppercase tracking-[0.2em] transition-all active:scale-95;
+  font-family: var(--font-display);
+  background: linear-gradient(135deg, var(--color-primary), #064e3b);
+  border-radius: var(--radius-xl);
+  box-shadow: 0 10px 20px -10px hsla(142, 76%, 36%, 0.5);
 }

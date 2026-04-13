@@ -1,231 +1,152 @@
- // src/features/profile/view/ProfileView.tsx
-
-
 import { IdentityForm } from '../components/IdentityForm';
-
 import { AddressForm } from '../components/AddressForm';
-
 import { RoleSwitcher } from '../components/RoleSwitcher';
-
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-
 import { Skeleton } from "@/components/ui/skeleton";
-
 import { Card } from "@/components/ui/card";
-
-import { User, MapPin, ShieldAlert, Fingerprint, Activity, Globe } from "lucide-react";
-
+import { User, MapPin, ShieldAlert, Fingerprint, Activity, Settings, ShieldCheck } from "lucide-react";
 import { useProfile } from '../hooks/useProfile';
-
+import { cn } from "@/lib/utils";
 
 export default function ProfileView() {
-
-const { profile, roles, isLoading, updateProfile, changeRole } = useProfile();
-
-
-if (isLoading && !profile) {
-
-return (
-
-<div className="p-4 md:p-10 space-y-8 animate-pulse">
-
-<div className="h-24 w-full bg-white/[0.02] rounded-3xl" />
-
-<div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-
-<div className="lg:col-span-8 h-[500px] bg-white/[0.02] rounded-[2.5rem]" />
-
-<div className="lg:col-span-4 h-[300px] bg-white/[0.02] rounded-[2.5rem]" />
-
-</div>
-
-</div>
-
-);
-
-}
-
-
-return (
-
-<div className="h-auto lg:h-[calc(100vh-110px)] flex flex-col gap-6 md:gap-8 animate-in fade-in slide-in-from-bottom-6 duration-700 lg:overflow-hidden p-1 md:p-4">
-
-{/* HEADER RESPONSIVE - Style Émeraude */}
-
-<header className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 shrink-0 px-2">
-
-<div className="flex items-center gap-4 md:gap-6">
-
-<div className="relative shrink-0">
-
-<div className="w-16 h-16 md:w-24 md:h-24 rounded-2xl md:rounded-[2rem] bg-white/[0.02] border-2 border-emerald-500/30 flex items-center justify-center overflow-hidden shadow-[0_0_30px_rgba(16,185,129,0.1)] group transition-all">
-
-{profile?.avatar_url ? (
-
-<img src={profile.avatar_url} alt="Avatar" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
-
-) : (
-
-<Fingerprint className="w-8 h-8 md:w-12 md:h-12 text-emerald-500/50" />
-
-)}
-
-</div>
-
-<Activity className="absolute -bottom-1 -right-1 w-5 h-5 text-emerald-500 bg-[#050505] rounded-full border-2 border-emerald-500 p-0.5 animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
-
-</div>
-
-
-<div>
-
-<h1 className="text-3xl md:text-5xl font-black uppercase italic tracking-tighter leading-none text-white drop-shadow-md">
-
-Gestion <span className="text-emerald-500">Profil</span>
-
-</h1>
-
-<p className="text-white/40 font-black uppercase tracking-[0.3em] text-[9px] md:text-[10px] mt-2 truncate max-w-[200px] md:max-w-none">
-
-{profile?.email}
-
-</p>
-
-</div>
-
-</div>
-
-<div className="hidden sm:flex px-4 py-3 bg-[#050505]/50 border border-white/5 rounded-2xl items-center gap-3 backdrop-blur-md">
-
-<span className="text-[10px] font-black uppercase tracking-widest text-emerald-500/40 italic">System_Auth_Active</span>
-
-</div>
-
-</header>
-
-
-{/* GRILLE PRINCIPALE RESPONSIVE */}
-
-<div className="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8 flex-1 min-h-0 overflow-y-auto lg:overflow-hidden pb-20 lg:pb-0">
-
-{/* COLONNE GAUCHE : FORMULAIRES */}
-
-<div className="lg:col-span-8 lg:overflow-y-auto lg:pr-4 custom-scrollbar space-y-6">
-
-<Tabs defaultValue="identity" className="w-full">
-
-{/* TABS - Look Terminal */}
-
-<TabsList className="bg-[#050505] border border-white/5 p-1.5 h-14 rounded-xl md:rounded-2xl w-full sm:w-[350px] mb-6 shadow-xl">
-
-<TabsTrigger
-
-value="identity"
-
-className="flex-1 rounded-lg md:rounded-xl data-[state=active]:bg-emerald-500 data-[state=active]:text-black text-white/40 font-black uppercase italic text-[9px] md:text-[10px] tracking-widest transition-all data-[state=active]:shadow-[0_0_15px_rgba(16,185,129,0.4)]"
-
->
-
-Identité
-
-</TabsTrigger>
-
-<TabsTrigger
-
-value="location"
-
-className="flex-1 rounded-lg md:rounded-xl data-[state=active]:bg-emerald-500 data-[state=active]:text-black text-white/40 font-black uppercase italic text-[9px] md:text-[10px] tracking-widest transition-all data-[state=active]:shadow-[0_0_15px_rgba(16,185,129,0.4)]"
-
->
-
-Adresse
-
-</TabsTrigger>
-
-</TabsList>
-
-
-<TabsContent value="identity" className="mt-0 outline-none animate-in fade-in slide-in-from-right-4 duration-500">
-
-<Card className="bg-[#050505] border-white/5 p-5 md:p-10 rounded-3xl md:rounded-[2.5rem] shadow-2xl">
-
-<IdentityForm profile={profile} onUpdate={updateProfile} loading={isLoading} />
-
-</Card>
-
-</TabsContent>
-
-
-<TabsContent value="location" className="mt-0 outline-none animate-in fade-in slide-in-from-right-4 duration-500">
-
-<Card className="bg-[#050505] border-white/5 p-5 md:p-10 rounded-3xl md:rounded-[2.5rem] shadow-2xl">
-
-<AddressForm profile={profile} onUpdate={updateProfile} loading={isLoading} />
-
-</Card>
-
-</TabsContent>
-
-</Tabs>
-
-</div>
-
-
-{/* COLONNE DROITE : RÔLE & SÉCURITÉ */}
-
-<div className="lg:col-span-4 lg:overflow-y-auto lg:pr-2 custom-scrollbar space-y-6 md:space-y-8">
-
-{/* Le conteneur du Switcher n'a plus besoin d'être redéfini en bg, car il a son propre bg-[#050505] */}
-
-<div className="border-none rounded-[2.5rem]">
-
-<RoleSwitcher
-
-currentRoleId={profile?.role_id}
-
-roles={roles}
-
-onRoleChange={changeRole}
-
-loading={isLoading}
-
-/>
-
-</div>
-
-
-{/* ZONE CRITIQUE - Style Cyber Sécurité (Rouge) */}
-
-<Card className="bg-red-500/[0.02] border border-red-500/10 p-6 md:p-8 rounded-3xl md:rounded-[2.5rem] border-l-4 border-l-red-500 relative overflow-hidden">
-
-<div className="absolute top-0 right-0 w-32 h-32 bg-red-500/5 blur-[50px] pointer-events-none" />
-
-<h3 className="text-red-500 font-black uppercase italic text-[10px] tracking-widest mb-4 flex items-center gap-2 relative z-10">
-
-<ShieldAlert className="w-4 h-4" /> Zone Critique
-
-</h3>
-
-<p className="text-[10px] font-bold text-white/30 leading-relaxed uppercase mb-6 tracking-wider relative z-10">
-
-Actions irréversibles sur les accès du terminal.
-
-</p>
-
-<button className="w-full py-4 bg-red-500/10 border border-red-500/20 text-red-500 text-[10px] font-black uppercase italic tracking-widest rounded-[1.25rem] hover:bg-red-500 hover:text-black transition-all shadow-[0_5px_15px_rgba(239,68,68,0.1)] hover:shadow-[0_10px_25px_rgba(239,68,68,0.3)] relative z-10">
-
-Réinitialiser
-
-</button>
-
-</Card>
-
-</div>
-
-</div>
-
-</div>
-
-);
-
+  const { profile, roles, isLoading, updateProfile, changeRole } = useProfile();
+
+  if (isLoading && !profile) {
+    return (
+      <div className="p-6 md:p-10 space-y-10 animate-pulse bg-[#020202]">
+        <div className="h-24 w-full bg-white/5 rounded-3xl" />
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+          <div className="h-[400px] bg-white/5 rounded-3xl" />
+          <div className="lg:col-span-3 h-[600px] bg-white/5 rounded-[3rem]" />
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen lg:h-[calc(100vh-80px)] flex flex-col gap-6 animate-in fade-in duration-1000 p-3 md:p-6 lg:overflow-hidden bg-[#020202]">
+      
+      {/* HEADER COMPACT STYLE TOP-BAR */}
+      <header className="flex items-center justify-between px-4 py-4 bg-[#0A0A0A] border border-white/5 rounded-[2rem] shrink-0 shadow-2xl">
+        <div className="flex items-center gap-4">
+          <div className="relative w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center overflow-hidden">
+            {profile?.avatar_url ? (
+              <img src={profile.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
+            ) : (
+              <Fingerprint className="w-6 h-6 text-emerald-500/50" />
+            )}
+          </div>
+          <div className="hidden sm:block">
+            <h1 className="text-xl font-display font-black uppercase italic tracking-tighter text-white">
+              GESTION<span className="text-emerald-500">Profil</span>
+            </h1>
+            <p className="font-tech text-[8px] text-white/30 uppercase tracking-[0.3em]">{profile?.email}</p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <div className="flex flex-col items-end hidden md:flex">
+             <span className="font-tech text-[9px] text-emerald-500 font-bold tracking-widest uppercase italic"></span>
+             <span className="font-tech text-[7px] text-white/20 uppercase">Bunia</span>
+          </div>
+          <div className="p-3 bg-emerald-500/10 rounded-xl border border-emerald-500/20">
+            <Activity className="w-4 h-4 text-emerald-500 animate-pulse" />
+          </div>
+        </div>
+      </header>
+
+      {/* MAIN LAYOUT AVEC SIDEBAR INTERNE */}
+      <Tabs defaultValue="identity" className="flex-1 flex flex-col lg:flex-row gap-6 min-h-0">
+        
+        {/* MINI SIDEBAR NAV (Verticale sur Desktop, Horizontale sur Mobile) */}
+        <aside className="w-full lg:w-72 shrink-0 lg:h-full overflow-x-auto lg:overflow-y-auto no-scrollbar">
+          <TabsList className="flex lg:flex-col h-auto w-max lg:w-full bg-[#0A0A0A] border border-white/5 p-2 rounded-[2rem] gap-2">
+            
+            <TabsTrigger value="identity" className="flex-1 lg:w-full justify-start gap-4 px-6 py-4 rounded-2xl data-[state=active]:bg-emerald-500 data-[state=active]:text-black text-white/40 font-display italic font-black uppercase text-[10px] tracking-widest transition-all duration-500">
+              <User className="w-4 h-4 shrink-0" />
+              <span className="hidden lg:inline">Identité</span>
+            </TabsTrigger>
+
+            <TabsTrigger value="location" className="flex-1 lg:w-full justify-start gap-4 px-6 py-4 rounded-2xl data-[state=active]:bg-emerald-500 data-[state=active]:text-black text-white/40 font-display italic font-black uppercase text-[10px] tracking-widest transition-all duration-500">
+              <MapPin className="w-4 h-4 shrink-0" />
+              <span className="hidden lg:inline">Localisation</span>
+            </TabsTrigger>
+
+            <TabsTrigger value="roles" className="flex-1 lg:w-full justify-start gap-4 px-6 py-4 rounded-2xl data-[state=active]:bg-emerald-500 data-[state=active]:text-black text-white/40 font-display italic font-black uppercase text-[10px] tracking-widest transition-all duration-500">
+              <ShieldCheck className="w-4 h-4 shrink-0" />
+              <span className="hidden lg:inline">Privilèges</span>
+            </TabsTrigger>
+
+            <TabsTrigger value="danger" className="flex-1 lg:w-full justify-start gap-4 px-6 py-4 rounded-2xl data-[state=active]:bg-red-500 data-[state=active]:text-white text-red-500/40 font-display italic font-black uppercase text-[10px] tracking-widest transition-all duration-500">
+              <ShieldAlert className="w-4 h-4 shrink-0" />
+              <span className="hidden lg:inline">Sécurité</span>
+            </TabsTrigger>
+          </TabsList>
+
+          {/* PETIT WIDGET DE STATUT (Visible seulement sur Desktop) */}
+          <div className="hidden lg:block mt-6 p-6 bg-[#0A0A0A] border border-white/5 rounded-[2rem] space-y-4">
+            <p className="font-tech text-[8px] text-white/20 uppercase tracking-widest italic">_AgriConnect_Stats</p>
+            <div className="flex justify-between items-end">
+              <span className="font-tech text-[10px] text-white/40 uppercase">Réputation</span>
+              <span className="font-display italic text-emerald-500 text-xl font-black">98%</span>
+            </div>
+            <div className="w-full h-1 bg-white/5 rounded-full overflow-hidden">
+               <div className="w-[98%] h-full bg-emerald-500 shadow-[0_0_10px_#10b981]" />
+            </div>
+          </div>
+        </aside>
+
+        {/* CONTENU PRINCIPAL (Scrolable individuellement) */}
+        <main className="flex-1 lg:h-full lg:overflow-y-auto custom-scrollbar lg:pr-4">
+          
+          <TabsContent value="identity" className="mt-0 focus-visible:outline-none animate-in fade-in slide-in-from-right-4 duration-700">
+            <Card className="bg-[#0A0A0A] border-white/5 p-6 md:p-12 rounded-[3rem] shadow-2xl relative overflow-hidden">
+               <div className="absolute top-0 right-0 p-8 opacity-[0.02] pointer-events-none">
+                 <User className="w-32 h-32 text-white" />
+               </div>
+               <IdentityForm profile={profile} onUpdate={updateProfile} loading={isLoading} />
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="location" className="mt-0 focus-visible:outline-none animate-in fade-in slide-in-from-right-4 duration-700">
+            <Card className="bg-[#0A0A0A] border-white/5 p-6 md:p-12 rounded-[3rem] shadow-2xl">
+               <AddressForm profile={profile} onUpdate={updateProfile} loading={isLoading} />
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="roles" className="mt-0 focus-visible:outline-none animate-in fade-in slide-in-from-right-4 duration-700">
+            <RoleSwitcher
+              currentRoleId={profile?.role_id}
+              roles={roles}
+              onRoleChange={changeRole}
+              loading={isLoading}
+            />
+          </TabsContent>
+
+          <TabsContent value="danger" className="mt-0 focus-visible:outline-none animate-in fade-in slide-in-from-right-4 duration-700">
+            <Card className="bg-red-500/[0.02] border border-red-500/10 p-8 rounded-[3rem] border-l-[6px] border-l-red-500 relative overflow-hidden group">
+               <div className="absolute top-0 right-0 p-10 opacity-5">
+                 <ShieldAlert className="w-24 h-24 text-red-500" />
+               </div>
+               <div className="max-w-md space-y-6 relative z-10">
+                 <h3 className="text-red-500 font-display font-black uppercase italic text-2xl tracking-tighter">Zone de Rupture</h3>
+                 <p className="font-tech text-xs text-white/40 leading-relaxed uppercase tracking-wider">
+                   Toute action entreprise ici est irréversible. Cela inclut la suppression de vos nœuds logistiques et l'effacement de votre matrice d'identité.
+                 </p>
+                 <button className="px-8 py-5 bg-red-500 text-black font-display font-black uppercase italic text-xs tracking-[0.3em] rounded-2xl hover:bg-red-400 transition-all shadow-[0_15px_30px_rgba(239,68,68,0.2)]">
+                   Initialiser la destruction
+                 </button>
+               </div>
+            </Card>
+          </TabsContent>
+
+        </main>
+      </Tabs>
+
+      {/* FOOTER MOBILE (Seulement visible en bas du scroll sur petit écran) */}
+      <footer className="lg:hidden text-center py-10 opacity-20">
+        <p className="font-tech text-[8px] text-white uppercase tracking-[0.4em]">Pied_Zyne_v4 // Bunia_RDC</p>
+      </footer>
+    </div>
+  );
 }

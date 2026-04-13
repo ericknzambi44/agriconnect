@@ -1,11 +1,11 @@
-// src/features/profile/components/IdentityForm.tsx
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { User, Phone, CheckCircle2, Loader2, Camera } from "lucide-react";
+import { User, Phone, CheckCircle2, Loader2, Camera, Fingerprint } from "lucide-react";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 export function IdentityForm({ profile, onUpdate, loading }: any) {
   const [preview, setPreview] = useState(profile?.avatar_url);
@@ -38,91 +38,123 @@ export function IdentityForm({ profile, onUpdate, loading }: any) {
     const promise = onUpdate({ ...profile.adresse, ...data });
     
     toast.promise(promise, {
-      loading: 'Cryptage et synchronisation...',
-      success: 'Matrice d\'identité mise à jour.',
-      error: 'Échec de la liaison de données.',
+      loading: 'Chiffrement des données biométriques...',
+      success: 'Matrice d\'identité synchronisée.',
+      error: 'Échec de la liaison montante.',
     });
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-8 animate-in fade-in duration-500">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-12 animate-in fade-in slide-in-from-top-4 duration-1000">
       
-      {/* MODULE AVATAR INTERACTIF - Style Cyber */}
-      <div className="flex flex-col items-center gap-4 pb-6 border-b border-white/5">
+      {/* MODULE AVATAR : STUDIO DIGITAL */}
+      <div className="relative flex flex-col items-center gap-6 pb-10 border-b border-white/5">
+        <div className="absolute top-0 left-0 opacity-[0.03] pointer-events-none">
+          <Fingerprint className="w-24 h-24 text-emerald-500" />
+        </div>
+
         <div className="relative group">
-          <div className="w-32 h-32 rounded-[2.5rem] bg-white/[0.02] border-2 border-white/5 flex items-center justify-center overflow-hidden group-hover:border-emerald-500/50 transition-all duration-500 shadow-2xl">
+          {/* Bordure animée style Scanner */}
+          <div className="absolute -inset-1.5 bg-gradient-to-tr from-emerald-500/20 via-transparent to-emerald-500/20 rounded-[3rem] opacity-0 group-hover:opacity-100 animate-pulse transition-opacity duration-700" />
+          
+          <div className="relative w-40 h-40 rounded-[2.8rem] bg-[#0A0A0A] border border-white/10 flex items-center justify-center overflow-hidden transition-all duration-700 group-hover:border-emerald-500/50 shadow-[0_0_50px_rgba(0,0,0,0.5)]">
             {preview ? (
-              <img src={preview} alt="Avatar" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+              <img src={preview} alt="Avatar" className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110 group-hover:rotate-2" />
             ) : (
-              <User className="w-12 h-12 text-white/10 group-hover:text-emerald-500/40 transition-colors" />
+              <div className="flex flex-col items-center gap-2">
+                <User className="w-16 h-16 text-white/5 group-hover:text-emerald-500/20 transition-colors" />
+                <span className="font-tech text-[7px] text-white/10 tracking-[0.4em] uppercase">No_Signal</span>
+              </div>
             )}
-            <div className="absolute inset-0 bg-emerald-500/10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+            
+            {/* Overlay au survol */}
+            <div className="absolute inset-0 bg-emerald-500/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-[2px]">
+              <div className="w-full h-[1px] bg-emerald-500/40 animate-[scan_2s_linear_infinite]" />
+            </div>
           </div>
           
-          <label className="absolute -bottom-2 -right-2 bg-emerald-500 text-black p-3 rounded-2xl cursor-pointer hover:scale-110 active:scale-95 transition-all shadow-[0_10px_20px_rgba(16,185,129,0.3)] border-2 border-[#050505]">
-            <Camera className="w-4 h-4" />
+          <label className="absolute -bottom-3 -right-3 bg-emerald-500 text-black p-4 rounded-2xl cursor-pointer hover:bg-emerald-400 hover:scale-110 active:scale-90 transition-all shadow-[0_15px_30px_rgba(16,185,129,0.4)] border-4 border-[#080808] z-20">
+            <Camera className="w-5 h-5" />
             <input type="file" className="hidden" onChange={handleFile} accept="image/*" />
           </label>
         </div>
-        <p className="text-[9px] font-black uppercase tracking-[0.3em] text-white/20">Protocole: JPG, PNG • Max 2Mo</p>
+
+        <div className="text-center space-y-1">
+          <p className="font-tech text-[10px] font-black uppercase tracking-[0.4em] text-white/40">Profil_Identité_Visuelle</p>
+          <p className="font-tech text-[8px] text-emerald-500/40 uppercase tracking-widest">Format: 1:1 • JPEG/PNG</p>
+        </div>
       </div>
 
-      {/* FORMULAIRE IDENTITÉ */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="space-y-2">
-          <label className="text-[10px] font-black uppercase tracking-widest text-emerald-500/60 ml-1">Prénom</label>
+      {/* GRILLE DE DONNÉES */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-10">
+        
+        {/* PRÉNOM */}
+        <div className="space-y-3 group">
+          <label className="font-tech text-[9px] font-black uppercase tracking-[0.3em] text-white/20 group-focus-within:text-emerald-500 transition-colors ml-1">Prénom_Entité</label>
           <Input 
             {...register("prenom")} 
-            className="bg-white/[0.03] border-white/5 h-14 font-black uppercase focus-visible:ring-emerald-500/30 text-white italic transition-all hover:bg-white/5" 
+            className="bg-white/[0.02] border-white/5 h-16 font-display italic text-lg uppercase tracking-tighter focus-visible:ring-emerald-500/20 focus-visible:border-emerald-500/40 text-white transition-all rounded-2xl px-6" 
           />
         </div>
         
-        <div className="space-y-2">
-          <label className="text-[10px] font-black uppercase tracking-widest text-emerald-500/60 ml-1">Nom & Post-nom</label>
+        {/* NOM */}
+        <div className="space-y-3 group">
+          <label className="font-tech text-[9px] font-black uppercase tracking-[0.3em] text-white/20 group-focus-within:text-emerald-500 transition-colors ml-1">Nom_Famille</label>
           <Input 
             {...register("nom")} 
-            className="bg-white/[0.03] border-white/5 h-14 font-black uppercase focus-visible:ring-emerald-500/30 text-white italic transition-all hover:bg-white/5" 
+            className="bg-white/[0.02] border-white/5 h-16 font-display italic text-lg uppercase tracking-tighter focus-visible:ring-emerald-500/20 focus-visible:border-emerald-500/40 text-white transition-all rounded-2xl px-6" 
           />
         </div>
         
-        <div className="space-y-2">
-          <label className="text-[10px] font-black uppercase tracking-widest text-emerald-500/60 ml-1">Sexe / Genre</label>
+        {/* GENRE */}
+        <div className="space-y-3 group">
+          <label className="font-tech text-[9px] font-black uppercase tracking-[0.3em] text-white/20 group-focus-within:text-emerald-500 transition-colors ml-1">Attribut Genre</label>
           <Select onValueChange={(v) => setValue("sexe", v)} defaultValue={watch("sexe")}>
-            <SelectTrigger className="bg-white/[0.03] border-white/5 h-14 font-black uppercase focus:ring-emerald-500/30 text-white italic hover:bg-white/5 transition-all">
+            <SelectTrigger className="bg-white/[0.02] border-white/5 h-16 font-tech font-bold uppercase tracking-widest focus:ring-emerald-500/20 text-white transition-all rounded-2xl px-6">
               <SelectValue placeholder="SÉLECTIONNER" />
             </SelectTrigger>
-            <SelectContent className="bg-[#0a0a0a] border-white/10 text-white">
-              <SelectItem value="M" className="font-bold cursor-pointer focus:bg-emerald-500/20 focus:text-emerald-400">MASCULIN (M)</SelectItem>
-              <SelectItem value="F" className="font-bold cursor-pointer focus:bg-emerald-500/20 focus:text-emerald-400">FÉMININ (F)</SelectItem>
+            <SelectContent className="bg-[#0f0f0f] border-white/10 text-white rounded-xl">
+              <SelectItem value="M" className="font-tech py-3 focus:bg-emerald-500 focus:text-black rounded-lg">MASCULIN // M</SelectItem>
+              <SelectItem value="F" className="font-tech py-3 focus:bg-emerald-500 focus:text-black rounded-lg">FÉMININ // F</SelectItem>
             </SelectContent>
           </Select>
         </div>
 
-        <div className="space-y-2">
-          <label className="text-[10px] font-black uppercase tracking-widest text-emerald-500/60 ml-1">Contact (WhatsApp/Tel)</label>
-          <div className="relative group">
-            <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20 group-focus-within:text-emerald-500 transition-colors" />
+        {/* CONTACT */}
+        <div className="space-y-3 group">
+          <label className="font-tech text-[9px] font-black uppercase tracking-[0.3em] text-emerald-500/60 ml-1 italic">Canal_Communication_WhatsApp</label>
+          <div className="relative">
+            <div className="absolute left-6 top-1/2 -translate-y-1/2 p-1.5 bg-emerald-500/10 rounded-lg">
+              <Phone className="w-4 h-4 text-emerald-500" />
+            </div>
             <Input 
               {...register("numero_tel")} 
-              className="bg-white/[0.03] border-white/5 h-14 pl-12 font-black uppercase focus-visible:ring-emerald-500/30 text-white italic transition-all hover:bg-white/5" 
+              className="bg-emerald-500/[0.03] border-emerald-500/20 h-16 pl-16 font-tech font-black text-lg focus-visible:ring-emerald-500/40 text-emerald-500 transition-all rounded-2xl tracking-widest" 
             />
           </div>
         </div>
       </div>
 
-      {/* BOUTON DE VALIDATION ÉMERAUDE */}
-      <Button 
-        disabled={loading} 
-        type="submit"
-        className="w-full bg-emerald-500 text-black font-black uppercase italic h-16 rounded-[1.25rem] hover:bg-emerald-400 shadow-[0_15px_30px_rgba(16,185,129,0.2)] transition-all active:scale-[0.98] mt-4"
-      >
-        {loading ? (
-          <Loader2 className="animate-spin mr-3 w-5 h-5" />
-        ) : (
-          <CheckCircle2 className="mr-3 w-5 h-5" />
-        )}
-        {loading ? "SYNCHRONISATION EN COURS..." : "VALIDER LES MODIFICATIONS"}
-      </Button>
+      {/* VALIDATION FINALE */}
+      <div className="pt-6">
+        <Button 
+          disabled={loading} 
+          type="submit"
+          className="w-full h-20 bg-emerald-500 text-black font-display font-black italic text-sm tracking-[0.5em] rounded-[2.5rem] hover:bg-emerald-400 shadow-[0_20px_40px_rgba(16,185,129,0.25)] transition-all duration-500 active:scale-[0.96] group relative overflow-hidden"
+        >
+          {loading ? (
+            <Loader2 className="animate-spin w-6 h-6" />
+          ) : (
+            <div className="flex items-center gap-4">
+              <CheckCircle2 className="w-5 h-5 transition-transform group-hover:scale-125 group-hover:rotate-12" />
+              <span>SCELLER LES MODIFICATIONS</span>
+            </div>
+          )}
+          
+          {/* Ligne de scanning horizontale */}
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/10 to-transparent -translate-y-full group-hover:animate-[scan-vertical_2s_linear_infinite] pointer-events-none" />
+        </Button>
+      </div>
     </form>
   );
 }

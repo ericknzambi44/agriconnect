@@ -1,4 +1,3 @@
-// src/features/recolte/view/Recoltes.tsx
 import React, { useState } from 'react';
 import { PublierAnnonceModal } from '../../annonce/components/PublierAnnonceModal';
 import { useRecoltes } from '../hooks/useRecoltes';
@@ -10,9 +9,9 @@ import {
   Search,
   AlertCircle,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  ImageIcon // Ajouté pour le style
 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -31,7 +30,7 @@ export default function Recoltes() {
   const displayedProduits = showAll ? filteredProduits : filteredProduits.slice(0, displayLimit);
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-6 duration-1000">
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-6 duration-1000 pb-20">
       
       {/* --- HEADER DE SECTION --- */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 px-1">
@@ -89,20 +88,36 @@ export default function Recoltes() {
                 key={produit.id}
                 className="group relative bg-[#050505] border border-white/5 hover:border-emerald-500/30 p-6 md:p-8 rounded-[2rem] transition-all duration-500 hover:bg-white/[0.01] hover:shadow-[0_20px_40px_rgba(0,0,0,0.4)]"
               >
-                {/* Overlay effet de lumière au survol */}
                 <div className="absolute inset-0 bg-emerald-500/[0.01] opacity-0 group-hover:opacity-100 transition-opacity rounded-[2rem]" />
 
                 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8 relative z-10">
                   
-                  {/* Info Produit */}
+                  {/* Info Produit avec Image */}
                   <div className="flex items-center gap-6">
-                    <div className="w-16 h-16 rounded-2xl bg-white/[0.02] border border-white/5 flex items-center justify-center group-hover:border-emerald-500/50 group-hover:bg-emerald-500/10 transition-all duration-500">
-                      <Package className="w-8 h-8 text-white/20 group-hover:text-emerald-500 group-hover:scale-110 transition-all" />
+                    <div className="w-20 h-20 rounded-2xl bg-white/[0.02] border border-white/5 overflow-hidden flex items-center justify-center group-hover:border-emerald-500/50 transition-all duration-500 shadow-inner">
+                      {produit.image ? (
+                        <img 
+                          src={produit.image} 
+                          alt={produit.nom_prod} 
+                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                        />
+                      ) : (
+                        <Package className="w-8 h-8 text-white/10 group-hover:text-emerald-500 transition-all" />
+                      )}
                     </div>
+                    
                     <div>
-                      <h3 className="text-xl md:text-2xl font-black uppercase tracking-tighter leading-none text-white italic group-hover:text-emerald-500 transition-colors">
-                        {produit.nom_prod}
-                      </h3>
+                      <div className="flex items-center gap-3">
+                         <h3 className="text-xl md:text-2xl font-black uppercase tracking-tighter leading-none text-white italic group-hover:text-emerald-500 transition-colors">
+                           {produit.nom_prod}
+                         </h3>
+                         {produit.categorie && (
+                           <span className="text-[7px] border border-white/10 px-2 py-0.5 rounded-md text-white/30 uppercase font-black tracking-widest bg-white/[0.02]">
+                             {produit.categorie.libelle_categorie}
+                           </span>
+                         )}
+                      </div>
+                      
                       <div className="flex flex-wrap items-center gap-4 mt-3 text-[9px] font-black text-white/20 uppercase tracking-[0.2em]">
                         <span className="flex items-center gap-1.5">
                           STOCK: <span className="text-white font-black">{produit.quantite_prod} {produit.unite}</span>
@@ -144,7 +159,6 @@ export default function Recoltes() {
                         <Trash2 className="w-5 h-5" />
                       </button>
 
-                      {/* Modal de publication stylisé par défaut */}
                       <PublierAnnonceModal produit={produit} />
                     </div>
                   </div>
@@ -152,7 +166,7 @@ export default function Recoltes() {
               </div>
             ))}
 
-            {/* BOUTON VOIR TOUT / RÉDUIRE */}
+            {/* BOUTON VOIR TOUT */}
             {filteredProduits.length > displayLimit && (
               <div className="flex justify-center mt-6">
                 <Button 
@@ -164,7 +178,7 @@ export default function Recoltes() {
                     <span className="flex items-center gap-3 italic">RÉDUIRE LA MATRICE <ChevronUp className="w-4 h-4" /></span>
                   ) : (
                     <span className="flex items-center gap-3 italic">
-                      DÉPLOYER TOUT ({filteredProduits.length}) <ChevronDown className="w-4 h-4 group-hover:translate-y-1 transition-transform" />
+                      DÉPLOYER TOUT ({filteredProduits.length}) <ChevronDown className="w-4 h-4" />
                     </span>
                   )}
                 </Button>

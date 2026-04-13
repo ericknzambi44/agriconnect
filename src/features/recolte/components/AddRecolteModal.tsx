@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Loader2, CheckCircle2, BadgeDollarSign, CalendarDays, LayoutGrid } from "lucide-react";
+import { Plus, Loader2, CheckCircle2, BadgeDollarSign, CalendarDays, LayoutGrid, ImagePlus, X } from "lucide-react";
 import { toast } from "sonner";
 
 export function AddRecolteModal() {
@@ -27,7 +27,10 @@ export function AddRecolteModal() {
   const [open, setOpen] = React.useState(false);
   const [categories, setCategories] = useState<{id: string, libelle_categorie: string}[]>([]);
   
-  // --- RÉCUPÉRATION DES CATÉGORIES ---
+  // États pour l'image
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
   useEffect(() => {
     const fetchCats = async () => {
       const { data } = await supabase.from('categorie').select('*').order('libelle_categorie');
@@ -47,6 +50,20 @@ export function AddRecolteModal() {
     }
   });
 
+  // Gérer le changement d'image
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+      setPreviewUrl(URL.createObjectURL(file));
+    }
+  };
+
+  const removeImage = () => {
+    setSelectedFile(null);
+    setPreviewUrl(null);
+  };
+
   const onSubmit = async (data: any) => {
     const payload = {
       ...data,
@@ -54,7 +71,8 @@ export function AddRecolteModal() {
       quantite_prod: parseFloat(data.quantite_prod) || 0,
     };
 
-    const success = await addProduit(payload);
+    // On passe le payload ET le fichier image au hook
+    const success = await addProduit(payload, selectedFile || undefined);
     
     if (success) {
       toast.success("PROTOCOLE VALIDÉ", {
@@ -63,13 +81,14 @@ export function AddRecolteModal() {
       });
 
       reset();
+      removeImage();
       setOpen(false);
       refresh(); 
     }
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={(val) => { setOpen(val); if(!val) removeImage(); }}>
       <DialogTrigger asChild>
         <Button className="bg-emerald-500 hover:bg-emerald-400 text-black font-black uppercase italic tracking-[0.2em] px-8 h-12 rounded-2xl shadow-[0_10px_25px_rgba(16,185,129,0.2)] transition-all active:scale-95 group">
           <Plus className="w-4 h-4 mr-2 stroke-[4px] group-hover:rotate-90 transition-transform" />
@@ -77,7 +96,7 @@ export function AddRecolteModal() {
         </Button>
       </DialogTrigger>
       
-      <DialogContent className="bg-[#050505] border-white/5 text-white sm:max-w-[480px] rounded-[3rem] shadow-2xl shadow-emerald-500/5 backdrop-blur-3xl overflow-hidden p-0 border-l-emerald-500/20 border-l-4">
+      <DialogContent className="bg-[#050505] border-white/5 text-white sm:max-w-[550px] rounded-[3rem] shadow-2xl shadow-emerald-500/5 backdrop-blur-3xl overflow-y-auto max-h-[90vh] p-0 border-l-emerald-500/20 border-l-4 custom-scrollbar">
         <div className="p-8 md:p-10">
           <DialogHeader>
             <DialogTitle className="text-3xl font-black uppercase italic tracking-tighter text-white flex items-center gap-4">
@@ -91,6 +110,34 @@ export function AddRecolteModal() {
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 mt-8">
             
+            {/* ZONE UPLOAD IMAGE */}
+            <div className="space-y-2">
+              <label className="text-[10px] font-black uppercase tracking-[0.2em] text-white/20 ml-1">Image_Ressource</label>
+              <div className="relative group">
+                {!previewUrl ? (
+                  <label className="flex flex-col items-center justify-center w-full h-32 rounded-2xl border-2 border-dashed border-white/10 bg-white/[0.02] hover:bg-emerald-500/[0.05] hover:border-emerald-500/40 transition-all cursor-pointer group/upload">
+                    <ImagePlus className="w-8 h-8 text-white/10 group-hover/upload:text-emerald-500 transition-colors mb-2" />
+                    <span className="text-[8px] font-black uppercase tracking-widest text-white/20 group-hover/upload:text-emerald-500">Scanner_Fichier_Media</span>
+                    <input type="file" className="hidden" accept="image/*" onChange={handleFileChange} />
+                  </label>
+                ) : (
+                  <div className="relative w-full h-40 rounded-2xl overflow-hidden border border-emerald-500/30">
+                    <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
+                    <button 
+                      type="button" 
+                      onClick={removeImage}
+                      className="absolute top-2 right-2 p-2 bg-black/60 backdrop-blur-md rounded-xl text-white hover:text-red-500 transition-colors"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                    <div className="absolute bottom-0 left-0 right-0 bg-emerald-500/80 backdrop-blur-md py-1 text-center">
+                      <span className="text-[8px] font-black text-black uppercase tracking-widest">Image_Ready_To_Sync</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
             {/* DÉSIGNATION PRODUIT */}
             <div className="space-y-2">
               <label className="text-[10px] font-black uppercase tracking-[0.2em] text-white/20 ml-1">Désignation_Logistique</label>
@@ -130,7 +177,6 @@ export function AddRecolteModal() {
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              {/* QUANTITÉ */}
               <div className="space-y-2">
                 <label className="text-[10px] font-black uppercase tracking-[0.2em] text-white/20 ml-1">Volume_Net</label>
                 <Input 
@@ -143,7 +189,6 @@ export function AddRecolteModal() {
                 />
               </div>
 
-              {/* UNITÉ */}
               <div className="space-y-2">
                 <label className="text-[10px] font-black uppercase tracking-[0.2em] text-white/20 ml-1">Unité_Mesure</label>
                 <Controller
@@ -168,7 +213,6 @@ export function AddRecolteModal() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* PRIX UNITAIRE */}
                 <div className="space-y-2">
                   <label className="text-[10px] font-black uppercase tracking-[0.2em] text-white/20 ml-1">Valeur_USD</label>
                   <div className="relative group">
@@ -185,7 +229,6 @@ export function AddRecolteModal() {
                   </div>
                 </div>
 
-                {/* DATE DE RÉCOLTE */}
                 <div className="space-y-2">
                   <label className="text-[10px] font-black uppercase tracking-[0.2em] text-white/20 ml-1">Date_Ressource</label>
                   <div className="relative group">

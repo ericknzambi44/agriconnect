@@ -1,22 +1,15 @@
-// src/features/marcher/views/MarketView.tsx
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useMarketplace } from '../hooks/useMarketplace';
-import { useMarketSearch } from '../hooks/useMarketSearch'; // Notre nouveau cerveau
+import { useMarketSearch } from '../hooks/useMarketSearch';
 import { supabase } from '@/supabase';
 import { MarketFilterBar } from '../components/MarketFilterBar';
 import { OrderAnnonceModal } from '../components/OrderAnnonceModal';
 import { OrderActionButtons } from '../components/OrderActionButtons';
-import { Card, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { 
-  Loader2, ShoppingBag, Globe, PackageCheck, 
-  Menu, X, LayoutGrid, Database, Zap, Clock, MapPin 
+  Loader2, ShoppingBag, Globe, Clock, Package, MapPin, Zap, Target 
 } from "lucide-react";
-
-const animationStyles = `
-  @keyframes scrollInfinite { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
-  .animate-scroll-infinite { animation: scrollInfinite 80s linear infinite; }
-  .carousel-container:hover .animate-scroll-infinite { animation-play-state: paused; }
-`;
+import { cn } from "@/lib/utils";
 
 export default function MarketView() {
   const { 
@@ -27,16 +20,10 @@ export default function MarketView() {
   const [categories, setCategories] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState<'market' | 'orders'>('market');
   const [searchTerm, setSearchTerm] = useState("");
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  // BRANCHEMENT DE LA RECHERCHE INTELLIGENTE
   const filteredResult = useMarketSearch(annonces, searchTerm);
 
   useEffect(() => {
-    const styleSheet = document.createElement("style");
-    styleSheet.innerText = animationStyles;
-    document.head.appendChild(styleSheet);
-    
     const init = async () => {
       const { data } = await supabase.from('categorie').select('*').order('libelle_categorie');
       if (data) setCategories(data);
@@ -44,136 +31,129 @@ export default function MarketView() {
       fetchMesCommandes();
     };
     init();
-    return () => { document.head.removeChild(styleSheet); };
-  }, []);
-
-  // Préparation du carrousel (Top 20 pour la fluidité)
-  const displayAnnonces = useMemo(() => {
-    const top = filteredResult.slice(0, 20);
-    return [...top, ...top];
-  }, [filteredResult]);
+  }, [fetchMarket, fetchMesCommandes]);
 
   return (
-    <div className="p-4 md:p-10 space-y-8 max-w-[100vw] overflow-x-hidden min-h-screen bg-[#020202] text-white selection:bg-emerald-500">
+    <div className="h-screen bg-[#020202] text-white flex flex-col overflow-hidden selection:bg-emerald-500">
       
-      {/* HEADER */}
-      <header className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 max-w-7xl mx-auto border-b border-white/5 pb-8">
-        <div>
-          <h1 className="text-5xl md:text-7xl font-black uppercase italic tracking-tighter">
-            AGRI<span className="text-emerald-500">MARKET</span>
+      {/* --- MINI HEADER (Ultra Compact) --- */}
+      <header className="flex items-center justify-between px-4 py-3 bg-[#080808] border-b border-white/5 shrink-0">
+        <div className="flex items-center gap-4">
+          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-500">
+             <Zap className="text-black fill-black w-4 h-4" />
+          </div>
+          <h1 className="text-xl font-black uppercase italic tracking-tighter">
+            AGRI<span className="text-emerald-500">Market</span>
           </h1>
-          <p className="text-[9px] font-black uppercase tracking-[0.4em] text-white/20 mt-2">Intelligence_Artificielle_Distribution</p>
         </div>
 
-        <div className={`${isMenuOpen ? 'flex' : 'hidden lg:flex'} flex-col md:flex-row bg-white/[0.02] p-2 rounded-3xl border border-white/5 gap-2`}>
-          <button onClick={() => setActiveTab('market')} className={`px-8 py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest transition-all ${activeTab === 'market' ? 'bg-emerald-500 text-black shadow-xl' : 'text-white/40'}`}>
-            <Globe className="inline mr-2 w-4 h-4" /> Le_Marché
+        <nav className="flex items-center bg-black/40 p-1 rounded-xl border border-white/5">
+          <button 
+            onClick={() => setActiveTab('market')} 
+            className={cn(
+              "px-4 py-2 rounded-lg font-black uppercase italic text-[9px] tracking-widest transition-all flex items-center gap-2",
+              activeTab === 'market' ? 'bg-emerald-500 text-black' : 'text-white/30'
+            )}
+          >
+            <Globe className="w-3 h-3" /> MARCHÉ
           </button>
-          <button onClick={() => setActiveTab('orders')} className={`px-8 py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest transition-all ${activeTab === 'orders' ? 'bg-emerald-500 text-black shadow-xl' : 'text-white/40'}`}>
-            <ShoppingBag className="inline mr-2 w-4 h-4" /> Mes_Ordres ({mesCommandes.length})
+          <button 
+            onClick={() => setActiveTab('orders')} 
+            className={cn(
+              "px-4 py-2 rounded-lg font-black uppercase italic text-[9px] tracking-widest transition-all flex items-center gap-2",
+              activeTab === 'orders' ? 'bg-emerald-500 text-black' : 'text-white/30'
+            )}
+          >
+            <ShoppingBag className="w-3 h-3" /> ORDRES ({mesCommandes.length})
           </button>
-        </div>
+        </nav>
       </header>
 
-      {activeTab === 'market' && (
-        <div className="max-w-7xl mx-auto animate-in fade-in duration-500">
-          <MarketFilterBar categories={categories} onSearch={setSearchTerm} onFilter={(id) => fetchMarket(id)} />
+      {/* --- BARRE DE FILTRE COMPACTE --- */}
+      <div className="px-4 py-2 bg-[#050505] border-b border-white/5 shrink-0">
+        <div className="max-w-full">
+           <MarketFilterBar categories={categories} onSearch={setSearchTerm} onFilter={(id) => fetchMarket(id)} />
         </div>
-      )}
+      </div>
 
-      {loading && annonces.length === 0 ? (
-        <div className="h-64 flex flex-col items-center justify-center gap-4">
-          <Loader2 className="w-10 h-10 text-emerald-500 animate-spin" />
-        </div>
-      ) : (
-        <main>
-          {/* VUE MARCHÉ */}
-          {activeTab === 'market' && (
-            <div className="carousel-container relative py-12">
-              <div className="flex gap-8 animate-scroll-infinite w-fit">
-                {displayAnnonces.map((annonce, idx) => (
-                  <div key={`${annonce.id}-${idx}`} className="min-w-[380px]">
-                    <Card className="bg-[#080808] border border-white/5 rounded-[3rem] p-10 hover:border-emerald-500/40 transition-all duration-500 group">
-                       <div className="flex justify-between items-start mb-8">
-                          <div className="space-y-1">
-                             <span className="text-[8px] font-black text-emerald-500 uppercase tracking-widest">{annonce.produit?.categorie?.libelle_categorie}</span>
-                             <h3 className="text-3xl font-black uppercase italic text-white tracking-tighter">{annonce.produit?.nom_prod}</h3>
-                          </div>
-                          <p className="text-3xl font-black text-[#bef264] tracking-tighter italic">{annonce.produit?.prix_prod}$</p>
-                       </div>
-                       
-                       <div className="space-y-6">
-                          <div className="flex justify-between text-[10px] font-black uppercase text-white/20 italic">
-                             <span>Volume_Disponible</span>
-                             <span className="text-white">{annonce.quantite_restante} {annonce.produit?.unite}</span>
-                          </div>
-                          <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
-                             <div className="h-full bg-emerald-500 group-hover:bg-[#bef264] transition-all" style={{ width: `${(annonce.quantite_restante / (annonce.quantite_vendre || 1)) * 100}%` }} />
-                          </div>
-                       </div>
-                       
-                       <div className="pt-8">
-                          <OrderAnnonceModal annonce={annonce} onOrder={passerCommande} loading={loading} />
-                       </div>
-                    </Card>
-                  </div>
+      {/* --- ZONE DE GRILLE SCROLLABLE --- */}
+      <main className="flex-1 overflow-y-auto p-4 no-scrollbar">
+        {loading && annonces.length === 0 ? (
+          <div className="h-full flex items-center justify-center animate-pulse">
+            <Loader2 className="w-8 h-8 text-emerald-500 animate-spin" />
+          </div>
+        ) : (
+          <div className="max-w-[1600px] mx-auto">
+            {activeTab === 'market' && (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
+                {filteredResult.map((annonce) => (
+                  <Card key={annonce.id} className="bg-[#0A0A0A] border border-white/5 rounded-2xl overflow-hidden group hover:border-emerald-500/40 transition-all flex flex-col">
+                    
+                    {/* Image réduite */}
+                    <div className="relative aspect-square overflow-hidden bg-white/5">
+                      {annonce.produit?.image ? (
+                        <img src={annonce.produit.image} className="w-full h-full object-cover group-hover:scale-105 transition-transform" alt="p" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center opacity-10"><Package className="w-6 h-6" /></div>
+                      )}
+                      <div className="absolute top-2 right-2 bg-black/80 backdrop-blur-md rounded-lg px-2 py-1 border border-white/10">
+                        <span className="text-emerald-500 font-black italic text-xs">
+                          {annonce.produit?.prix_prod}$
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Infos compactes */}
+                    <div className="p-3 space-y-3 flex-1 flex flex-col justify-between">
+                      <div>
+                        <h3 className="text-[11px] font-black uppercase italic text-white truncate leading-tight">
+                          {annonce.produit?.nom_prod}
+                        </h3>
+                        <div className="flex items-center gap-1 mt-1 opacity-40">
+                          <MapPin className="w-2.5 h-2.5" />
+                          <span className="text-[7px] font-mono uppercase tracking-tighter">BUNIA_RD</span>
+                        </div>
+                      </div>
+
+                      {/* Mini Stock & Action */}
+                      <div className="space-y-2">
+                        <div className="flex justify-between text-[8px] font-mono text-emerald-500/60 uppercase">
+                          <span>Stock</span>
+                          <span>{annonce.quantite_restante} {annonce.produit?.unite}</span>
+                        </div>
+                        <OrderAnnonceModal annonce={annonce} onOrder={passerCommande} loading={loading} />
+                      </div>
+                    </div>
+                  </Card>
                 ))}
               </div>
-            </div>
-          )}
+            )}
 
-          {/* VUE COMMANDES (RESTAURÉE) */}
-          {activeTab === 'orders' && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto px-4">
-              {mesCommandes.map((cmd) => (
-                <Card key={cmd.id} className="bg-white/[0.02] border border-white/5 rounded-[2.5rem] p-8 space-y-6">
-                  <div className="flex justify-between items-start">
-                    <div className="space-y-1">
-                      <p className="text-[9px] font-black text-white/20 uppercase tracking-widest">ID_{cmd.id.slice(0,8)}</p>
-                      <h4 className="text-2xl font-black uppercase italic text-white">{cmd.annonce?.produit?.nom_prod}</h4>
+            {activeTab === 'orders' && (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {mesCommandes.map((cmd) => (
+                  <Card key={cmd.id} className="bg-[#0A0A0A] border border-white/5 rounded-xl p-4 flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-emerald-500/10 rounded-lg flex items-center justify-center text-emerald-500">
+                        <Package className="w-5 h-5" />
+                      </div>
+                      <div className="leading-none">
+                        <h4 className="text-xs font-black uppercase italic text-white">{cmd.annonce?.produit?.nom_prod}</h4>
+                        <span className="text-[8px] font-mono text-white/20 uppercase tracking-widest">{cmd.prix_total_commande}$ — {cmd.quantite_commandee}qty</span>
+                      </div>
                     </div>
                     <OrderActionButtons 
                        status={cmd.statut} 
                        onCancel={() => annulerCommande(cmd.id)} 
                        onEdit={() => modifierCommande(cmd.id, cmd.quantite_commandee, cmd.annonce as any)} 
                     />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4 p-5 bg-black/40 rounded-3xl border border-white/5">
-                    <div>
-                      <p className="text-[8px] font-black text-white/20 uppercase">Quantité</p>
-                      <p className="text-lg font-black text-white italic">{cmd.quantite_commandee} {cmd.annonce?.produit?.unite}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-[8px] font-black text-white/20 uppercase">Total</p>
-                      <p className="text-lg font-black text-[#bef264] italic">{cmd.prix_total_commande}$</p>
-                    </div>
-                  </div>
-
-                  <div className="flex justify-between items-center pt-4 border-t border-white/5">
-                     <div className="flex items-center gap-2 text-[10px] font-black text-white/20 uppercase">
-                        <Clock className="w-3 h-3" /> {new Date(cmd.created_at).toLocaleDateString()}
-                     </div>
-                     <span className={`px-4 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest ${
-                       cmd.statut === 'validee' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-white/5 text-white/40'
-                     }`}>
-                       {cmd.statut}
-                     </span>
-                  </div>
-                </Card>
-              ))}
-            </div>
-          )}
-        </main>
-      )}
-
-      {/* EMPTY STATE */}
-      {!loading && filteredResult.length === 0 && activeTab === 'market' && (
-        <div className="flex flex-col items-center justify-center py-40 opacity-20">
-          <PackageCheck size={60} />
-          <p className="text-xl font-black uppercase italic tracking-widest mt-4">Signal_Perdu : Aucun Produit</p>
-        </div>
-      )}
+                  </Card>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </main>
     </div>
   );
 }
