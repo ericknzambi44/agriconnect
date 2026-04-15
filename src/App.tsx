@@ -14,6 +14,8 @@ import SubscriptionView from './features/abonnenent/view/SubscriptionView';
 // HOOK DE SESSION
 import { useAuthSession } from '@/features/auth/hooks/use-auth-session';
 import MarketView from './features/marcher/view/MarketView';
+import TransportControlCenter from './features/transport/view/TransportControlCenter';
+
 
 export default function App() {
   // 1. RÉCUPÉRATION DU PROFIL ET DU STATUT DE CHARGEMENT
@@ -54,7 +56,7 @@ export default function App() {
           
           {/* Acheteur / Transporteur */}
           <Route path="marche" element={<MarketView />} />
-          <Route path="missions" element={<div className="p-8 text-white">Missions...</div>} />
+          <Route path="missions" element={<TransportControlCenter />} />
         </Route>
 
         <Route path="*" element={<div className="...">Erreur 404</div>} />
