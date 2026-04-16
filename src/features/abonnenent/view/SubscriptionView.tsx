@@ -1,4 +1,3 @@
-// src/features/abonnement/view/SubscriptionView.tsx
 import { useState, useEffect } from "react";
 import { useSubscription } from "../hooks/use-subscription";
 import { PlanCard } from "../components/PlanCard";
@@ -6,7 +5,10 @@ import { PaymentDialog } from "../components/PaymentDialog";
 import { Plan } from "../types";
 import { toast } from "sonner";
 import { subscriptionService } from "../service/subscription-service";
-import { ShieldCheck, RefreshCw, CheckCircle2, XCircle, Clock } from "lucide-react";
+import { 
+  ShieldCheck, RefreshCw, CheckCircle2, XCircle, 
+  ArrowRight, Globe, AlertTriangle 
+} from "lucide-react";
 
 export default function SubscriptionView({ userId }: { userId: string }) {
   const { 
@@ -31,27 +33,91 @@ export default function SubscriptionView({ userId }: { userId: string }) {
 
   const handleFinalPayment = async (phone: string, operator: string) => {
     if (!selectedPlan || !userId) return;
+
+    // --- VÉRIFICATION RÉSEAU ---
+    if (!window.navigator.onLine) {
+      toast.error("ERREUR RÉSEAU", {
+        description: "Vérifiez votre connexion internet avant d'initier le paiement.",
+        className: "bg-red-950 border-red-500 text-white font-black uppercase italic text-[10px]"
+      });
+      return;
+    }
+
     setIsProcessing(true);
     setStatus('IDLE');
+
     try {
       await subscriptionService.processPaymentFlow(userId, selectedPlan, phone);
+      
+      // SUCCÈS
       setStatus('SUCCESS');
       toast.success("SYSTÈME MIS À JOUR");
       setSelectedPlan(null);
       refresh(); 
-      setTimeout(() => setStatus('IDLE'), 6000);
     } catch (e: any) {
+      // ÉCHEC
       setStatus('ERROR');
+      toast.error("ÉCHEC DE L'OPÉRATION");
     } finally {
       setIsProcessing(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white selection:bg-emerald-500 selection:text-black flex flex-col">
+    <div className="min-h-screen bg-[#050505] text-white selection:bg-emerald-500 selection:text-black flex flex-col relative overflow-hidden">
       
-      {/* HEADER COMPACT & STATIQUE */}
-      <header className="w-full max-w-7xl mx-auto px-6 pt-10 mb-6">
+      {/* --- ÉCRAN DE SUCCÈS (OVERLAY) --- */}
+      {status === 'SUCCESS' && (
+        <div className="fixed inset-0 flex items-center justify-center p-4 bg-[#020202]/90 backdrop-blur-md z-[110] animate-in fade-in duration-500">
+          <div className="bg-[#080808] border border-emerald-500/30 rounded-[2.5rem] p-10 max-w-sm w-full text-center flex flex-col items-center shadow-[0_0_60px_rgba(16,185,129,0.15)] animate-in zoom-in-95 duration-500">
+            <div className="w-24 h-24 rounded-full bg-emerald-500/10 flex items-center justify-center mb-8 animate-[pulse_2s_ease-in-out_infinite]">
+              <CheckCircle2 className="w-12 h-12 text-emerald-500" />
+            </div>
+            <h2 className="text-3xl font-black uppercase italic text-white mb-3 tracking-tighter">
+              Félicitations !
+            </h2>
+            <p className="text-[10px] text-emerald-500 font-black uppercase tracking-[0.3em] mb-8 italic">
+              Terminal_Activé_Avec_Succès
+            </p>
+            <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-5 w-full mb-8">
+              <p className="text-[9px] text-white/40 uppercase font-black mb-2 tracking-widest">Niveau de privilège :</p>
+              <p className="text-lg font-black italic text-white uppercase">{activeSubscription?.plans?.nom || "Plan Actif"}</p>
+            </div>
+            <button
+              onClick={() => setStatus('IDLE')}
+              className="group w-full py-5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-black uppercase italic tracking-widest text-[11px] transition-all active:scale-95 flex items-center justify-center gap-3"
+            >
+              Accéder au Dashboard <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* --- ÉCRAN D'ERREUR (OVERLAY) --- */}
+      {status === 'ERROR' && (
+        <div className="fixed inset-0 flex items-center justify-center p-4 bg-[#020202]/90 backdrop-blur-md z-[110] animate-in fade-in duration-500">
+          <div className="bg-[#080808] border border-red-500/30 rounded-[2.5rem] p-10 max-w-sm w-full text-center flex flex-col items-center shadow-[0_0_60px_rgba(239,68,68,0.1)]">
+            <div className="w-20 h-20 rounded-full bg-red-500/10 flex items-center justify-center mb-8">
+              <AlertTriangle className="w-10 h-10 text-red-500" />
+            </div>
+            <h2 className="text-2xl font-black uppercase italic text-white mb-2 tracking-tighter">
+              ÉCHEC FLUX
+            </h2>
+            <p className="text-[10px] text-red-500/60 font-black uppercase tracking-[0.2em] mb-8 leading-tight">
+              La transaction a été interrompue ou refusée par l'opérateur.
+            </p>
+            <button
+              onClick={() => setStatus('IDLE')}
+              className="w-full py-4 rounded-xl border border-white/10 hover:bg-white/5 text-white/40 hover:text-white font-black uppercase italic tracking-widest text-[10px] transition-all"
+            >
+              Réessayer le protocole
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* HEADER COMPACT */}
+      <header className="w-full max-w-7xl mx-auto px-6 pt-10 mb-6 shrink-0">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div>
             <div className="flex items-center gap-2 mb-2">
@@ -78,25 +144,8 @@ export default function SubscriptionView({ userId }: { userId: string }) {
         </div>
       </header>
 
-      {/* FEEDBACK STATUS (Positionné pour ne pas casser le layout) */}
-      <div className="w-full max-w-7xl mx-auto px-6 h-14 mb-4">
-        {status === 'SUCCESS' && (
-          <div className="h-full bg-emerald-500/10 border border-emerald-500/20 rounded-xl flex items-center px-4 gap-3 animate-in slide-in-from-left-4">
-            <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-            <span className="text-[10px] font-black uppercase italic tracking-widest text-emerald-500">Protocole de cumul validé avec succès</span>
-          </div>
-        )}
-        {status === 'ERROR' && (
-          <div className="h-full bg-red-500/10 border border-red-500/20 rounded-xl flex items-center px-4 gap-3 animate-in slide-in-from-left-4">
-            <XCircle className="w-4 h-4 text-red-500" />
-            <span className="text-[10px] font-black uppercase italic tracking-widest text-red-500">Échec de la liaison bancaire</span>
-          </div>
-        )}
-      </div>
-
-      {/* ZONE DE SCROLL HORIZONTAL (SNAPPING) */}
+      {/* ZONE DE PLANS */}
       <main className="flex-grow overflow-hidden relative group">
-        {/* Indicateur de scroll visuel (optionnel) */}
         <div className="absolute left-6 top-1/2 -translate-y-1/2 w-12 h-12 bg-emerald-500/5 rounded-full blur-2xl pointer-events-none group-hover:bg-emerald-500/10 transition-all"></div>
         
         <div className="flex overflow-x-auto overflow-y-hidden snap-x snap-mandatory gap-8 px-6 md:px-12 pb-20 no-scrollbar items-stretch h-full">
@@ -110,21 +159,24 @@ export default function SubscriptionView({ userId }: { userId: string }) {
               />
             </div>
           ))}
-          
-          {/* Spacer de fin pour le scroll */}
           <div className="shrink-0 w-12 h-full"></div>
         </div>
       </main>
 
-      {/* OVERLAY CHARGEMENT */}
+      {/* OVERLAY CHARGEMENT (SYNC) */}
       {isProcessing && (
-        <div className="fixed inset-0 bg-[#050505]/95 backdrop-blur-xl z-[100] flex flex-col items-center justify-center">
-          <RefreshCw className="w-16 h-16 text-emerald-500 animate-spin mb-6" />
-          <p className="font-black italic uppercase tracking-[0.4em] text-xs text-white/40">Synchronisation_Bancaire...</p>
+        <div className="fixed inset-0 bg-[#050505]/95 backdrop-blur-xl z-[150] flex flex-col items-center justify-center animate-in fade-in duration-300">
+          <div className="relative mb-8">
+             <RefreshCw className="w-20 h-20 text-emerald-500 animate-spin" />
+             <div className="absolute inset-0 flex items-center justify-center">
+                <Globe className="w-6 h-6 text-emerald-500/30" />
+             </div>
+          </div>
+          <p className="font-black italic uppercase tracking-[0.5em] text-[10px] text-emerald-500/60 animate-pulse">Synchronisation_Bancaire_En_Cours...</p>
         </div>
       )}
 
-      {/* DIALOGUE */}
+      {/* DIALOGUE DE PAIEMENT */}
       <PaymentDialog 
         plan={selectedPlan}
         open={!!selectedPlan}
@@ -133,10 +185,10 @@ export default function SubscriptionView({ userId }: { userId: string }) {
         loading={isProcessing}
       />
 
-      {/* CSS INTERNE POUR CACHER LA SCROLLBAR MAIS GARDER LE SCROLL */}
       <style>{`
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .text-glow-green { text-shadow: 0 0 20px rgba(16,185,129,0.3); }
       `}</style>
     </div>
   );
