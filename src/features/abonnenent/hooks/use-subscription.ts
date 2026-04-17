@@ -1,5 +1,4 @@
-// src/features/abonnement/hooks/use-subscription.ts
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Abonnement } from '../types';
 import { subscriptionService } from '../service/subscription-service';
 
@@ -8,13 +7,13 @@ export function useSubscription(userId: string | undefined) {
   const [loading, setLoading] = useState(true);
 
   const refresh = useCallback(async () => {
-    if (!userId || userId.length < 10) return;
+    if (!userId) return;
     setLoading(true);
     try {
       const subs = await subscriptionService.getUserSubscriptions(userId);
       setAllSubs(subs);
     } catch (err) {
-      console.error(err);
+      console.error("[SUBSCRIPTION_HOOK_ERROR]:", err);
     } finally {
       setLoading(false);
     }
@@ -22,27 +21,88 @@ export function useSubscription(userId: string | undefined) {
 
   useEffect(() => { refresh(); }, [refresh]);
 
-  // Retourne l'abonnement spécifique à un plan s'il existe
-  const getPlanSubscription = (planId: string) => {
-    return allSubs.find(s => s.id_plan === planId) || null;
-  };
+  /**
+   * 1. ISOLATION STRICTE PAR PLAN
+   * On crée un dictionnaire où chaque ID de plan est une clé unique.
+   */
+  const planDataMap = useMemo(() => {
+    const map: Record<string, Abonnement> = {};
+    
+    allSubs.forEach(sub => {
+      // On ne garde que l'abonnement le plus récent pour chaque plan
+      const existing = map[sub.id_plan];
+      if (!existing || new Date(sub.date_fin) > new Date(existing.date_fin)) {
+        map[sub.id_plan] = sub;
+      }
+    });
+    
+    return map;
+  }, [allSubs]);
 
-  // Calcule les jours restants pour un abonnement précis
-  const getDaysForSub = (sub: Abonnement | null): number => {
-    if (!sub) return 0;
-    const diff = new Date(sub.date_fin).getTime() - new Date().getTime();
-    return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
-  };
+  /**
+   * 2. CALCUL DES DONNÉES PAR PLAN
+   */
+  const getPlanInfo = useCallback((planId: string) => {
+    const sub = planDataMap[planId];
+    
+    if (!sub) {
+      return { status: 'AVAILABLE' as const, days: 0, isActive: false };
+    }
+
+    const now = new Date();
+    const endDate = new Date(sub.date_fin);
+
+    // Calcul précis de la différence en millisecondes transformée en jours
+    const diffTime = endDate.getTime() - now.getTime();
+    const days = Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
+
+    // Un plan est considéré actif seulement s'il reste des jours
+    const isActive = days > 0;
+
+    return {
+      status: isActive ? 'ACTIVE' as const : 'AVAILABLE' as const,
+      days: days,
+      isActive,
+      subDetails: sub
+    };
+  }, [planDataMap]);
 
   return {
-    activeSubscription: allSubs.find(s => new Date(s.date_debut) <= new Date()),
-    getPlanStatus: (planId: string) => {
-      const sub = getPlanSubscription(planId);
-      if (!sub) return 'AVAILABLE';
-      return new Date(sub.date_debut) <= new Date() ? 'ACTIVE' : 'QUEUED';
-    },
-    getPlanDays: (planId: string) => getDaysForSub(getPlanSubscription(planId)),
     loading,
-    refresh
+    refresh,
+    
+    // Liste des abonnements réellement actifs en ce moment (pour résumé global)
+    activeSubscriptions: allSubs.filter(s => {
+      const now = new Date();
+      return new Date(s.date_fin) > now;
+    }),
+
+    /**
+     * MÉTHODES POUR LA VUE (SUBSCRIPTION CARD)
+     */
+    getPlanStatus: (planId: string) => getPlanInfo(planId).status,
+    getPlanDays: (planId: string) => getPlanInfo(planId).days,
+    
+    /**
+     * SÉCURITÉ D'ACHAT : La règle d'or d'AgriConnect
+     * Empêche l'achat si un abonnement du même plan est encore valide.
+     */
+    checkPurchaseSafety: (planId: string) => {
+      const info = getPlanInfo(planId);
+      
+      if (info.isActive) {
+        return {
+          canBuy: false,
+          message: `ACTIF : Il vous reste ${info.days} jour(s).`,
+          variant: 'warning'
+        };
+      }
+
+      return {
+        canBuy: true,
+        message: "Disponible à l'achat immédiat.",
+        variant: 'success'
+      };
+    }
   };
 }

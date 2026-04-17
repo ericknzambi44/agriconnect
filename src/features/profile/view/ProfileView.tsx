@@ -145,7 +145,7 @@ export default function ProfileView() {
 
       {/* FOOTER MOBILE (Seulement visible en bas du scroll sur petit écran) */}
       <footer className="lg:hidden text-center py-10 opacity-20">
-        <p className="font-tech text-[8px] text-white uppercase tracking-[0.4em]">Pied_Zyne_v4 // Bunia_RDC</p>
+        <p className="font-tech text-[8px] text-white uppercase tracking-[0.4em]"> Bunia_RDC</p>
       </footer>
     </div>
   );

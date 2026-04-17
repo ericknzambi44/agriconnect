@@ -1,4 +1,4 @@
-// src/features/abonnement/services/subscription-service.ts
+// src/features/abonnement/service/subscription-service.ts
 import { supabase } from "@/supabase";
 import { Plan, Abonnement } from "../types";
 
@@ -12,53 +12,55 @@ export const subscriptionService = {
     return data as Plan[];
   },
 
-  /**
-   * Récupère TOUS les abonnements actifs ou futurs de l'utilisateur
-   */
+  // Récupère les abonnements d'un utilisateur (dispatché par ID plus tard)
   getUserSubscriptions: async (userId: string): Promise<Abonnement[]> => {
-    const now = new Date().toISOString();
     const { data, error } = await supabase
       .from('abonnement')
       .select('*, plans(*)')
       .eq('id_utilisateur', userId)
-      .eq('statut', 'ACTIF')
-      .gt('date_fin', now) // Seulement ceux qui ne sont pas encore finis
-      .order('date_fin', { ascending: false });
+      .eq('statut', 'ACTIF'); // On récupère tout l'historique actif
     
     if (error) throw error;
     return data || [];
   },
 
+  /**
+   * LOGIQUE DE PAIEMENT SÉCURISÉE
+   */
   processPaymentFlow: async (userId: string, plan: Plan, phone: string) => {
-    // 1. Trouver la date de fin la plus lointaine (tous plans confondus)
-    const { data: lastSub } = await supabase
+    // 1. VÉRIFICATION DE SÉCURITÉ (Côté Serveur/Service)
+    // On vérifie si ce plan précis est déjà actif pour cet utilisateur
+    const now = new Date().toISOString();
+    const { data: existingActive } = await supabase
       .from('abonnement')
-      .select('date_fin')
+      .select('id, date_fin')
       .eq('id_utilisateur', userId)
+      .eq('id_plan', plan.id_plans)
       .eq('statut', 'ACTIF')
-      .order('date_fin', { ascending: false })
-      .limit(1)
+      .gt('date_fin', now)
       .maybeSingle();
 
-    let dateDebut = new Date();
-    if (lastSub && new Date(lastSub.date_fin) > dateDebut) {
-      dateDebut = new Date(lastSub.date_fin);
+    if (existingActive) {
+      throw new Error("SÉCURITÉ : Un abonnement pour ce plan est déjà en cours.");
     }
 
-    const dateFin = new Date(dateDebut);
+    // 2. INITIALISATION DES DATES
+    const dateDebut = new Date();
+    const dateFin = new Date();
     dateFin.setDate(dateDebut.getDate() + plan.duree_jour);
 
-    // 2. Simulation Paiement
-    await new Promise(res => setTimeout(res, 2000));
-
-    // 3. Insertions
-    await supabase.from('payement').insert([{
+    // 3. TRANSACTION DE PAIEMENT
+    // Note : Dans un vrai système, ceci serait géré par un Webhook (Stripe/OrangeMoney)
+    const { error: pErr } = await supabase.from('payement').insert([{
       id_utilisateur: userId,
       montant: plan.prix,
-      reference: `AGRI-${Math.random().toString(36).toUpperCase().slice(0, 8)}`,
-      statut: 'SUCCESS'
+      statut: 'SUCCESS',
+      reference: `AGRI-${Math.random().toString(36).toUpperCase().slice(0, 8)}`
     }]);
 
+    if (pErr) throw pErr;
+
+    // 4. INSERTION DE L'ABONNEMENT
     const { error: sErr } = await supabase.from('abonnement').insert([{
       id_plan: plan.id_plans,
       id_utilisateur: userId,

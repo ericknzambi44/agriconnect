@@ -1,0 +1,84 @@
+-- ==========================================
+-- FONCTION : GESTION COHÉRENCE POST-PAIEMENT
+-- ==========================================
+CREATE OR REPLACE FUNCTION public.fn_handle_paid_order()
+RETURNS TRIGGER AS $$
+DECLARE
+    v_vendeur_id UUID;
+    v_prod_id UUID;
+    v_code_depot TEXT;
+    v_code_retrait TEXT;
+BEGIN
+    -- [CONDITION] : On n'agit que si le statut_paiement devient 'PAYEE'
+    IF (NEW.statut_paiement = 'PAYEE' AND (OLD.statut_paiement IS DISTINCT FROM 'PAYEE')) THEN
+
+        -- 1. RÉCUPÉRATION DES INFOS DE L'ANNONCE
+        -- On a besoin du vendeur_id et du prod_id liés à cette annonce
+        SELECT user_id, prod_id INTO v_vendeur_id, v_prod_id
+        FROM public.annonce
+        WHERE id = NEW.annonce_id;
+
+        -- 2. MISE À JOUR DU STOCK DE L'ANNONCE
+        -- On diminue la quantité restante de l'annonce spécifique
+        UPDATE public.annonce
+        SET quantite_restante = quantite_restante - NEW.quantite_commandee,
+            statut = CASE 
+                WHEN (quantite_restante - NEW.quantite_commandee) <= 0 THEN 'vendu' 
+                ELSE 'en_attente' 
+            END
+        WHERE id = NEW.annonce_id;
+
+        -- 3. MISE À JOUR DU STOCK GLOBAL DU PRODUIT
+        -- Le vendeur voit son stock général diminuer également
+        UPDATE public.produit
+        SET quantite_prod = quantite_prod - NEW.quantite_commandee
+        WHERE id = v_prod_id;
+
+        -- 4. GÉNÉRATION DES CODES DE SÉCURITÉ (6 Caractères Alphanumériques)
+        -- Code Dépôt : Vendeur -> Agence | Code Retrait : Acheteur -> Agence
+        v_code_depot := upper(substring(md5(random()::text) from 1 for 6));
+        v_code_retrait := upper(substring(md5(random()::text) from 1 for 6));
+
+        -- 5. CRÉATION DE L'EXPÉDITION
+        -- On transfère les données de destination de 'commande' vers 'expedition'
+        INSERT INTO public.expedition (
+            commande_id,
+            vendeur_id,
+            acheteur_id,
+            code_depot,
+            code_retrait,
+            statut_expedition,
+            destination_ville,
+            destination_details,
+            id_agence_retrait
+        ) VALUES (
+            NEW.id,
+            v_vendeur_id,
+            NEW.acheteur_id,
+            v_code_depot,
+            v_code_retrait,
+            'A_DEPOSER',
+            NEW.destination_ville,
+            NEW.destination_details,
+            NEW.id_agence_retrait
+        );
+
+        -- 6. OPTIONNEL : Mise à jour du statut global de la commande
+        -- La commande n'est plus simplement 'en_attente', elle est validée
+        NEW.statut := 'validée';
+
+    END IF;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- ==========================================
+-- DÉCLENCHEUR (TRIGGER)
+-- ==========================================
+-- Il surveille la table 'commande' après chaque UPDATE ou INSERT
+DROP TRIGGER IF EXISTS trg_after_payment_success ON public.commande;
+CREATE TRIGGER trg_after_payment_success
+AFTER INSERT OR UPDATE ON public.commande
+FOR EACH ROW
+EXECUTE FUNCTION public.fn_handle_paid_order();

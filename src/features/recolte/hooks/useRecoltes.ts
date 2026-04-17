@@ -17,7 +17,7 @@ export function useRecoltes() {
       const { data, error } = await supabase
         .from('produit')
         .select(`*, annonce(*), categorie(*)`) 
-        .eq('user_id', profile.id) // 🔴 CORRECTION ICI : user_id au lieu de id_utilisateur
+        .eq('user_id', profile.id) // 🔴 
         .order('created_at', { ascending: false });
 
       if (error) {
