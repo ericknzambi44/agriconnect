@@ -1,0 +1,36 @@
+-- 1. Fonction qui génère la notification
+CREATE OR REPLACE FUNCTION handle_notification_retrait()
+RETURNS TRIGGER AS $$
+BEGIN
+    -- On vérifie si le code_retrait vient d'être généré (passe de NULL à une valeur)
+    -- OU si le statut vient de passer à EN_TRANSIT
+    IF (OLD.code_retrait IS NULL AND NEW.code_retrait IS NOT NULL) THEN
+        
+        INSERT INTO public.notifications (
+            titre,
+            message,
+            user_id,         -- L'acheteur qui doit recevoir le code
+            type,
+            expedition_id,
+            is_read
+        )
+        VALUES (
+            'Colis prêt pour retrait !',
+            'Votre colis est en transit. Voici votre code de retrait : ' || NEW.code_retrait || '. Présentez-le à l''agence de destination.',
+            NEW.acheteur_id, -- On utilise l'ID de l'acheteur stocké dans la table expedition
+            'LIVRAISON',     -- Assure-toi que ce type existe dans ton enum type_notification
+            NEW.id,
+            false
+        );
+        
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- 2. Création du trigger (doit être AFTER UPDATE pour être sûr que la donnée est sauvée)
+DROP TRIGGER IF EXISTS tr_notify_retrait ON public.expedition;
+CREATE TRIGGER tr_notify_retrait
+AFTER UPDATE ON public.expedition
+FOR EACH ROW
+EXECUTE FUNCTION handle_notification_retrait();

@@ -1,5 +1,5 @@
 -- ==========================================
--- FONCTION : GESTION COHÉRENCE POST-PAIEMENT
+-- 1. FONCTION : CRÉATION DE L'EXPÉDITION (POST-PAIEMENT)
 -- ==========================================
 CREATE OR REPLACE FUNCTION public.fn_handle_paid_order()
 RETURNS TRIGGER AS $$
@@ -7,19 +7,15 @@ DECLARE
     v_vendeur_id UUID;
     v_prod_id UUID;
     v_code_depot TEXT;
-    v_code_retrait TEXT;
 BEGIN
-    -- [CONDITION] : On n'agit que si le statut_paiement devient 'PAYEE'
+    -- Condition : le paiement vient de passer à 'PAYEE'
     IF (NEW.statut_paiement = 'PAYEE' AND (OLD.statut_paiement IS DISTINCT FROM 'PAYEE')) THEN
 
-        -- 1. RÉCUPÉRATION DES INFOS DE L'ANNONCE
-        -- On a besoin du vendeur_id et du prod_id liés à cette annonce
-        SELECT user_id, prod_id INTO v_vendeur_id, v_prod_id
-        FROM public.annonce
-        WHERE id = NEW.annonce_id;
+        -- 1. Récupération du vendeur et du produit (SYNTAXE CORRIGÉE ICI)
+        v_vendeur_id := (SELECT user_id FROM public.annonce WHERE id = NEW.annonce_id LIMIT 1);
+        v_prod_id := (SELECT prod_id FROM public.annonce WHERE id = NEW.annonce_id LIMIT 1);
 
-        -- 2. MISE À JOUR DU STOCK DE L'ANNONCE
-        -- On diminue la quantité restante de l'annonce spécifique
+        -- 2. Mise à jour du stock de l'annonce
         UPDATE public.annonce
         SET quantite_restante = quantite_restante - NEW.quantite_commandee,
             statut = CASE 
@@ -28,19 +24,15 @@ BEGIN
             END
         WHERE id = NEW.annonce_id;
 
-        -- 3. MISE À JOUR DU STOCK GLOBAL DU PRODUIT
-        -- Le vendeur voit son stock général diminuer également
+        -- 3. Mise à jour du stock global du produit
         UPDATE public.produit
         SET quantite_prod = quantite_prod - NEW.quantite_commandee
         WHERE id = v_prod_id;
 
-        -- 4. GÉNÉRATION DES CODES DE SÉCURITÉ (6 Caractères Alphanumériques)
-        -- Code Dépôt : Vendeur -> Agence | Code Retrait : Acheteur -> Agence
+        -- 4. Génération UNIQUE du Code Dépôt
         v_code_depot := upper(substring(md5(random()::text) from 1 for 6));
-        v_code_retrait := upper(substring(md5(random()::text) from 1 for 6));
 
-        -- 5. CRÉATION DE L'EXPÉDITION
-        -- On transfère les données de destination de 'commande' vers 'expedition'
+        -- 5. Création de l'expédition (code_retrait reste NULL)
         INSERT INTO public.expedition (
             commande_id,
             vendeur_id,
@@ -56,15 +48,14 @@ BEGIN
             v_vendeur_id,
             NEW.acheteur_id,
             v_code_depot,
-            v_code_retrait,
+            NULL, 
             'A_DEPOSER',
             NEW.destination_ville,
             NEW.destination_details,
             NEW.id_agence_retrait
         );
 
-        -- 6. OPTIONNEL : Mise à jour du statut global de la commande
-        -- La commande n'est plus simplement 'en_attente', elle est validée
+        -- 6. Mise à jour du statut de la commande
         NEW.statut := 'validée';
 
     END IF;
@@ -73,10 +64,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- ==========================================
--- DÉCLENCHEUR (TRIGGER)
--- ==========================================
--- Il surveille la table 'commande' après chaque UPDATE ou INSERT
+-- TRIGGER ATTACHÉ À LA COMMANDE
 DROP TRIGGER IF EXISTS trg_after_payment_success ON public.commande;
 CREATE TRIGGER trg_after_payment_success
 AFTER INSERT OR UPDATE ON public.commande

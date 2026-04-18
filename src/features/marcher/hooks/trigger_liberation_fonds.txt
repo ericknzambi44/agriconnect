@@ -1,0 +1,42 @@
+CREATE OR REPLACE FUNCTION public.fn_finalize_payment_on_delivery()
+RETURNS TRIGGER AS $$
+DECLARE
+    v_montant_total DECIMAL(12,2);
+    v_portefeuille_id UUID;
+BEGIN
+    -- On n'agit que si le colis est marqué comme LIVRÉ
+    IF (NEW.statut_expedition = 'LIVRE' AND OLD.statut_expedition IS DISTINCT FROM 'LIVRE') THEN
+        
+        -- 1. Récupérer le montant de la commande
+        SELECT prix_total INTO v_montant_total 
+        FROM public.commande 
+        WHERE id = NEW.commande_id;
+
+        -- 2. Récupérer l'ID du portefeuille du vendeur
+        SELECT id INTO v_portefeuille_id 
+        FROM public.portefeuille 
+        WHERE user_id = NEW.vendeur_id;
+
+        -- 3. Libérer l'argent : Bloqué -> Disponible
+        UPDATE public.portefeuille
+        SET solde_bloque = solde_bloque - v_montant_total,
+            solde_disponible = solde_disponible + v_montant_total,
+            last_update = NOW()
+        WHERE id = v_portefeuille_id;
+
+        -- 4. Enregistrer la transaction finale
+        INSERT INTO public.transactions_portefeuille (
+            portefeuille_id, montant, type, statut, reference_externe, description
+        ) VALUES (
+            v_portefeuille_id, v_montant_total, 'VENTE', 'COMPLETE', NEW.id, 'Vente finalisée - Colis livré'
+        );
+
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_on_delivery_success
+AFTER UPDATE ON public.expedition
+FOR EACH ROW
+EXECUTE FUNCTION public.fn_finalize_payment_on_delivery();

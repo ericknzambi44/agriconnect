@@ -19,6 +19,9 @@ export interface Profile {
   avatar_url: string | null;
   role_id: number;
   address_id: string;
+  // --- AJOUT CHAMP AGENCE ---
+  id_agence: string | null; 
+  // --------------------------
   role?: Role;
   adresse?: any;
 }
@@ -34,7 +37,7 @@ export const useProfile = () => {
     if (data) setRoles(data);
   }, []);
 
-  // 2. RÉCUPÉRATION DU PROFIL COMPLET (ID + ADRESSE + RÔLE)
+  // 2. RÉCUPÉRATION DU PROFIL COMPLET (Intégration id_agence)
   const fetchProfile = useCallback(async () => {
     setIsLoading(true);
     try {
@@ -47,7 +50,7 @@ export const useProfile = () => {
           *,
           role:role_id (id, titre_role),
           adresse:address_id (*)
-        `)
+        `) // Le '*' ici récupère automatiquement id_agence si la colonne existe en DB
         .eq('id', user.id)
         .single();
 
@@ -65,13 +68,12 @@ export const useProfile = () => {
     fetchProfile();
   }, [fetchProfile, fetchRoles]);
 
-  // 3. MISE À JOUR UNIVERSELLE (IDENTITÉ + ADRESSE)
+  // 3. MISE À JOUR UNIVERSELLE (Inchangée pour ne rien casser)
   const updateProfile = async (formData: any) => {
     setIsLoading(true);
     try {
       if (!profile) throw new Error("Profil introuvable");
 
-      // A. Mise à jour de l'adresse
       const { error: addrError } = await supabase
         .from('adresse')
         .update({
@@ -87,7 +89,6 @@ export const useProfile = () => {
 
       if (addrError) throw new Error(`Erreur Adresse: ${addrError.message}`);
 
-      // B. Mise à jour de l'identité
       const { error: userError } = await supabase
         .from('utilisateurs')
         .update({
@@ -97,7 +98,7 @@ export const useProfile = () => {
           numero_tel: formData.numero_tel,
           sexe: formData.sexe,
           avatar_url: formData.avatar_url,
-          role_id: formData.role_id, // Capacité de changer de rôle ici
+          role_id: formData.role_id,
         })
         .eq('id', profile.id);
 
@@ -107,7 +108,7 @@ export const useProfile = () => {
         description: "Vos informations ont été mises à jour avec succès."
       });
       
-      await fetchProfile(); // Rafraîchir les données locales
+      await fetchProfile();
       return { success: true };
     } catch (err: any) {
       toast.error("ÉCHEC DE MISE À JOUR", { description: err.message });
@@ -117,7 +118,7 @@ export const useProfile = () => {
     }
   };
 
-  // 4. CHANGEMENT DE RÔLE RAPIDE (Spécifique)
+  // 4. CHANGEMENT DE RÔLE RAPIDE
   const changeRole = async (newRoleId: number) => {
     setIsLoading(true);
     try {
@@ -133,7 +134,6 @@ export const useProfile = () => {
       });
       
       await fetchProfile();
-      // Optionnel: window.location.reload() si tu veux forcer le changement de layout
     } catch (err: any) {
       toast.error("ERREUR DE RÔLE", { description: err.message });
     } finally {
