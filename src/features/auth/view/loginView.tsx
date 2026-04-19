@@ -1,4 +1,7 @@
 // src/features/auth/views/LoginView.tsx
+
+//  interface pour se connecter 
+
 import React, { useState } from 'react';
 import { useAuthLogin } from '../hooks/use-auth-login';
 import { Button } from "@/components/ui/button";
@@ -13,7 +16,7 @@ export default function LoginView() {
   const [identifier, setIdentifier] = useState(''); 
   const [password, setPassword] = useState('');
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.ChangeEvent) => {
     e.preventDefault();
     await login(identifier, password);
   };
@@ -50,7 +53,7 @@ export default function LoginView() {
             AGRI<span className="text-[#bef264]">CONNECT</span>
           </CardTitle>
           <CardDescription className="text-white/20 font-black uppercase tracking-[0.5em] text-[9px] mt-4 italic">
-            Authentification_Système
+           System d'authentification
           </CardDescription>
         </CardHeader>
 
@@ -65,7 +68,7 @@ export default function LoginView() {
           <form onSubmit={handleSubmit} className="space-y-7">
             {/* IDENTIFIANT */}
             <div className="space-y-2.5">
-              <Label className="text-[10px] font-black uppercase tracking-[0.3em] text-emerald-500/50 ml-1">Terminal_ID</Label>
+              <Label className="text-[10px] font-black uppercase tracking-[0.3em] text-emerald-500/50 ml-1">Identifiant </Label>
               <Input 
                 value={identifier}
                 onChange={(e) => setIdentifier(e.target.value)}
@@ -96,7 +99,7 @@ export default function LoginView() {
               />
             </div>
 
-            {/* BOUTON ÉLITE */}
+            {/* BOUTON  de connection*/}
             <Button 
               type="submit" 
               disabled={isLoading} 
@@ -110,7 +113,7 @@ export default function LoginView() {
                   <Loader2 className="animate-spin w-5 h-5" />
                 ) : (
                   <>
-                    Établir la connexion
+                   Connexion
                     <LogIn className="w-4 h-4 group-hover:translate-x-1 transition-transform stroke-[3px]" />
                   </>
                 )}
@@ -121,7 +124,7 @@ export default function LoginView() {
           {/* ACCÈS EXTERNE */}
           <div className="mt-12 pt-8 border-t border-white/5 text-center">
             <Link to="/signup" className="inline-flex items-center gap-2 text-[#bef264] font-black uppercase italic tracking-tighter hover:text-white transition-all group text-[11px]">
-              Générer un nouvel accès système
+              Créez-compt
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </Link>
           </div>

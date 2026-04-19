@@ -41,7 +41,7 @@ export function Sidebar({ role, isOpen, onClose }: SidebarProps) {
 
       <div className="p-8 pb-10 relative shrink-0">
         <h2 className="text-3xl font-display italic tracking-tight leading-none select-none group">
-          <span className="text-white">Agri</span>
+          <span className="text-white/150">Agri</span>
           <span className="text-emerald-500 transition-all duration-500 group-hover:text-glow-green">Connect</span>
         </h2>
         
@@ -72,7 +72,7 @@ export function Sidebar({ role, isOpen, onClose }: SidebarProps) {
                 isActive 
                   ? "bg-emerald-500/5 border-emerald-500/20 text-white shadow-[0_0_20px_rgba(16,185,129,0.05)]" 
                   : "border-transparent text-white/30 hover:text-white hover:bg-white/[0.02]",
-                item.isAgencyOnly && "border-emerald-500/10" // Petit rappel visuel pour l'agence
+                item.isAgencyOnly && "border-emerald-500/10" 
               )}
             >
               <div className={cn(

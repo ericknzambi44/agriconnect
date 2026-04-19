@@ -175,7 +175,7 @@ export default function MarketView() {
               <span className="text-[10px] font-black uppercase tracking-widest italic">Annuler_Et_Retourner</span>
             </button>
 
-            {/* LE NOUVEAU COMPOSANT SHIPPING FORM */}
+            {/* SHIPPING FORM */}
             <ShippingForm 
               data={shippingData} 
               agences={agences}

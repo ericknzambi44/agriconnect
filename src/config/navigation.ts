@@ -1,18 +1,20 @@
 // src/config/navigation.ts
+// configuration de chemin de navigation dashboard
 import { 
   LayoutDashboard, 
   UserCog, 
   CreditCard, 
   Settings, 
-  Truck, 
+  //Truck, 
   ShoppingCart, 
   Leaf, 
-  Building2 
+  Building2, 
+  LayoutDashboardIcon
 } from "lucide-react";
 
 // 1. On définit les liens communs à tout le monde
 export const COMMON_ROUTES = [
-  { name: "Vue d'ensemble", href: "/dashboard", icon: LayoutDashboard },
+  { name: "Vue d'ensemble", href: "/dashboard", icon: LayoutDashboardIcon },
   { name: "Gestion Profil", href: "/dashboard/profile", icon: UserCog },
   { name: "Abonnement", href: "/dashboard/subscription", icon: CreditCard },
   { name: "Paramètres", href: "/dashboard/settings", icon: Settings },

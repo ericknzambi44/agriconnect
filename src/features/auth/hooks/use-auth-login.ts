@@ -1,4 +1,5 @@
 // src/features/auth/hooks/use-auth-login.ts
+// ce hook gere la l'authentification requette sql 
 import { supabase } from '@/supabase';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';

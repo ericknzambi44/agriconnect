@@ -38,7 +38,7 @@ export const usePayment = () => {
             statut: 'en_attente',
             statut_paiement: 'PAYEE', // Déclenche le Super-Trigger
             numero_suivi: paymentResult.transactionId,
-            // NOUVEAUX CHAMPS POUR L'EXPÉDITION :
+            // NOUVEAUX CHAMPS numero suivie  optionnel
             destination_ville: orderData.destination_ville, 
             destination_details: orderData.destination_details,
             id_agence_retrait: orderData.id_agence_retrait || null 
