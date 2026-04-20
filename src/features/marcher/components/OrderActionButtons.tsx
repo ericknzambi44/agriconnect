@@ -1,7 +1,7 @@
-// src/features/marcher/components/OrderActionButtons.tsx
 import React from 'react';
 import { Button } from "@/components/ui/button";
-import { Edit3, Trash2, Lock, AlertTriangle } from "lucide-react";
+import { Edit3, Trash2, Lock, Zap } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface Props {
   status: string;
@@ -10,53 +10,58 @@ interface Props {
 }
 
 export function OrderActionButtons({ status, onEdit, onCancel }: Props) {
-  // Une commande ne peut être modifiée ou annulée que si le vendeur ne l'a pas encore traitée
+  // Statut de modification autorisé uniquement en attente
   const canInteract = status === 'en_attente';
 
-  // État Verrouillé (Validée ou Annulée)
+  // ÉTAT VERROUILLÉ : Look Terminal Désactivé
   if (!canInteract) {
     return (
-      <div className="flex items-center gap-3 px-4 py-2 bg-white/[0.02] rounded-2xl border border-white/5 opacity-50">
-        <Lock className="w-3 h-3 text-white/20" />
-        <span className="text-[8px] font-black text-white/40 uppercase tracking-[0.2em]">Transaction_Close</span>
+      <div className="flex items-center gap-3 px-4 py-2 bg-secondary/50 rounded-xl border-2 border-border/50 opacity-40 select-none">
+        <Lock size={12} className="text-muted-foreground" />
+        <span className="font-tech text-[8px] font-black text-muted-foreground uppercase tracking-[0.2em]">
+          SESSION_LOCKED
+        </span>
       </div>
     );
   }
 
   return (
-    <div className="flex items-center gap-2 animate-in fade-in slide-in-from-right-2 duration-500">
-      {/* BOUTON MODIFIER */}
+    <div className="flex items-center gap-2.5 animate-in fade-in slide-in-from-right-2 duration-500">
+      
+      {/* BOUTON MODIFIER : Style Action Primaire */}
       <Button 
-        variant="ghost" 
-        onClick={(e) => {
-          e.stopPropagation(); // Évite de trigger d'éventuels clics sur la carte
-          onEdit();
-        }}
-        title="Modifier la quantité de la postulation"
-        className="h-10 w-10 p-0 rounded-xl bg-white/[0.03] border border-white/5 hover:bg-emerald-500/10 hover:border-emerald-500/20 hover:text-emerald-500 transition-all text-white/40 group"
-      >
-        <Edit3 className="w-4 h-4 group-hover:rotate-12 transition-transform" />
-      </Button>
-
-      {/* BOUTON ANNULER (DANGER ZONE) */}
-      <Button 
-        variant="ghost" 
         onClick={(e) => {
           e.stopPropagation();
-          if (confirm("Voulez-vous vraiment révoquer cette postulation ?")) {
+          onEdit();
+        }}
+        className="h-10 w-10 p-0 rounded-xl bg-background border-2 border-border hover:border-primary/50 hover:bg-primary/5 text-muted-foreground hover:text-primary transition-all group relative overflow-hidden"
+        title="MODIFIER_ORDRE"
+      >
+        <Edit3 size={16} className="relative z-10 group-hover:rotate-12 transition-transform duration-300" />
+        <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+      </Button>
+
+      {/* BOUTON ANNULER : Style Danger Zone */}
+      <Button 
+        onClick={(e) => {
+          e.stopPropagation();
+          if (window.confirm("RÉVOQUER CETTE POSTULATION ? CETTE ACTION EST IRRÉVERSIBLE.")) {
             onCancel();
           }
         }}
-        title="Annuler cette commande"
-        className="h-10 w-10 p-0 rounded-xl bg-white/[0.03] border border-white/5 hover:bg-red-500/10 hover:border-red-500/20 hover:text-red-500 transition-all text-white/40 group"
+        className="h-10 w-10 p-0 rounded-xl bg-background border-2 border-border hover:border-red-500/50 hover:bg-red-500/5 text-muted-foreground hover:text-red-500 transition-all group relative overflow-hidden"
+        title="RÉVOQUER_ORDRE"
       >
-        <Trash2 className="w-4 h-4 group-hover:scale-110 transition-transform" />
+        <Trash2 size={16} className="relative z-10 group-hover:scale-110 transition-transform duration-300" />
+        <div className="absolute inset-0 bg-red-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
       </Button>
 
-      {/* Petit indicateur visuel de l'état éditable */}
-      <div className="ml-2 hidden md:block">
-        <div className="h-1 w-1 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+      {/* INDICATEUR DE FLUX ÉDITABLE */}
+      <div className="ml-1 flex flex-col items-center gap-1 opacity-60">
+        <Zap size={10} className="text-primary animate-pulse" />
+        <div className="w-[2px] h-4 bg-gradient-to-b from-primary to-transparent rounded-full" />
       </div>
+
     </div>
   );
 }
