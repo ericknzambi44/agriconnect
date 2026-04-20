@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useMarketplace, MarketAnnonce } from '../hooks/useMarketplace';
 import { useMarketSearch } from '../hooks/useMarketSearch';
 import { usePayment } from '../hooks/usePayment'; 
@@ -11,7 +11,7 @@ import { ShippingForm } from '../components/ShippingForm';
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import { 
-  Loader2, ShoppingBag, Globe, Package, MapPin, Zap, ArrowLeft, CheckCircle2, Target, Radio
+  Loader2, ShoppingBag, Globe, Package, MapPin, Zap, ArrowLeft, CheckCircle2, Target, Megaphone, Sparkles, MoveRight
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -31,38 +31,56 @@ export default function MarketView() {
   const [pendingPayment, setPendingPayment] = useState<{annonce: MarketAnnonce, quantite: number} | null>(null);
   const [selectedProvider, setSelectedProvider] = useState<'mpesa' | 'airtel' | 'orange' | null>(null);
   const [phone, setPhone] = useState("");
-  
   const [shippingData, setShippingData] = useState({ ville: '', details: '', agenceId: '' });
   const [paymentSuccess, setPaymentSuccess] = useState(false);
-
+  
+  const [forcePromo, setForcePromo] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
   const filteredResult = useMarketSearch(annonces, searchTerm);
+
+  // --- 🔄 LOGIQUE CARROUSEL AUTO-TOURNANT ---
+  useEffect(() => {
+    if (activeTab !== 'market' || pendingPayment) return;
+
+    const autoScroll = setInterval(() => {
+      if (scrollRef.current) {
+        const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
+        const maxScroll = scrollWidth - clientWidth;
+        
+        // Si on est à la fin, on revient au début, sinon on avance d'une carte
+        const nextScroll = scrollLeft >= maxScroll - 10 ? 0 : scrollLeft + (clientWidth * 0.8);
+        
+        scrollRef.current.scrollTo({
+          left: nextScroll,
+          behavior: 'smooth'
+        });
+      }
+    }, 5000); // Tourne toutes les 5 secondes
+
+    return () => clearInterval(autoScroll);
+  }, [activeTab, pendingPayment, filteredResult]);
 
   useEffect(() => {
     const init = async () => {
       const { data: catData } = await supabase.from('categorie').select('*').order('libelle_categorie');
       if (catData) setCategories(catData);
-      
       const { data: agenceData } = await supabase.from('agence').select('*');
       if (agenceData) setAgences(agenceData);
-
       fetchMarket();
       fetchMesCommandes();
     };
     init();
-  }, [fetchMarket, fetchMesCommandes]);
 
-  const handleInitiateOrder = async (annonce: MarketAnnonce, quantite: number): Promise<boolean> => {
-    setPendingPayment({ annonce, quantite });
-    setPaymentSuccess(false);
-    return true; 
-  };
+    const timer = setTimeout(() => setForcePromo(true), 90000);
+    return () => clearTimeout(timer);
+  }, [fetchMarket, fetchMesCommandes]);
 
   const handleConfirmPayment = async () => {
     if (!pendingPayment || !selectedProvider) return;
     if (!shippingData.ville.trim() || !shippingData.details.trim()) {
-      toast.error("ERREUR_ADRESSE", {
-        description: "Protocole de livraison incomplet. Spécifiez la ville et les précisions.",
-        className: "bg-red-950 border-2 border-red-500 text-white font-tech italic font-black uppercase tracking-widest",
+      toast.error("ERREUR_PROTOCOLE", {
+        description: "Coordonnées de livraison manquantes.",
+        className: "bg-red-950 border-2 border-red-500 text-white font-tech italic uppercase font-black",
       });
       return;
     }
@@ -93,155 +111,149 @@ export default function MarketView() {
     }
   };
 
-  const resetAndGoToOrders = () => {
-    setPendingPayment(null);
-    setPaymentSuccess(false);
-    setShippingData({ ville: '', details: '', agenceId: '' });
-    setSelectedProvider(null);
-    setPhone("");
-    setActiveTab('orders');
-  };
+  const PromoCard = () => (
+    <div className="snap-center shrink-0 w-[85vw] md:w-[450px] h-full py-2">
+      <Card className="h-full bg-gradient-to-br from-primary/30 via-secondary to-background border-2 border-primary/40 p-8 flex flex-col items-center justify-center text-center relative overflow-hidden group rounded-[2.5rem] shadow-[0_0_50px_rgba(var(--primary),0.1)]">
+        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary to-transparent animate-pulse" />
+        <Megaphone size={60} className="text-primary mb-6 animate-bounce" />
+        <h2 className="text-3xl md:text-5xl font-display font-black uppercase italic leading-none mb-4">
+          Toi-même <br />
+          <span className="text-primary shadow-glow-primary">tu le crées</span>
+        </h2>
+        <p className="font-tech text-xs text-muted-foreground uppercase tracking-widest mb-8 max-w-[80%]">
+          AgriConnect : La force du réseau pour acheter en gros.
+        </p>
+        <div className="flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-full font-display font-black italic text-xs uppercase animate-pulse">
+          <Sparkles size={16} /> REJOINDRE LE FLUX
+        </div>
+      </Card>
+    </div>
+  );
 
   return (
-    // ON RETIRE h-screen ET overflow-hidden POUR QUE ÇA S'ADAPTE AU LAYOUT PARENT
-    <div className="w-full min-h-full bg-background text-foreground flex flex-col selection:bg-primary/30">
+    <div className="w-full min-h-screen bg-background text-foreground flex flex-col selection:bg-primary/30 overflow-x-hidden font-tech">
       
-      {/* 🚀 HEADER : STICKY POUR RESTER ACCESSIBLE AU SCROLL */}
-      <header className="sticky top-0 flex items-center justify-between px-6 py-4 bg-secondary/80 backdrop-blur-xl border-b-2 border-border shrink-0 z-30">
-        <div className="flex items-center gap-5">
-          <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-primary shadow-glow-primary rotate-3">
-             <Zap className="text-primary-foreground fill-primary-foreground w-5 h-5" />
+      <header className="sticky top-0 z-50 w-full bg-secondary/80 backdrop-blur-2xl border-b border-border/50 px-4 py-4 md:px-8">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-6 max-w-[1800px] mx-auto">
+          <div className="flex items-center gap-4 self-start">
+            <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-primary shadow-glow-primary -rotate-6">
+               <Zap className="text-primary-foreground fill-primary-foreground w-5 h-5" />
+            </div>
+            <div>
+              <h1 className="text-xl md:text-3xl font-display font-black uppercase italic tracking-tighter leading-none">AGRI<span className="text-primary">_CONNECT</span></h1>
+              <span className="text-[7px] md:text-[9px] text-primary/60 uppercase tracking-[0.5em] font-black italic">nexus_marketplace_v3</span>
+            </div>
           </div>
-          <div className="leading-none">
-            <h1 className="text-2xl font-display font-black uppercase italic tracking-tighter leading-none">
-              AGRI<span className="text-primary">_CONNECT</span>
-            </h1>
-            <p className="font-tech text-[8px] text-muted-foreground uppercase tracking-[0.4em] mt-1 font-black italic">Terminal_V4.0_Flux</p>
-          </div>
-        </div>
 
-        <nav className="flex items-center bg-background p-1.5 rounded-2xl border-2 border-border shadow-inner">
-          {[
-            { id: 'market', icon: Globe, label: 'MARCHÉ' },
-            { id: 'orders', icon: ShoppingBag, label: `ORDRES (${mesCommandes.length})` }
-          ].map((tab) => (
-            <button 
-              key={tab.id}
-              onClick={() => {setActiveTab(tab.id as any); setPendingPayment(null); setPaymentSuccess(false);}} 
-              className={cn(
-                "px-6 py-2.5 rounded-[0.8rem] font-display font-black uppercase italic text-[10px] tracking-widest transition-all flex items-center gap-3",
-                activeTab === tab.id && !pendingPayment ? 'bg-primary text-primary-foreground shadow-lg' : 'text-muted-foreground/40 hover:text-foreground'
-              )}
-            >
-              <tab.icon size={14} strokeWidth={3} /> {tab.label}
-            </button>
-          ))}
-        </nav>
+          <nav className="flex items-center bg-black/20 p-1.5 rounded-2xl border border-border/40 w-full sm:w-auto">
+            {[{ id: 'market', icon: Globe, label: 'MARCHÉ' }, { id: 'orders', icon: ShoppingBag, label: `ORDRES [${mesCommandes.length}]` }].map((tab) => (
+              <button 
+                key={tab.id}
+                onClick={() => {setActiveTab(tab.id as any); setPendingPayment(null); setPaymentSuccess(false);}} 
+                className={cn(
+                  "flex-1 sm:flex-none px-6 py-3 rounded-xl font-display font-black uppercase italic text-[10px] tracking-[0.2em] transition-all flex items-center justify-center gap-3",
+                  activeTab === tab.id && !pendingPayment ? 'bg-primary text-primary-foreground shadow-glow-primary scale-105' : 'text-muted-foreground/30 hover:text-foreground'
+                )}
+              >
+                <tab.icon size={14} strokeWidth={3} /> {tab.label}
+              </button>
+            ))}
+          </nav>
+        </div>
       </header>
 
-      {/* 🔍 FILTRES */}
-      {!pendingPayment && !paymentSuccess && (
-        <div className="w-full px-6 py-6 bg-background/50 border-b-2 border-border/40">
-          <MarketFilterBar categories={categories} onSearch={setSearchTerm} onFilter={(id) => fetchMarket(id)} />
-        </div>
-      )}
-
-      {/* CONTENU SANS h-full POUR REMPLIR L'ESPACE DU PARENT */}
-      <main className="w-full flex-1 p-6 relative">
-        
-        {/* 🎉 ÉCRAN SUCCÈS FULL OVERLAY */}
+      <main className="w-full flex-1 relative max-w-[1800px] mx-auto">
         {paymentSuccess && (
-          <div className="fixed inset-0 flex items-center justify-center p-6 bg-background/95 backdrop-blur-md z-[100]">
-            <div className="bg-secondary border-2 border-primary/30 rounded-[2.5rem] p-10 max-w-md w-full text-center flex flex-col items-center animate-in zoom-in-95 shadow-glow-primary/10">
-              <div className="w-24 h-24 rounded-full bg-primary/10 border-2 border-primary/20 flex items-center justify-center mb-8 animate-pulse shadow-glow-primary/20">
-                <CheckCircle2 className="w-12 h-12 text-primary" strokeWidth={3} />
+          <div className="fixed inset-0 flex items-center justify-center p-6 bg-background/98 backdrop-blur-xl z-[100] animate-in fade-in">
+            <div className="bg-secondary border-2 border-primary/40 rounded-[3rem] p-12 max-w-lg w-full text-center flex flex-col items-center">
+              <CheckCircle2 className="w-20 h-20 text-primary mb-8 animate-pulse" strokeWidth={3} />
+              <h2 className="text-3xl font-display font-black uppercase italic mb-2">ORDRE_SYNCHRONISÉ</h2>
+              <div className="bg-background/50 border border-border rounded-2xl p-5 w-full mb-8 text-left space-y-2">
+                <p className="text-[8px] text-muted-foreground uppercase font-black">_HUB_DESTINATION</p>
+                <p className="text-[13px] font-black text-primary truncate italic uppercase">{shippingData.ville}</p>
               </div>
-              <h2 className="text-3xl font-display font-black uppercase italic text-foreground mb-2 italic">FLUX_VALIDE !</h2>
-              <p className="font-tech text-[10px] text-primary font-black mb-8 uppercase tracking-[0.3em] italic">_SÉQUESTRE_ACTIF_SYNCHRONISÉ</p>
-              <div className="bg-background border-2 border-border rounded-2xl p-5 w-full mb-8 text-left space-y-2 font-tech uppercase">
-                <p className="text-[8px] text-muted-foreground font-black tracking-widest leading-none">DESTINATION_FINALE_NODE :</p>
-                <p className="text-xs font-black text-primary truncate italic pt-1 tracking-tighter">{shippingData.ville}</p>
-                <p className="text-[10px] text-muted-foreground truncate italic">{shippingData.details}</p>
-              </div>
-              <button onClick={resetAndGoToOrders} className="w-full py-5 rounded-2xl bg-primary text-primary-foreground font-display font-black uppercase italic tracking-widest text-xs shadow-xl shadow-primary/20 hover:bg-primary/90 transition-all">
-                TRACKING_LOGISTIQUE
-              </button>
+              <button onClick={() => {setPaymentSuccess(false); setActiveTab('orders');}} className="w-full py-5 rounded-2xl bg-primary text-primary-foreground font-display font-black uppercase italic tracking-widest text-xs">VOIR_LE_TRACKING</button>
             </div>
           </div>
         )}
 
         {pendingPayment ? (
-          /* 💸 TUNNEL PAIEMENT */
-          <div className="max-w-3xl mx-auto space-y-6 py-4 animate-in fade-in slide-in-from-bottom-6 duration-500 pb-24">
-            <button onClick={() => setPendingPayment(null)} className="flex items-center gap-3 text-muted-foreground hover:text-primary transition-all mb-4 font-tech text-[9px] font-black uppercase tracking-widest italic group">
-              <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
-              RÉVOQUER_ET_RETOURNER
+          <div className="max-w-2xl mx-auto space-y-6 py-10 px-4 animate-in slide-in-from-bottom-10 pb-32">
+            <button onClick={() => setPendingPayment(null)} className="flex items-center gap-2 text-muted-foreground hover:text-primary font-tech text-[10px] font-black uppercase italic tracking-widest group">
+              <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> ANNULER_L_ORDRE
             </button>
-            <ShippingForm data={shippingData} agences={agences} onChange={(field, val) => setShippingData(prev => ({ ...prev, [field]: val }))} />
-            <PaymentSelector selectedId={selectedProvider} onSelect={setSelectedProvider} phone={phone} onPhoneChange={setPhone} amount={(pendingPayment.annonce.produit?.prix_prod || 0) * pendingPayment.quantite} />
-            <button
-              disabled={!selectedProvider || paymentLoading || phone.length < 10}
-              onClick={handleConfirmPayment}
-              className={cn(
-                "w-full h-16 rounded-[1.5rem] flex items-center justify-center gap-4 transition-all duration-500 mt-8 font-display font-black uppercase italic tracking-[0.2em] text-[11px]",
-                selectedProvider && phone.length >= 10 ? "bg-primary text-primary-foreground shadow-glow-primary hover:scale-[1.01]" : "bg-secondary text-muted-foreground/30 border-2 border-border grayscale pointer-events-none"
-              )}
-            >
-              {paymentLoading ? <Loader2 size={20} className="animate-spin" /> : <><Target size={18} /><span>INITIER_ORDRE_PAIEMENT</span></>}
-            </button>
+            <div className="bg-secondary rounded-[2rem] p-8 space-y-8 border border-primary/20">
+              <ShippingForm data={shippingData} agences={agences} onChange={(field, val) => setShippingData(prev => ({ ...prev, [field]: val }))} />
+              <PaymentSelector selectedId={selectedProvider} onSelect={setSelectedProvider} phone={phone} onPhoneChange={setPhone} amount={(pendingPayment.annonce.produit?.prix_prod || 0) * pendingPayment.quantite} />
+              <button disabled={!selectedProvider || paymentLoading || phone.length < 10} onClick={handleConfirmPayment} className={cn("w-full h-16 rounded-2xl flex items-center justify-center gap-4 font-display font-black uppercase italic tracking-widest text-sm", selectedProvider && phone.length >= 10 ? "bg-primary text-primary-foreground shadow-glow-primary" : "bg-muted/10 text-muted-foreground/20 pointer-events-none")}>
+                {paymentLoading ? <Loader2 className="animate-spin" /> : <><Target size={20} /><span>CONFIRMER_LA_TRANSACTION</span></>}
+              </button>
+            </div>
           </div>
         ) : (
-          /* 🛒 MARCHÉ / ORDRES (FULL WIDTH GRID) */
-          <div className="w-full space-y-8 pb-10">
+          <div className="w-full pb-20">
+            <div className="px-4 py-6 md:px-8 max-w-[1800px] mx-auto">
+              <MarketFilterBar categories={categories} onSearch={setSearchTerm} onFilter={(id) => fetchMarket(id)} />
+            </div>
+
             {activeTab === 'market' && (
-              <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6 gap-6">
+              /* 🔄 DÉFILEMENT HORIZONTAL FORCÉ & FLUIDE */
+              <div 
+                ref={scrollRef}
+                className="flex flex-nowrap overflow-x-auto snap-x snap-mandatory gap-6 px-4 py-8 md:px-8 no-scrollbar h-[550px] md:h-[650px] items-stretch scroll-smooth"
+              >
                 {filteredResult.map((annonce) => (
-                  <Card key={annonce.id} className="bg-secondary border-2 border-border rounded-[1.8rem] overflow-hidden group hover:border-primary/50 transition-all flex flex-col shadow-lg">
-                    <div className="relative aspect-square bg-background">
-                      {annonce.produit?.image ? (
-                        <img src={annonce.produit.image} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" alt="p" />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center opacity-10"><Package size={40} /></div>
-                      )}
-                      <div className="absolute bottom-3 right-3 bg-secondary border-2 border-primary rounded-xl px-3 py-1.5 shadow-xl backdrop-blur-md">
-                        <span className="text-primary font-display font-black italic text-sm">{annonce.produit?.prix_prod}$</span>
-                      </div>
-                    </div>
-                    <div className="p-5 space-y-4 flex-1 flex flex-col justify-between">
-                      <div className="space-y-1">
-                        <h3 className="font-display text-[12px] font-black uppercase italic text-foreground truncate">{annonce.produit?.nom_prod}</h3>
-                        <div className="flex items-center gap-2 pt-1 font-tech text-[8px] text-muted-foreground uppercase font-black tracking-widest">
-                          <MapPin size={10} className="text-primary" /> ITURI_SECTOR_SYNC
+                  <div key={annonce.id} className="snap-center shrink-0 w-[85vw] md:w-[400px] h-full py-2">
+                    <Card className="bg-secondary/40 border-2 border-border/50 rounded-[2.5rem] overflow-hidden group hover:border-primary/40 transition-all duration-500 flex flex-col shadow-2xl h-full relative">
+                      <div className="relative aspect-[4/3] bg-black overflow-hidden">
+                        {annonce.produit?.image ? (
+                          <img src={annonce.produit.image} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-all duration-1000 group-hover:scale-110" alt="p" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center opacity-10"><Package size={40} /></div>
+                        )}
+                        <div className="absolute top-4 left-4 flex items-center gap-1.5 px-3 py-1 bg-black/60 border border-white/10 rounded-full text-[8px] font-black text-primary tracking-widest uppercase italic">
+                          <Target size={10} strokeWidth={3} /> LIVE_STOCK
+                        </div>
+                        <div className="absolute bottom-4 right-4 bg-primary rounded-2xl px-5 py-2 shadow-glow-primary">
+                          <span className="text-primary-foreground font-display font-black italic text-xl">{annonce.produit?.prix_prod}$</span>
                         </div>
                       </div>
-                      <div className="space-y-3">
-                        <div className="flex justify-between items-center bg-background/50 rounded-lg px-2 py-1.5 border border-border font-tech">
-                          <span className="text-[8px] text-muted-foreground font-bold uppercase tracking-widest italic">STOCK</span>
-                          <span className="text-[9px] text-primary font-black italic">{annonce.quantite_restante} {annonce.produit?.unite}</span>
+                      
+                      <div className="p-8 space-y-6 flex-1 flex flex-col justify-between">
+                        <div>
+                          <h3 className="font-display text-[18px] font-black uppercase italic text-foreground tracking-tighter truncate">{annonce.produit?.nom_prod}</h3>
+                          <div className="flex items-center gap-2 font-tech text-[10px] text-muted-foreground/60 uppercase font-black tracking-widest mt-1">
+                            <MapPin size={12} className="text-primary" /> HUB_ITURI
+                          </div>
                         </div>
-                        <OrderAnnonceModal annonce={annonce} onOrder={handleInitiateOrder} loading={loading} />
+                        <div className="space-y-4">
+                          <div className="flex justify-between items-center bg-white/5 rounded-xl px-4 py-3 border border-white/5 font-tech">
+                            <span className="text-[9px] text-muted-foreground font-bold uppercase italic">VOLUME</span>
+                            <span className="text-[11px] text-primary font-black italic">{annonce.quantite_restante} {annonce.produit?.unite}</span>
+                          </div>
+                          <OrderAnnonceModal annonce={annonce} onOrder={(a, q) => { setPendingPayment({annonce: a, quantite: q}); return Promise.resolve(true); }} loading={loading} />
+                        </div>
                       </div>
-                    </div>
-                  </Card>
+                    </Card>
+                  </div>
                 ))}
+                <PromoCard />
               </div>
             )}
 
             {activeTab === 'orders' && (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 px-4 md:px-8 animate-in fade-in">
                 {mesCommandes.map((cmd: any) => (
-                  <Card key={cmd.id} className="bg-secondary border-2 border-border rounded-2xl p-5 flex items-center justify-between gap-5">
-                    <div className="flex items-center gap-4 min-w-0 font-display">
-                      <div className="w-12 h-12 bg-background border-2 border-border rounded-xl flex items-center justify-center text-primary shadow-inner">
-                        <Package size={20} />
+                  <Card key={cmd.id} className="bg-secondary/30 border border-border/50 rounded-2xl p-6 flex items-center justify-between gap-4 group">
+                    <div className="flex items-center gap-4 min-w-0">
+                      <div className="w-14 h-14 bg-background border border-border/40 rounded-xl flex items-center justify-center text-primary/30 group-hover:text-primary transition-colors">
+                        <Package size={24} />
                       </div>
-                      <div className="leading-none min-w-0">
-                        <h4 className="text-[13px] font-black uppercase italic truncate">{cmd.annonce?.produit?.nom_prod}</h4>
-                        <div className="flex gap-2 mt-2 items-center font-tech italic">
-                           <span className={cn("text-[7px] px-2 py-1 rounded-md font-black uppercase tracking-widest", cmd.statut_paiement === 'PAYEE' ? 'bg-primary text-primary-foreground' : 'bg-background border-2 border-border text-muted-foreground/50')}>
-                             {cmd.statut_paiement || 'WAITING_SIG'}
-                           </span>
-                           <span className="text-[9px] text-primary/40 font-bold">{cmd.prix_total_commande}$</span>
+                      <div className="leading-tight min-w-0">
+                        <h4 className="text-[14px] font-black uppercase italic truncate">{cmd.annonce?.produit?.nom_prod}</h4>
+                        <div className="flex gap-3 mt-2 items-center">
+                           <span className={cn("text-[7px] px-2 py-0.5 rounded-md font-black uppercase tracking-widest", cmd.statut_paiement === 'PAYEE' ? 'bg-primary/20 text-primary border border-primary/30' : 'bg-black/20 text-muted-foreground/40')}>{cmd.statut_paiement || 'PENDING'}</span>
+                           <span className="text-[10px] text-primary font-black italic">{cmd.prix_total_commande}$</span>
                         </div>
                       </div>
                     </div>
@@ -254,8 +266,7 @@ export default function MarketView() {
         )}
       </main>
 
-      {/* 🔮 BACKGROUND EFFECTS FIXES */}
-      <div className="fixed bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/5 blur-[120px] rounded-full pointer-events-none -z-10" />
+      <div className="fixed bottom-[-10%] right-[-5%] w-[60%] h-[60%] bg-primary/5 blur-[150px] rounded-full pointer-events-none -z-10" />
     </div>
   );
 }

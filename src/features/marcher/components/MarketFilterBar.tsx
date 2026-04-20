@@ -12,103 +12,86 @@ interface Props {
 
 export function MarketFilterBar({ categories, onSearch, onFilter }: Props) {
   return (
-    <div className="relative group animate-in fade-in slide-in-from-top-4 duration-1000 w-full z-20">
+    <div className="relative group animate-in fade-in slide-in-from-top-4 duration-700 w-full z-20">
       
-      {/* GLOW DE FOND RADIAL */}
-      <div className="absolute -inset-1 bg-gradient-to-r from-primary/10 via-transparent to-primary/10 rounded-[2.5rem] blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-1000 pointer-events-none" />
+      {/* GLOW DISCRET */}
+      <div className="absolute -inset-0.5 bg-gradient-to-r from-primary/5 via-transparent to-primary/5 rounded-[1.2rem] md:rounded-[2rem] blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-1000 pointer-events-none" />
 
-      <div className="relative flex flex-col lg:flex-row items-stretch lg:items-center gap-4 p-3 md:p-4 bg-secondary/90 backdrop-blur-3xl border-2 border-border rounded-[2rem] md:rounded-[2.5rem] shadow-2xl">
+      <div className="relative flex flex-col md:flex-row items-stretch md:items-center gap-2 p-2 bg-secondary/80 backdrop-blur-2xl border border-border rounded-[1.2rem] md:rounded-[2rem] shadow-xl">
         
-        {/* INDICATEUR DE SCAN (Console Look) */}
-        <div className="hidden lg:flex items-center gap-4 pl-4 pr-3 border-r-2 border-border">
-           <div className="relative flex items-center justify-center">
-              <Radio size={20} className="text-primary animate-pulse relative z-10" />
+        {/* 1. INDICATEUR DE SCAN (Plus petit) */}
+        <div className="hidden lg:flex items-center gap-3 pl-3 pr-2 border-r border-border/50">
+           <div className="relative flex items-center justify-center shrink-0">
+              <Radio size={16} className="text-primary animate-pulse relative z-10" />
               <div className="absolute inset-0 bg-primary/20 rounded-full blur-md animate-ping" />
            </div>
-           <div className="flex flex-col leading-none">
-              <span className="font-tech text-[9px] text-primary font-black tracking-[0.2em] uppercase italic">STATUS_NODE</span>
-              <span className="font-tech text-[7px] text-muted-foreground uppercase tracking-widest mt-1">Marché_Connecté</span>
+           <div className="flex flex-col leading-none min-w-[70px]">
+              <span className="font-tech text-[8px] text-primary font-black tracking-widest uppercase italic">NODE_ON</span>
+              <span className="font-tech text-[6px] text-muted-foreground uppercase tracking-tighter mt-0.5">CONNECTED</span>
            </div>
         </div>
 
-        {/* RECHERCHE PRINCIPALE - STYLE RADAR INPUT */}
+        {/* 2. RECHERCHE PRINCIPALE (Hauteur réduite h-12 à h-14) */}
         <div className="relative flex-grow min-w-0 group/input">
-          <div className="absolute left-6 top-1/2 -translate-y-1/2 z-10">
-            <Target size={20} className="text-muted-foreground/40 group-focus-within/input:text-primary group-focus-within/input:rotate-90 transition-all duration-500" />
+          <div className="absolute left-4 top-1/2 -translate-y-1/2 z-10">
+            <Target size={16} className="text-muted-foreground/40 group-focus-within/input:text-primary transition-transform duration-500" />
           </div>
           
           <Input 
-            placeholder="RECHERCHER UN PRODUIT (TOMATES, MAÏS...)" 
+            placeholder="RECHERCHER..." 
             onChange={(e) => onSearch(e.target.value)}
-            className="w-full bg-background border-2 border-border rounded-[1.5rem] md:rounded-[2rem] pl-16 pr-4 h-16 md:h-20 font-display italic font-black text-xs md:text-sm uppercase tracking-wider text-foreground placeholder:text-muted-foreground/50 focus-visible:border-primary transition-all shadow-inner focus-visible:bg-primary/5 outline-none"
+            className="w-full bg-background border border-border rounded-[0.8rem] md:rounded-[1.2rem] pl-10 pr-4 h-11 md:h-13 font-display italic font-black text-[10px] md:text-xs uppercase tracking-wider text-foreground placeholder:text-muted-foreground/30 focus-visible:ring-1 focus-visible:ring-primary transition-all shadow-inner outline-none"
           />
           
-          {/* BADGE CLAVIER (Déco Tech) */}
-          <div className="absolute right-6 top-1/2 -translate-y-1/2 hidden md:flex items-center gap-2 px-3 py-1.5 bg-secondary border-2 border-border rounded-xl opacity-40 group-focus-within/input:opacity-100 transition-opacity">
-             <span className="font-tech text-[8px] text-muted-foreground font-black tracking-widest uppercase">INPUT_ACTIVE</span>
+          <div className="absolute right-4 top-1/2 -translate-y-1/2 hidden xl:flex items-center gap-2 px-2 py-1 bg-secondary/50 border border-border rounded-md opacity-40">
+             <span className="font-tech text-[6px] text-muted-foreground font-black tracking-widest uppercase">INPUT</span>
           </div>
         </div>
 
-        {/* FILTRE CATÉGORIE - STYLE SÉLECTEUR DE DONNÉES */}
-        <div className="flex items-center gap-3 w-full lg:w-auto">
+        {/* 3. FILTRE CATÉGORIE & ACTION */}
+        <div className="flex items-center gap-2">
           <Select onValueChange={onFilter} defaultValue="all">
-            <SelectTrigger className="flex-1 lg:w-72 bg-background border-2 border-border rounded-[1.5rem] md:rounded-[2rem] h-16 md:h-20 font-tech font-black text-[10px] md:text-[11px] uppercase tracking-widest text-primary focus:border-primary transition-all hover:bg-primary/5 shadow-inner pl-6 data-[state=open]:border-primary">
-              <div className="flex items-center gap-3">
-                <LayoutGrid size={18} className="text-primary transition-transform group-hover:rotate-12" />
-                <SelectValue placeholder="FILTRER_PAR_SOURCE" />
+            <SelectTrigger className="flex-1 md:w-56 bg-background border border-border rounded-[0.8rem] md:rounded-[1.2rem] h-11 md:h-13 font-tech font-black text-[9px] uppercase tracking-tighter text-primary focus:ring-1 focus:ring-primary transition-all shadow-inner pl-4 pr-2">
+              <div className="flex items-center gap-2 truncate">
+                <LayoutGrid size={14} className="text-primary shrink-0" />
+                <SelectValue placeholder="SOURCE" />
               </div>
             </SelectTrigger>
             
-            <SelectContent className="bg-secondary border-2 border-border text-foreground rounded-[1.5rem] p-2 backdrop-blur-3xl shadow-2xl z-[100]">
-              <SelectItem 
-                  value="all" 
-                  className="font-tech text-[10px] uppercase tracking-widest py-3 focus:bg-primary/10 focus:text-primary rounded-xl cursor-pointer mb-1 transition-colors"
-              >
-                <div className="flex items-center gap-3 font-black">
-                  <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                  TOUT_AFFICHER
+            <SelectContent className="bg-secondary border border-border text-foreground rounded-xl p-1 backdrop-blur-3xl z-[100]">
+              <SelectItem value="all" className="font-tech text-[9px] uppercase py-2 focus:bg-primary/10 rounded-lg cursor-pointer">
+                <div className="flex items-center gap-2 font-black">
+                  <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                  TOUT
                 </div>
               </SelectItem>
-              
-              <div className="h-[2px] bg-border my-2 mx-2 rounded-full" />
-              
               {categories.map(cat => (
-                <SelectItem 
-                  key={cat.id} 
-                  value={cat.id.toString()} 
-                  className="font-tech text-[10px] uppercase tracking-widest py-3 focus:bg-primary/10 focus:text-primary rounded-xl cursor-pointer transition-colors"
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="text-muted-foreground/30 font-black">/</span>
-                    {cat.libelle_categorie}
-                  </div>
+                <SelectItem key={cat.id} value={cat.id.toString()} className="font-tech text-[9px] uppercase py-2 focus:bg-primary/10 rounded-lg cursor-pointer">
+                  {cat.libelle_categorie}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
 
-          {/* BOUTON FILTRE AVANCÉ (Look Déclencheur) */}
-          <button className="h-16 w-16 md:h-20 md:w-20 hidden sm:flex items-center justify-center bg-primary text-primary-foreground rounded-[1.5rem] md:rounded-[2rem] hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 active:scale-95 shrink-0 group/filter">
-              <Filter size={20} className="group-hover/filter:scale-110 transition-transform" />
+          <button className="h-11 w-11 md:h-13 md:w-13 flex items-center justify-center bg-primary text-primary-foreground rounded-[0.8rem] md:rounded-[1.2rem] hover:opacity-90 transition-all shadow-md active:scale-95 shrink-0">
+              <Filter size={18} />
           </button>
         </div>
       </div>
 
-      {/* FOOTER BARRE DE RECHERCHE - MÉTADONNÉES SYSTÈME */}
-      <div className="flex items-center justify-between px-6 mt-3">
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
-            <div className="w-1.5 h-1.5 rounded-full bg-primary/50 animate-ping" />
-            <span className="font-tech text-[7px] text-muted-foreground uppercase tracking-widest font-bold">Data_Stream_On</span>
+      {/* FOOTER - MÉTA DISCRET (Réduit) */}
+      <div className="flex items-center justify-between px-4 mt-1.5">
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1.5">
+            <div className="w-1 h-1 rounded-full bg-primary/50 animate-ping" />
+            <span className="font-tech text-[6px] text-muted-foreground/60 uppercase tracking-widest font-bold">STREAM_LIVE</span>
           </div>
-          <div className="hidden md:flex items-center gap-2 border-l-2 border-border pl-4">
-            <Zap size={10} className="text-primary/40" />
-            <span className="font-tech text-[7px] text-muted-foreground uppercase tracking-widest font-bold">0ms_Latency</span>
-          </div>
+          <div className="hidden xs:block h-2 w-[1px] bg-border" />
+          <span className="hidden xs:block font-tech text-[6px] text-muted-foreground/40 uppercase">ZONE_ITURI_SEC_04</span>
         </div>
         
-        <span className="font-tech text-[8px] text-primary/40 uppercase tracking-[0.4em] italic font-black">
-          AgriConnect_Market_zone
+        <span className="font-tech text-[6px] text-primary/30 uppercase tracking-[0.2em] italic font-black">
+          Agri_connect_Interface
         </span>
       </div>
     </div>

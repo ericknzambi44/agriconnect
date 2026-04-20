@@ -15,7 +15,7 @@ import SubscriptionView from './features/abonnenent/view/SubscriptionView';
 import { useAuthSession } from '@/features/auth/hooks/use-auth-session';
 import MarketView from './features/marcher/view/MarketView';
 import { AgencyTerminalView } from './features/transport/view/AgencyTerminalView';
-import { AgenceTransportView } from './features/transport/view/AgenceTransportView';
+
 
 
 export default function App() {

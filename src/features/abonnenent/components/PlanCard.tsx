@@ -3,7 +3,7 @@ import { Check, Clock, ArrowRight, Lock, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function PlanCard({ plan, status, days, onSelect, canBuy, safetyMessage }: any) {
-  const isActive = status === 'ACTIVE';
+  const isActive = status === 'ACTIF';
 
   return (
     <div className={cn(
