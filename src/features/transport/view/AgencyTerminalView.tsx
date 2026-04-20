@@ -1,4 +1,3 @@
-// src/features/transport/pages/AgencyTerminalView.tsx
 import React, { useState } from 'react';
 import { useAgencyDashboard } from '../hooks/useAgencyDashboard';
 import { 
@@ -6,8 +5,10 @@ import {
   MapPin, Phone, User, ShoppingBag, History, Radar, Globe, 
   ShieldCheck, LayoutDashboard, Zap, Hash, CheckCircle2
 } from 'lucide-react';
+import { cn } from "@/lib/utils";
 
-const cardStyle = "bg-[#0A0A0A] border border-white/5 rounded-[32px] overflow-hidden transition-all duration-300 hover:border-white/10";
+// Utilisation des variables de ton index.css (bg-secondary, primary, etc.)
+const cardStyle = "bg-secondary border-2 border-border rounded-[32px] overflow-hidden transition-all duration-500 hover:border-primary/20 shadow-2xl";
 
 export function AgencyTerminalView() {
   const { agency, myStats, opportunities, loading, processing, processCode, confirmAction } = useAgencyDashboard();
@@ -33,59 +34,62 @@ export function AgencyTerminalView() {
   };
 
   if (loading) return (
-    <div className="flex flex-col items-center justify-center py-20 min-h-[60vh]">
-      <Loader2 className="w-12 h-12 text-[#FACC15] animate-spin mb-4" />
-      <p className="text-white/20 text-[10px] font-black uppercase tracking-[0.5em] animate-pulse font-mono">
-        Synchronisation ...
+    <div className="flex flex-col items-center justify-center py-20 min-h-[60vh] bg-background">
+      <Loader2 className="w-14 h-14 text-primary animate-spin mb-6" />
+      <p className="text-primary/40 text-[10px] font-black uppercase tracking-[0.5em] animate-pulse font-tech">
+        SYNCHRONISATION_TERMINAL...
       </p>
     </div>
   );
 
   const isDepot = scannedExp?.actionType === 'DEPOT';
-  const actionColor = isDepot ? 'text-[#FACC15]' : 'text-[#10B981]';
-  const actionBg = isDepot ? 'bg-[#FACC15]' : 'bg-[#10B981]';
+  // Utilisation de l'orange (primary) pour le dépôt et du vert (success) pour le retrait
+  const actionColor = isDepot ? 'text-primary' : 'text-success';
+  const actionBg = isDepot ? 'bg-primary' : 'bg-success';
   
   const clientData = isDepot ? scannedExp?.vendeur : scannedExp?.acheteur;
   const clientRole = isDepot ? "Vendeur (Dépôt)" : "Acheteur (Retrait)";
 
   return (
-    // AJUSTEMENT : Ajout de pt-4 md:pt-2 pour éviter que le haut soit collé/caché
-    <div className="w-full min-h-full flex flex-col selection:bg-[#FACC15]/30 font-sans pb-24 pt-4 md:pt-2 relative z-10">
+    <div className="w-full min-h-full flex flex-col selection:bg-primary/30 font-sans pb-24 pt-6 md:pt-4 relative z-10 bg-background text-foreground">
       
-      {/* HEADER : Structure robuste pour ne pas être cachée */}
-      <header className="w-full mb-10 flex flex-col lg:flex-row justify-between items-start lg:items-end border-b border-white/5 pb-10 gap-8">
+      {/* HEADER : TERMINAL LOGISTIQUE */}
+      <header className="w-full mb-12 flex flex-col lg:flex-row justify-between items-start lg:items-end border-b-2 border-border pb-10 gap-8">
         <div className="flex items-center gap-6">
           <div className="relative group flex-shrink-0">
-            <div className="absolute -inset-1 bg-gradient-to-r from-[#FACC15] to-amber-600 rounded-2xl blur opacity-25 group-hover:opacity-50 transition duration-1000"></div>
-            <div className="relative w-16 h-16 bg-black border border-white/10 rounded-2xl flex items-center justify-center shadow-xl">
-              <Building2 className="text-[#FACC15]" size={32} />
+            {/* Glow orange typique Pied Zyne */}
+            <div className="absolute -inset-2 bg-primary/20 rounded-2xl blur-xl group-hover:opacity-100 transition duration-1000 opacity-50"></div>
+            <div className="relative w-20 h-20 bg-secondary border-2 border-primary/30 rounded-2xl flex items-center justify-center shadow-2xl">
+              <Truck className="text-primary" size={40} strokeWidth={2.5} />
             </div>
           </div>
           <div className="min-w-0">
-            <div className="flex flex-wrap items-center gap-3">
-               <h1 className="text-3xl md:text-4xl font-black italic uppercase tracking-tighter leading-none text-white truncate">
-                {agency?.nom_agence || 'PISHOPY'}<span className="text-[#FACC15]">.</span> RDC
+            <div className="flex flex-wrap items-center gap-4">
+               <h1 className="text-3xl md:text-5xl font-display font-black italic uppercase tracking-tighter leading-none text-foreground">
+                {agency?.nom_agence || 'PYSHOPY'}<span className="text-primary">.</span> LOG
               </h1>
-              <span className="bg-[#FACC15] text-black text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-tighter shadow-lg shadow-[#FACC15]/10">Terminal</span>
+              <span className="bg-primary text-primary-foreground text-[10px] font-black px-4 py-1.5 rounded-xl uppercase tracking-tighter shadow-lg shadow-primary/20">
+                NODE_ACTIVE
+              </span>
             </div>
-            <p className="text-white/40 text-[10px] font-bold uppercase tracking-[0.3em] mt-2 flex items-center gap-2">
-              <MapPin size={12} className="text-[#FACC15]/50" /> {agency?.ville_agence || 'Localisation...'}
+            <p className="font-tech text-muted-foreground text-[11px] font-bold uppercase tracking-[0.3em] mt-3 flex items-center gap-2">
+              <MapPin size={14} className="text-primary" /> {agency?.ville_agence || 'BUNIA_HUB'} // RDC_TRANSIT
             </p>
           </div>
         </div>
 
-        <nav className="flex bg-white/5 p-1.5 rounded-2xl border border-white/5 backdrop-blur-xl w-full lg:w-auto">
+        <nav className="flex bg-secondary p-2 rounded-[1.5rem] border-2 border-border backdrop-blur-xl w-full lg:w-auto shadow-xl">
           <TabButton 
             active={activeTab === 'terminal'} 
             onClick={() => setActiveTab('terminal')} 
-            icon={<LayoutDashboard size={16}/>} 
-            label="Terminal" 
+            icon={<LayoutDashboard size={18}/>} 
+            label="TERMINAL" 
           />
           <TabButton 
             active={activeTab === 'market'} 
             onClick={() => setActiveTab('market')} 
-            icon={<Radar size={16}/>} 
-            label="Flux" 
+            icon={<Radar size={18}/>} 
+            label="FLUX_RESEAU" 
             count={opportunities.length}
           />
         </nav>
@@ -94,46 +98,45 @@ export function AgencyTerminalView() {
       {/* CONTENU PRINCIPAL */}
       <main className="w-full flex-1">
         {activeTab === 'terminal' ? (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 animate-in fade-in slide-in-from-bottom-6 duration-700">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 animate-in fade-in slide-in-from-bottom-8 duration-700">
             
             <div className="lg:col-span-7 space-y-8 flex flex-col">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <MiniStat label="En Transit vers ici" value={myStats.toDeliver} icon={<Truck size={18}/>} color="blue" />
-                <MiniStat label="Livraisons Effectuées" value={myStats.completed} icon={<History size={18}/>} color="emerald" />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <MiniStat label="EN_TRANSIT_ARRIVÉE" value={myStats.toDeliver} icon={<Truck size={24}/>} variant="primary" />
+                <MiniStat label="LIVRAISONS_TOTALES" value={myStats.completed} icon={<History size={24}/>} variant="success" />
               </div>
 
-              <section className={`${cardStyle} p-8 md:p-12 relative group shadow-2xl shadow-black flex-1 flex flex-col justify-center min-h-[400px]`}>
-                <div className="absolute top-0 right-0 p-8 opacity-5">
-                   <ShieldCheck size={120} />
+              <section className={cn(cardStyle, "p-8 md:p-14 relative group flex-1 flex flex-col justify-center min-h-[450px] border-primary/10")}>
+                <div className="absolute top-0 right-0 p-10 opacity-[0.03] pointer-events-none group-hover:opacity-[0.07] transition-opacity">
+                   <ShieldCheck size={180} className="text-primary" />
                 </div>
                 
-                <div className="relative z-10 w-full max-w-2xl mx-auto">
-                  <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/30 mb-8 flex items-center gap-3">
-                    <div className="w-1.5 h-1.5 bg-[#FACC15] rounded-full animate-ping" />
-                    Scan de Code Sécurisé
+                <div className="relative z-10 w-full max-w-2xl mx-auto text-center md:text-left">
+                  <h2 className="font-tech text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground mb-10 flex items-center gap-4 justify-center md:justify-start">
+                    <div className="w-2 h-2 bg-primary rounded-full animate-pulse shadow-[0_0_10px_rgba(var(--primary),0.8)]" />
+                    SCAN_SYSTEM_ENCRYPTION_ACTIVE
                   </h2>
                   
-                  <div className="space-y-6">
-                    <div className="relative">
-                      <Hash className="absolute left-6 top-1/2 -translate-y-1/2 text-white/10" size={32} />
+                  <div className="space-y-8">
+                    <div className="relative group/input">
+                      <Hash className="absolute left-8 top-1/2 -translate-y-1/2 text-primary/20 group-focus-within/input:text-primary transition-colors" size={40} />
                       <input 
                         type="text"
                         value={inputCode}
                         onChange={(e) => setInputCode(e.target.value.toUpperCase())}
                         onKeyDown={(e) => e.key === 'Enter' && handleScan()}
-                        className="w-full bg-[#050505] border-2 border-white/5 rounded-3xl py-10 md:py-12 pl-20 pr-8 text-center text-4xl md:text-6xl font-mono font-black tracking-[0.4em] text-[#FACC15] focus:border-[#FACC15]/50 outline-none transition-all placeholder:text-white/5 shadow-inner"
+                        className="w-full bg-background border-2 border-border rounded-[2.5rem] py-12 md:py-16 pl-24 pr-8 text-center text-5xl md:text-7xl font-tech font-black tracking-[0.5em] text-primary focus:border-primary outline-none transition-all shadow-inner placeholder:text-muted-foreground/10"
                         placeholder="000000"
-                        autoComplete="off"
                       />
                     </div>
                     
                     <button 
                       onClick={handleScan}
                       disabled={processing || inputCode.length < 6}
-                      className="w-full bg-white/5 hover:bg-white/10 text-white border border-white/10 font-black py-6 md:py-8 rounded-3xl flex items-center justify-center gap-4 text-sm md:text-lg transition-transform active:scale-95 disabled:opacity-50"
+                      className="w-full bg-primary text-primary-foreground font-display font-black italic py-8 md:py-10 rounded-[2rem] flex items-center justify-center gap-6 text-lg md:text-xl transition-all hover:shadow-[0_20px_40px_rgba(var(--primary),0.3)] active:scale-[0.98] disabled:opacity-50"
                     >
-                      {processing ? <Loader2 className="animate-spin text-[#FACC15]" /> : <ArrowRight className="text-[#FACC15]" size={24} />}
-                      IDENTIFIER LE COLIS
+                      {processing ? <Loader2 className="animate-spin" /> : <ArrowRight className="group-hover:translate-x-2 transition-transform" size={30} />}
+                      IDENTIFIER_FLUX_LOGISTIQUE
                     </button>
                   </div>
                 </div>
@@ -142,47 +145,50 @@ export function AgencyTerminalView() {
 
             <div className="lg:col-span-5 h-full min-h-[500px]">
               {scannedExp ? (
-                <div className={`p-1 h-full rounded-[40px] shadow-2xl animate-in zoom-in-95 duration-300 ${actionBg}`}>
-                  <div className="bg-[#0A0A0A] rounded-[38px] p-8 text-white h-full border border-white/10 flex flex-col justify-between gap-8">
+                <div className={cn("p-1.5 h-full rounded-[45px] shadow-2xl animate-in zoom-in-95 duration-500", actionBg)}>
+                  <div className="bg-secondary rounded-[40px] p-8 text-foreground h-full border-2 border-white/10 flex flex-col justify-between gap-10">
                     
                     <div className="flex justify-between items-start">
-                       <div className={`flex items-center gap-2 px-4 py-1.5 rounded-full ${isDepot ? 'bg-[#FACC15]/10 text-[#FACC15]' : 'bg-[#10B981]/10 text-[#10B981]'}`}>
-                         {isDepot ? <PackageSearch size={14} /> : <CheckCircle2 size={14} />}
-                         <span className="text-[10px] font-black uppercase tracking-widest leading-none">
-                           {isDepot ? 'Dépôt Vendeur' : 'Retrait Acheteur'}
+                       <div className={cn("flex items-center gap-3 px-5 py-2.5 rounded-xl border-2", isDepot ? 'bg-primary/10 border-primary/30 text-primary' : 'bg-success/10 border-success/30 text-success')}>
+                         {isDepot ? <PackageSearch size={18} /> : <CheckCircle2 size={18} />}
+                         <span className="font-tech text-[11px] font-black uppercase tracking-widest">
+                           {isDepot ? 'DÉPÔT_VENDEUR' : 'RETRAIT_CLIENT'}
                          </span>
                        </div>
-                       <button onClick={() => setScannedExp(null)} className="w-10 h-10 flex items-center justify-center bg-white/5 rounded-full text-white/40 hover:text-white hover:bg-white/10 transition-colors">✕</button>
+                       <button onClick={() => setScannedExp(null)} className="p-3 flex items-center justify-center bg-background border-2 border-border rounded-xl text-muted-foreground hover:text-error hover:border-error/30 transition-all">✕</button>
                     </div>
 
-                    <div className="space-y-6 flex-1 flex flex-col justify-center">
-                      <div className="p-8 bg-[#050505] rounded-3xl border border-white/5">
-                        <p className="text-white/30 text-[9px] font-black uppercase tracking-widest mb-2">Colis: #{scannedExp.id.substring(0,8)}</p>
-                        <h3 className="text-2xl md:text-3xl font-black tracking-tighter leading-tight mb-4 truncate">
-                          {scannedExp.commande?.annonce?.produit?.nom_prod || `Produit Pishopy`}
+                    <div className="space-y-8 flex-1 flex flex-col justify-center">
+                      <div className="p-8 bg-background rounded-3xl border-2 border-border relative overflow-hidden group">
+                        <div className="absolute top-0 right-0 p-4 opacity-[0.05]">
+                           <Hash size={60} />
+                        </div>
+                        <p className="font-tech text-muted-foreground text-[10px] font-black uppercase tracking-widest mb-3">ID_COLIS: #{scannedExp.id.substring(0,8)}</p>
+                        <h3 className="text-3xl font-display font-black italic tracking-tighter leading-tight mb-6 truncate text-foreground uppercase">
+                          {scannedExp.commande?.annonce?.produit?.nom_prod || `FRET_AGRICOLE`}
                         </h3>
-                        <div className="flex items-center gap-6 border-t border-white/5 pt-6">
-                            <span className="text-xs font-bold text-white/50">{scannedExp.commande?.quantite_commandee || 1} Unité(s)</span>
-                            <span className={`text-xl font-black font-mono ${actionColor}`}>
+                        <div className="flex items-center justify-between border-t-2 border-border pt-6">
+                            <span className="font-tech text-xs font-bold text-muted-foreground uppercase">{scannedExp.commande?.quantite_commandee || 1} UNITÉ(S)</span>
+                            <span className={cn("text-3xl font-tech font-black tracking-tighter", actionColor)}>
                               {scannedExp.commande?.prix_total_commande || 0} USD
                             </span>
                         </div>
                       </div>
 
-                      <div className="p-8 bg-white/5 rounded-3xl border border-white/5 flex flex-col gap-6">
-                          <div className="flex justify-between items-center">
-                            <span className="text-[10px] font-black text-white/30 uppercase tracking-widest">{clientRole}</span>
-                            <User size={18} className="text-white/20" />
+                      <div className="p-8 bg-background border-2 border-border rounded-3xl space-y-6">
+                          <div className="flex justify-between items-center border-b border-border pb-4">
+                            <span className="font-tech text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em]">{clientRole}</span>
+                            <User size={20} className="text-primary/40" />
                           </div>
-                          <p className="font-bold text-xl md:text-2xl">{clientData?.nom || "Utilisateur"}</p>
+                          <p className="font-display font-black italic text-2xl uppercase text-foreground">{clientData?.nom || "AGENT_EXTERNE"}</p>
                           
-                          <div className="flex items-center justify-between bg-[#050505] p-5 rounded-2xl border border-white/5">
-                            <span className="font-mono text-white text-lg font-bold tracking-wider">
-                              {clientData?.numero_tel || "N/A"}
+                          <div className="flex items-center justify-between bg-secondary p-6 rounded-2xl border-2 border-border">
+                            <span className="font-tech text-xl font-black text-foreground tracking-[0.1em]">
+                              {clientData?.numero_tel || "NON_RENSEIGNÉ"}
                             </span>
                             {clientData?.numero_tel && (
-                              <a href={`tel:${clientData?.numero_tel}`} className={`p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors ${actionColor}`}>
-                                <Phone size={20} />
+                              <a href={`tel:${clientData?.numero_tel}`} className={cn("p-4 rounded-xl shadow-lg transition-all active:scale-90", actionBg, "text-white")}>
+                                <Phone size={24} />
                               </a>
                             )}
                           </div>
@@ -192,72 +198,74 @@ export function AgencyTerminalView() {
                     <button 
                       onClick={handleConfirm}
                       disabled={processing}
-                      className={`w-full ${isDepot ? 'bg-[#FACC15]' : 'bg-[#10B981]'} hover:opacity-90 text-black font-black py-6 md:py-8 rounded-3xl shadow-xl transition-all active:scale-95 flex items-center justify-center gap-3 text-lg`}
+                      className={cn("w-full h-24 text-white font-display font-black italic py-8 rounded-[2rem] shadow-2xl transition-all active:scale-[0.98] flex items-center justify-center gap-4 text-xl tracking-[0.2em]", actionBg)}
                     >
-                      {processing ? <Loader2 className="animate-spin" /> : <ShieldCheck size={28} />}
-                      {isDepot ? "CONFIRMER DÉPÔT" : "CONFIRMER LIVRAISON"}
+                      {processing ? <Loader2 className="animate-spin" /> : <ShieldCheck size={32} />}
+                      {isDepot ? "CONFIRMER_RÉCEPTION_DÉPÔT" : "SCELLER_LIVRAISON_FINALE"}
                     </button>
                   </div>
                 </div>
               ) : (
-                <div className="h-full min-h-[500px] border-2 border-dashed border-white/10 rounded-[40px] flex flex-col items-center justify-center text-center p-12 relative overflow-hidden bg-white/[0.01]">
-                   <div className="w-20 h-20 bg-white/[0.02] border border-white/5 rounded-full flex items-center justify-center mb-6 relative z-10 shadow-inner">
-                      <Zap size={32} className="text-white/10" />
+                <div className="h-full min-h-[500px] border-4 border-dashed border-border rounded-[45px] flex flex-col items-center justify-center text-center p-14 relative overflow-hidden bg-secondary/30 group">
+                   <div className="w-24 h-24 bg-background border-2 border-border rounded-3xl flex items-center justify-center mb-8 relative z-10 shadow-inner group-hover:border-primary/30 transition-all duration-700">
+                      <Zap size={40} className="text-primary/20 group-hover:text-primary transition-all group-hover:scale-110" />
                    </div>
-                   <p className="text-white/20 font-black uppercase text-[10px] tracking-[0.4em] leading-relaxed relative z-10">
-                     Système Pishopy Actif <br/> En attente de scan
+                   <p className="text-muted-foreground/30 font-tech font-black uppercase text-[11px] tracking-[0.5em] leading-loose relative z-10">
+                     TERMINAL_STANDBY <br/> 
+                     <span className="text-primary/20">EN_ATTENTE_DE_FLUX_LOGISTIQUE</span>
                    </p>
                 </div>
               )}
             </div>
           </div>
         ) : (
-          <div className="animate-in fade-in slide-in-from-bottom-6 duration-700">
-             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-10">
-                <div className="flex items-center gap-4">
-                  <div className="p-3 bg-[#FACC15]/10 rounded-2xl border border-[#FACC15]/20 shadow-lg shadow-[#FACC15]/5">
-                    <Radar className="text-[#FACC15] animate-spin-slow" />
+          <div className="animate-in fade-in slide-in-from-bottom-8 duration-700">
+             {/* SECTION MARCHÉ / FLUX */}
+             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-8 mb-12">
+                <div className="flex items-center gap-6">
+                  <div className="p-4 bg-primary/10 rounded-2xl border-2 border-primary/20 shadow-xl">
+                    <Radar className="text-primary animate-spin-slow" size={28} />
                   </div>
                   <div>
-                    <h2 className="text-xl font-black uppercase tracking-tighter text-white">Flux du Réseau</h2>
-                    <p className="text-[10px] text-white/30 font-bold uppercase tracking-widest">Colis en attente</p>
+                    <h2 className="text-2xl font-display font-black uppercase italic tracking-tighter text-foreground leading-none">FLUX_DU_RÉSEAU</h2>
+                    <p className="font-tech text-[10px] text-muted-foreground font-black uppercase tracking-[0.4em] mt-2">OPPORTUNITÉS_LOGISTIQUES_ACTIVES</p>
                   </div>
                 </div>
-                <div className="bg-white/5 border border-white/10 px-6 py-3 rounded-2xl flex items-center gap-3 w-fit">
-                   <Globe size={16} className="text-[#FACC15]" />
-                   <span className="font-mono font-black text-xs text-white uppercase tracking-tighter">{opportunities.length} OPPORTUNITÉS</span>
+                <div className="bg-secondary border-2 border-border px-8 py-4 rounded-2xl flex items-center gap-4 shadow-xl">
+                   <Globe size={20} className="text-primary" />
+                   <span className="font-tech font-black text-sm text-foreground uppercase tracking-widest">{opportunities.length} NŒUDS_EN_ATTENTE</span>
                 </div>
              </div>
 
-             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
+             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
                 {opportunities.map((opp) => (
-                  <div key={opp.id} className={`${cardStyle} group relative flex flex-col h-full shadow-xl shadow-black`}>
+                  <div key={opp.id} className={cn(cardStyle, "group relative flex flex-col h-full border-t-primary/20 hover:border-primary/40")}>
                     <div className="p-8 flex-1">
-                      <div className="flex justify-between items-start mb-6">
-                        <div className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center border border-white/5">
-                          <ShoppingBag className="text-[#FACC15]/50" size={24} />
+                      <div className="flex justify-between items-start mb-8">
+                        <div className="w-14 h-14 bg-background rounded-2xl flex items-center justify-center border-2 border-border shadow-inner">
+                          <ShoppingBag className="text-primary/60 group-hover:text-primary transition-colors" size={28} />
                         </div>
-                        <p className="text-2xl font-black text-[#10B981] font-mono">
+                        <p className="text-3xl font-tech font-black text-success tracking-tighter shadow-glow-success">
                           {opp.commande?.prix_total_commande || 0}$
                         </p>
                       </div>
-                      <h4 className="text-lg font-black text-white/90 leading-tight mb-4 group-hover:text-[#FACC15] transition-colors line-clamp-2">
-                        {opp.commande?.annonce?.produit?.nom_prod || `Produit`}
+                      <h4 className="text-xl font-display font-black italic text-foreground leading-tight mb-6 group-hover:text-primary transition-colors line-clamp-2 uppercase">
+                        {opp.commande?.annonce?.produit?.nom_prod || `FRET_AGRICOLE`}
                       </h4>
-                      <div className="space-y-3 pt-4 border-t border-white/5 text-[10px] font-bold text-white/40 uppercase">
-                        <div className="flex items-center gap-3">
-                          <MapPin size={12} className="text-[#FACC15]/50" />
-                          <span className="truncate">Vers : {opp.destination_ville}</span>
+                      <div className="space-y-4 pt-6 border-t-2 border-border font-tech text-[10px] font-black text-muted-foreground uppercase tracking-widest italic">
+                        <div className="flex items-center gap-4">
+                          <MapPin size={14} className="text-primary/60" />
+                          <span className="truncate">DESTINATION : {opp.destination_ville}</span>
                         </div>
-                        <div className="flex items-center gap-3">
-                          <User size={12} className="text-[#FACC15]/50" />
-                          <span className="truncate">De : {opp.vendeur?.nom}</span>
+                        <div className="flex items-center gap-4">
+                          <User size={14} className="text-primary/60" />
+                          <span className="truncate">ORIGINE : {opp.vendeur?.nom}</span>
                         </div>
                       </div>
                     </div>
-                    <div className="p-2 border-t border-white/5 bg-[#050505]">
-                      <a href={`tel:${opp.vendeur?.numero_tel}`} className="w-full bg-white/5 hover:bg-white hover:text-black py-4 rounded-2xl flex items-center justify-center gap-3 text-[10px] font-black uppercase transition-all">
-                        <Phone size={14} /> Contacter Vendeur
+                    <div className="p-3 border-t-2 border-border bg-background/50 backdrop-blur-sm">
+                      <a href={`tel:${opp.vendeur?.numero_tel}`} className="w-full bg-secondary hover:bg-primary hover:text-primary-foreground py-5 rounded-2xl flex items-center justify-center gap-4 font-tech text-[11px] font-black uppercase tracking-[0.2em] transition-all active:scale-95 shadow-md">
+                        <Phone size={18} /> CONTACTER_VENDEUR
                       </a>
                     </div>
                   </div>
@@ -269,7 +277,8 @@ export function AgencyTerminalView() {
       
       <style>{`
         @keyframes spin-slow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        .animate-spin-slow { animation: spin-slow 12s linear infinite; }
+        .animate-spin-slow { animation: spin-slow 15s linear infinite; }
+        .shadow-glow-success { text-shadow: 0 0 10px rgba(var(--success), 0.3); }
       `}</style>
     </div>
   );
@@ -281,13 +290,19 @@ function TabButton({ active, onClick, icon, label, count }: any) {
   return (
     <button 
       onClick={onClick}
-      className={`flex-1 lg:flex-none px-6 py-4 rounded-xl flex items-center justify-center gap-3 text-[10px] font-black uppercase tracking-widest transition-all ${
-        active ? 'bg-white text-black shadow-2xl scale-105' : 'text-white/40 hover:text-white hover:bg-white/5'
-      }`}
+      className={cn(
+        "flex-1 lg:flex-none px-8 py-4 rounded-xl flex items-center justify-center gap-4 font-tech text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-500",
+        active 
+          ? "bg-primary text-primary-foreground shadow-2xl scale-105" 
+          : "text-muted-foreground/60 hover:text-primary hover:bg-primary/5"
+      )}
     >
       {icon} {label}
       {count !== undefined && (
-        <span className={`ml-1 px-2 py-0.5 rounded-full text-[8px] ${active ? 'bg-black text-white' : 'bg-white/10 text-white/40'}`}>
+        <span className={cn(
+          "ml-2 px-2.5 py-1 rounded-lg text-[9px] font-black",
+          active ? "bg-primary-foreground text-primary" : "bg-border text-muted-foreground"
+        )}>
           {count}
         </span>
       )}
@@ -295,18 +310,19 @@ function TabButton({ active, onClick, icon, label, count }: any) {
   );
 }
 
-function MiniStat({ label, value, icon, color }: any) {
-  const colors: any = {
-    blue: "text-blue-400 bg-blue-400/5 border-blue-400/10",
-    emerald: "text-[#10B981] bg-[#10B981]/5 border-[#10B981]/10"
+function MiniStat({ label, value, icon, variant }: { label: string, value: any, icon: any, variant: 'primary' | 'success' }) {
+  const themes = {
+    primary: "text-primary border-primary/20 bg-primary/5",
+    success: "text-success border-success/20 bg-success/5"
   };
+  
   return (
-    <div className={`p-8 rounded-3xl border ${colors[color]} flex items-center justify-between shadow-xl`}>
+    <div className={cn("p-8 rounded-[2rem] border-2 flex items-center justify-between shadow-xl transition-all hover:scale-[1.02]", themes[variant])}>
       <div className="min-w-0">
-        <p className="text-[8px] font-black uppercase tracking-[0.2em] opacity-50 mb-1 truncate">{label}</p>
-        <p className="text-3xl md:text-4xl font-black tracking-tighter leading-none">{value}</p>
+        <p className="font-tech text-[9px] font-black uppercase tracking-[0.3em] opacity-60 mb-2 truncate italic">{label}</p>
+        <p className="text-4xl md:text-5xl font-tech font-black tracking-tighter leading-none">{value}</p>
       </div>
-      <div className="opacity-20 scale-125 flex-shrink-0 ml-4">{icon}</div>
+      <div className="opacity-20 scale-150 flex-shrink-0 ml-4 group-hover:rotate-12 transition-transform">{icon}</div>
     </div>
   );
 }

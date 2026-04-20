@@ -28,38 +28,38 @@ export function AddressForm({ profile, onUpdate, loading }: any) {
     });
   };
 
-  // Petit Helper pour les labels stylisés
-  const Label = ({ children, emerald = false }: { children: React.ReactNode, emerald?: boolean }) => (
+  // Label ajusté pour une lisibilité maximale
+  const Label = ({ children, highlighted = false }: { children: React.ReactNode, highlighted?: boolean }) => (
     <label className={cn(
-      "font-tech text-[9px] uppercase tracking-[0.3em] ml-1 mb-2 block transition-colors duration-500",
-      emerald ? "text-emerald-500 font-black italic" : "text-white/20 group-focus-within:text-emerald-500/50"
+      "font-tech text-[10px] uppercase tracking-[0.25em] ml-1 mb-2 block",
+      highlighted ? "text-primary font-black italic" : "text-muted-foreground/80 font-bold"
     )}>
       {children}
     </label>
   );
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-12 animate-in fade-in slide-in-from-bottom-2 duration-500">
       
-      {/* SECTION HEADER : INFO DE POSITION */}
-      <div className="flex items-center gap-4 mb-2">
-        <div className="p-3 bg-emerald-500/10 rounded-xl border border-emerald-500/20">
-          <MapPin className="w-5 h-5 text-emerald-500" />
+      {/* SECTION HEADER : POSITIONNEMENT NÉGATIF */}
+      <div className="flex items-center gap-5 mb-4">
+        <div className="p-4 bg-background border-2 border-primary/30 rounded-2xl shadow-lg">
+          <MapPin className="w-6 h-6 text-primary" />
         </div>
         <div>
-          <h3 className="font-display text-xl text-white uppercase italic tracking-tighter">Géo-Localisation</h3>
-          <p className="font-tech text-[9px] text-white/30 uppercase tracking-widest italic">Définition du point nodal de l'entité</p>
+          <h3 className="font-display text-2xl text-foreground uppercase italic tracking-tighter leading-none">Géo-Localisation</h3>
+          <p className="font-tech text-[10px] text-muted-foreground uppercase tracking-widest mt-1">Point_Accès_Logistique</p>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         
         {/* PAYS */}
         <div className="group space-y-1">
           <Label>Pays_Origine</Label>
           <Input 
             {...register("pays")} 
-            className="bg-[#0A0A0A] border-white/5 h-14 font-tech font-bold text-white/80 focus-visible:ring-emerald-500/20 focus-visible:border-emerald-500/40 transition-all rounded-2xl uppercase tracking-widest shadow-inner" 
+            className="bg-background border-2 border-border h-14 font-tech font-black text-foreground focus-visible:border-primary transition-all rounded-xl uppercase tracking-widest" 
           />
         </div>
 
@@ -68,78 +68,77 @@ export function AddressForm({ profile, onUpdate, loading }: any) {
           <Label>Province_Région</Label>
           <Input 
             {...register("province")} 
-            className="bg-[#0A0A0A] border-white/5 h-14 font-tech font-bold text-white/80 focus-visible:ring-emerald-500/20 focus-visible:border-emerald-500/40 transition-all rounded-2xl uppercase tracking-widest shadow-inner" 
+            className="bg-background border-2 border-border h-14 font-tech font-black text-foreground focus-visible:border-primary transition-all rounded-xl uppercase tracking-widest" 
           />
         </div>
 
-        {/* VILLE / TERRITOIRE (Le point critique) */}
-        <div className="group space-y-1 lg:col-span-1">
-          <Label emerald>Ville_Territoire_Hub</Label>
+        {/* VILLE / TERRITOIRE (HUB CRITIQUE) */}
+        <div className="group space-y-1">
+          <Label highlighted>Ville_Territoire_Hub</Label>
           <div className="relative">
             <Input 
               {...register("ville")} 
-              placeholder="EX: BUNIA / BENI" 
-              className="bg-emerald-500/[0.03] border-emerald-500/30 h-14 font-display italic font-black text-emerald-500 placeholder:text-emerald-500/10 focus-visible:ring-emerald-500/40 focus-visible:border-emerald-500 transition-all rounded-2xl uppercase tracking-tighter text-lg" 
+              placeholder="EX: BUNIA" 
+              className="bg-primary/5 border-2 border-primary h-14 font-display italic font-black text-primary placeholder:text-primary/20 focus-visible:ring-0 focus-visible:border-primary transition-all rounded-xl uppercase tracking-tighter text-xl" 
             />
-            <div className="absolute right-4 top-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_8px_#10b981]" />
+            <div className="absolute right-4 top-1/2 -translate-y-1/2 w-2 h-2 bg-success rounded-full animate-pulse shadow-[0_0_10px_hsl(var(--success))]" />
           </div>
         </div>
 
-        {/* COMMUNE / SECTEUR */}
+        {/* COMMUNE */}
         <div className="group space-y-1">
           <Label>Commune_Secteur</Label>
           <Input 
             {...register("commune")} 
-            className="bg-[#0A0A0A] border-white/5 h-14 font-tech font-bold text-white/70 focus-visible:ring-emerald-500/20 rounded-2xl uppercase shadow-inner transition-all group-hover:border-white/10" 
+            className="bg-background border-2 border-border h-14 font-tech font-bold text-foreground focus-visible:border-primary transition-all rounded-xl uppercase" 
           />
         </div>
 
-        {/* QUARTIER / GROUPEMENT */}
+        {/* QUARTIER */}
         <div className="group space-y-1">
           <Label>Quartier_Groupement</Label>
           <Input 
             {...register("quartier")} 
-            className="bg-[#0A0A0A] border-white/5 h-14 font-tech font-bold text-white/70 focus-visible:ring-emerald-500/20 rounded-2xl uppercase shadow-inner transition-all group-hover:border-white/10" 
+            className="bg-background border-2 border-border h-14 font-tech font-bold text-foreground focus-visible:border-primary transition-all rounded-xl uppercase" 
           />
         </div>
 
-        {/* AVENUE / VILLAGE */}
+        {/* AVENUE */}
         <div className="group space-y-1">
           <Label>Avenue_Village</Label>
           <Input 
             {...register("avenue")} 
-            className="bg-[#0A0A0A] border-white/5 h-14 font-tech font-bold text-white/70 focus-visible:ring-emerald-500/20 rounded-2xl uppercase shadow-inner transition-all group-hover:border-white/10" 
+            className="bg-background border-2 border-border h-14 font-tech font-bold text-foreground focus-visible:border-primary transition-all rounded-xl uppercase" 
           />
         </div>
 
         {/* N° / CELLULE */}
-        <div className="group space-y-1 md:col-span-2 lg:col-span-1">
+        <div className="group space-y-1 lg:col-span-1">
           <Label>ID_Parcelle_Cellule</Label>
           <Input 
             {...register("numero")} 
-            className="bg-[#0A0A0A] border-white/5 h-14 font-tech font-bold text-white/70 focus-visible:ring-emerald-500/20 rounded-2xl uppercase shadow-inner transition-all group-hover:border-white/10" 
+            className="bg-background border-2 border-border h-14 font-tech font-bold text-foreground focus-visible:border-primary transition-all rounded-xl uppercase" 
           />
         </div>
       </div>
 
-      {/* BOUTON D'ACTION - LOOK INDUSTRIEL */}
-      <div className="pt-6">
+      {/* BOUTON D'ACTION - MASSIF ET VISIBLE */}
+      <div className="pt-8">
         <Button 
           disabled={loading} 
           type="submit"
-          className="w-full h-20 bg-emerald-500 text-black font-display italic text-sm tracking-[0.4em] rounded-[2rem] hover:bg-emerald-400 hover:shadow-[0_25px_50px_rgba(16,185,129,0.2)] transition-all duration-500 active:scale-[0.97] group relative overflow-hidden"
+          className="w-full h-24 bg-primary text-primary-foreground font-display italic text-base tracking-[0.4em] rounded-[1.5rem] hover:bg-primary/90 hover:scale-[1.01] transition-all duration-300 active:scale-[0.98] group relative overflow-hidden shadow-2xl"
         >
           {loading ? (
-            <Loader2 className="w-6 h-6 animate-spin" />
+            <Loader2 className="w-8 h-8 animate-spin" />
           ) : (
-            <div className="flex items-center justify-center gap-4">
-              <Navigation className="w-5 h-5 transition-transform group-hover:rotate-12 group-hover:scale-110" />
-              <span>SYNCHRONISER LA POSITION</span>
+            <div className="flex items-center justify-center gap-6">
+              <Navigation className="w-6 h-6 transition-transform group-hover:rotate-12" />
+              <span className="font-black">SYNCHRONISER_COORDONNÉES</span>
             </div>
           )}
           
-          {/* Effet de brillance au survol */}
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] pointer-events-none" />
+          <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
         </Button>
       </div>
     </form>

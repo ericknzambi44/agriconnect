@@ -45,116 +45,129 @@ export function IdentityForm({ profile, onUpdate, loading }: any) {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-12 animate-in fade-in slide-in-from-top-4 duration-1000">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-12 animate-in fade-in slide-in-from-top-4 duration-500">
       
       {/* MODULE AVATAR : STUDIO DIGITAL */}
-      <div className="relative flex flex-col items-center gap-6 pb-10 border-b border-white/5">
-        <div className="absolute top-0 left-0 opacity-[0.03] pointer-events-none">
-          <Fingerprint className="w-24 h-24 text-emerald-500" />
+      <div className="relative flex flex-col items-center gap-8 pb-12 border-b-2 border-border">
+        <div className="absolute top-0 left-0 opacity-[0.05] pointer-events-none">
+          <Fingerprint className="w-28 h-28 text-primary" />
         </div>
 
         <div className="relative group">
-          {/* Bordure animée style Scanner */}
-          <div className="absolute -inset-1.5 bg-gradient-to-tr from-emerald-500/20 via-transparent to-emerald-500/20 rounded-[3rem] opacity-0 group-hover:opacity-100 animate-pulse transition-opacity duration-700" />
+          {/* Bordure de scanneur active */}
+          <div className="absolute -inset-2 bg-gradient-to-tr from-primary/30 via-transparent to-primary/30 rounded-[3rem] opacity-0 group-hover:opacity-100 animate-pulse transition-opacity duration-700" />
           
-          <div className="relative w-40 h-40 rounded-[2.8rem] bg-[#0A0A0A] border border-white/10 flex items-center justify-center overflow-hidden transition-all duration-700 group-hover:border-emerald-500/50 shadow-[0_0_50px_rgba(0,0,0,0.5)]">
+          <div className="relative w-44 h-44 rounded-[2.5rem] bg-background border-2 border-border flex items-center justify-center overflow-hidden transition-all duration-500 group-hover:border-primary/50 shadow-2xl">
             {preview ? (
-              <img src={preview} alt="Avatar" className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110 group-hover:rotate-2" />
+              <img src={preview} alt="Avatar" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
             ) : (
-              <div className="flex flex-col items-center gap-2">
-                <User className="w-16 h-16 text-white/5 group-hover:text-emerald-500/20 transition-colors" />
-                <span className="font-tech text-[7px] text-white/10 tracking-[0.4em] uppercase">No_Signal</span>
+              <div className="flex flex-col items-center gap-3">
+                <User className="w-20 h-20 text-muted-foreground/20 group-hover:text-primary/30 transition-colors" />
+                <span className="font-tech text-[8px] text-muted-foreground/30 tracking-[0.5em] uppercase font-black">NO_SIGNAL</span>
               </div>
             )}
             
-            {/* Overlay au survol */}
-            <div className="absolute inset-0 bg-emerald-500/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-[2px]">
-              <div className="w-full h-[1px] bg-emerald-500/40 animate-[scan_2s_linear_infinite]" />
+            {/* Effet de Scan Horizontal */}
+            <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
+              <div className="w-full h-[2px] bg-primary/50 shadow-[0_0_15px_rgba(var(--primary),0.8)] animate-[scan_2s_linear_infinite]" />
             </div>
           </div>
           
-          <label className="absolute -bottom-3 -right-3 bg-emerald-500 text-black p-4 rounded-2xl cursor-pointer hover:bg-emerald-400 hover:scale-110 active:scale-90 transition-all shadow-[0_15px_30px_rgba(16,185,129,0.4)] border-4 border-[#080808] z-20">
-            <Camera className="w-5 h-5" />
+          <label className="absolute -bottom-4 -right-4 bg-primary text-primary-foreground p-5 rounded-2xl cursor-pointer hover:bg-primary/90 hover:scale-110 active:scale-95 transition-all shadow-xl border-4 border-secondary z-20">
+            <Camera className="w-6 h-6" />
             <input type="file" className="hidden" onChange={handleFile} accept="image/*" />
           </label>
         </div>
 
-        <div className="text-center space-y-1">
-          <p className="font-tech text-[10px] font-black uppercase tracking-[0.4em] text-white/40">Profil_Identité_Visuelle</p>
-          <p className="font-tech text-[8px] text-emerald-500/40 uppercase tracking-widest">Format: 1:1 • JPEG/PNG</p>
+        <div className="text-center space-y-2">
+          <p className="font-tech text-[10px] font-black uppercase tracking-[0.5em] text-muted-foreground/60">ID_Visuelle_Synchronisée</p>
+          <div className="h-1 w-12 bg-primary/20 mx-auto rounded-full" />
         </div>
       </div>
 
-      {/* GRILLE DE DONNÉES */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-10">
+      {/* GRILLE DE DONNÉES : HAUT CONTRASTE */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         
         {/* PRÉNOM */}
         <div className="space-y-3 group">
-          <label className="font-tech text-[9px] font-black uppercase tracking-[0.3em] text-white/20 group-focus-within:text-emerald-500 transition-colors ml-1">Prénom_Entité</label>
+          <label className="font-tech text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground group-focus-within:text-primary transition-colors ml-1">Prénom_Entité</label>
           <Input 
             {...register("prenom")} 
-            className="bg-white/[0.02] border-white/5 h-16 font-display italic text-lg uppercase tracking-tighter focus-visible:ring-emerald-500/20 focus-visible:border-emerald-500/40 text-white transition-all rounded-2xl px-6" 
+            className="bg-background border-2 border-border h-16 font-display italic text-xl uppercase tracking-tighter focus-visible:border-primary text-foreground transition-all rounded-xl px-6" 
           />
         </div>
         
         {/* NOM */}
         <div className="space-y-3 group">
-          <label className="font-tech text-[9px] font-black uppercase tracking-[0.3em] text-white/20 group-focus-within:text-emerald-500 transition-colors ml-1">Nom_Famille</label>
+          <label className="font-tech text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground group-focus-within:text-primary transition-colors ml-1">Nom_Famille</label>
           <Input 
             {...register("nom")} 
-            className="bg-white/[0.02] border-white/5 h-16 font-display italic text-lg uppercase tracking-tighter focus-visible:ring-emerald-500/20 focus-visible:border-emerald-500/40 text-white transition-all rounded-2xl px-6" 
+            className="bg-background border-2 border-border h-16 font-display italic text-xl uppercase tracking-tighter focus-visible:border-primary text-foreground transition-all rounded-xl px-6" 
           />
         </div>
         
         {/* GENRE */}
         <div className="space-y-3 group">
-          <label className="font-tech text-[9px] font-black uppercase tracking-[0.3em] text-white/20 group-focus-within:text-emerald-500 transition-colors ml-1">Attribut Genre</label>
+          <label className="font-tech text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground group-focus-within:text-primary transition-colors ml-1">Attribut_Genre</label>
           <Select onValueChange={(v) => setValue("sexe", v)} defaultValue={watch("sexe")}>
-            <SelectTrigger className="bg-white/[0.02] border-white/5 h-16 font-tech font-bold uppercase tracking-widest focus:ring-emerald-500/20 text-white transition-all rounded-2xl px-6">
+            <SelectTrigger className="bg-background border-2 border-border h-16 font-tech font-black uppercase tracking-widest focus:border-primary text-foreground transition-all rounded-xl px-6">
               <SelectValue placeholder="SÉLECTIONNER" />
             </SelectTrigger>
-            <SelectContent className="bg-[#0f0f0f] border-white/10 text-white rounded-xl">
-              <SelectItem value="M" className="font-tech py-3 focus:bg-emerald-500 focus:text-black rounded-lg">MASCULIN // M</SelectItem>
-              <SelectItem value="F" className="font-tech py-3 focus:bg-emerald-500 focus:text-black rounded-lg">FÉMININ // F</SelectItem>
+            <SelectContent className="bg-secondary border-2 border-border text-foreground rounded-xl">
+              <SelectItem value="M" className="font-tech py-4 focus:bg-primary focus:text-primary-foreground">MASCULIN // M</SelectItem>
+              <SelectItem value="F" className="font-tech py-4 focus:bg-primary focus:text-primary-foreground">FÉMININ // F</SelectItem>
             </SelectContent>
           </Select>
         </div>
 
-        {/* CONTACT */}
+        {/* CONTACT WHATSAPP (Priorité Bunia) */}
         <div className="space-y-3 group">
-          <label className="font-tech text-[9px] font-black uppercase tracking-[0.3em] text-emerald-500/60 ml-1 italic">Canal_Communication_WhatsApp</label>
+          <label className="font-tech text-[10px] font-black uppercase tracking-[0.3em] text-primary/80 ml-1 italic">Canal_Communication_WhatsApp</label>
           <div className="relative">
-            <div className="absolute left-6 top-1/2 -translate-y-1/2 p-1.5 bg-emerald-500/10 rounded-lg">
-              <Phone className="w-4 h-4 text-emerald-500" />
+            <div className="absolute left-6 top-1/2 -translate-y-1/2 p-2 bg-primary/10 rounded-lg">
+              <Phone className="w-4 h-4 text-primary" />
             </div>
             <Input 
               {...register("numero_tel")} 
-              className="bg-emerald-500/[0.03] border-emerald-500/20 h-16 pl-16 font-tech font-black text-lg focus-visible:ring-emerald-500/40 text-emerald-500 transition-all rounded-2xl tracking-widest" 
+              placeholder="+243..."
+              className="bg-primary/5 border-2 border-primary/40 h-16 pl-16 font-tech font-black text-lg focus-visible:border-primary text-primary transition-all rounded-xl tracking-[0.15em]" 
             />
           </div>
         </div>
       </div>
 
-      {/* VALIDATION FINALE */}
-      <div className="pt-6">
+      {/* VALIDATION FINALE : LE SCEAU */}
+      <div className="pt-8">
         <Button 
           disabled={loading} 
           type="submit"
-          className="w-full h-20 bg-emerald-500 text-black font-display font-black italic text-sm tracking-[0.5em] rounded-[2.5rem] hover:bg-emerald-400 shadow-[0_20px_40px_rgba(16,185,129,0.25)] transition-all duration-500 active:scale-[0.96] group relative overflow-hidden"
+          className="w-full h-24 bg-primary text-primary-foreground font-display font-black italic text-base tracking-[0.5em] rounded-[1.5rem] hover:bg-primary/90 shadow-2xl transition-all duration-300 active:scale-[0.98] group relative overflow-hidden"
         >
           {loading ? (
-            <Loader2 className="animate-spin w-6 h-6" />
+            <Loader2 className="animate-spin w-8 h-8" />
           ) : (
-            <div className="flex items-center gap-4">
-              <CheckCircle2 className="w-5 h-5 transition-transform group-hover:scale-125 group-hover:rotate-12" />
-              <span>SCELLER LES MODIFICATIONS</span>
+            <div className="flex items-center gap-5">
+              <CheckCircle2 className="w-6 h-6 transition-transform group-hover:scale-125" />
+              <span>SCELLER_L'IDENTITÉ_SÉCURISÉE</span>
             </div>
           )}
           
-          {/* Ligne de scanning horizontale */}
+          {/* Effet de balayage vertical au survol */}
           <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/10 to-transparent -translate-y-full group-hover:animate-[scan-vertical_2s_linear_infinite] pointer-events-none" />
         </Button>
       </div>
+      
+      <style>{`
+        @keyframes scan {
+          0% { transform: translateY(-100px); opacity: 0; }
+          50% { opacity: 1; }
+          100% { transform: translateY(100px); opacity: 0; }
+        }
+        @keyframes scan-vertical {
+          0% { transform: translateY(-100%); }
+          100% { transform: translateY(100%); }
+        }
+      `}</style>
     </form>
   );
 }
