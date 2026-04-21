@@ -123,7 +123,7 @@ export default function DashboardOverview() {
                  <Cpu className="w-[400px] h-[400px] text-primary" />
               </div>
               
-              <h2 className="font-display text-foreground text-5xl md:text-7xl italic uppercase tracking-tighter text-center leading-[0.85]">
+              <h2 className="font-display text-foreground text-2xl md:text-7xl italic uppercase tracking-tighter text-center leading-[0.85]">
                 Agri_Connect<br/><span className="text-primary/80">Visualiseur</span>
               </h2>
 
