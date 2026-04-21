@@ -1,5 +1,5 @@
-import React from 'react';
-import { Search, Bell, Command, Menu, ShieldCheck } from "lucide-react";
+import React, { useState } from 'react';
+import { Search, Bell, Command, Menu, ShieldCheck, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
@@ -15,78 +15,91 @@ interface TopbarProps {
 }
 
 export function Topbar({ user, onMenuClick }: TopbarProps) {
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const initials = `${user.prenom[0]}${user.nom[0]}`.toUpperCase();
 
   return (
-    <header className="fixed top-0 right-0 z-40 flex h-20 items-center justify-between border-b-2 border-border bg-secondary px-6 sm:px-10 left-0 lg:left-72 shadow-xl">
+    <div className="w-full h-full flex items-center justify-between px-[clamp(0.75rem,3vw,2rem)] gap-2 sm:gap-4 relative">
       
-      {/* 1. RECHERCHE & COMMANDES : Look Terminal Pur */}
-      <div className="flex items-center gap-6 flex-1">
-        {/* BOUTON MOBILE - Visible uniquement sur petit écran */}
+      {/* 1. SECTION GAUCHE : MENU & RECHERCHE INTELLIGENTE */}
+      <div className="flex items-center gap-2 sm:gap-4 flex-1 min-w-0">
         <button 
           onClick={onMenuClick}
-          className="p-3 bg-background border-2 border-primary/20 rounded-xl text-primary lg:hidden active:scale-90 transition-all hover:bg-primary/5"
+          className="p-2.5 bg-background border-2 border-primary/20 rounded-xl text-primary lg:hidden active:scale-95 transition-all flex-shrink-0"
         >
           <Menu className="w-5 h-5" />
         </button>
 
-        {/* BARRE DE RECHERCHE - Nette et Contrastée */}
-        <div className="relative w-full max-w-[220px] group sm:max-w-md hidden sm:block">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
-          <Input 
-            placeholder="RECHERCHER_DANS_LE_SYSTEME..." 
-            className="h-11 bg-background border-2 border-border pl-12 font-tech text-[10px] tracking-[0.1em] text-foreground placeholder:text-muted-foreground/50 focus-visible:ring-0 focus-visible:border-primary rounded-xl transition-all"
-          />
-          <div className="absolute right-4 top-1/2 -translate-y-1/2 hidden md:flex items-center gap-1 px-2 py-1 bg-secondary border border-border rounded-md opacity-60">
-            <Command className="w-3 h-3 text-primary" />
-            <span className="font-tech text-[8px] font-bold">K</span>
+        {/* RECHERCHE MOBILE : Bouton d'activation si écran < sm */}
+        <button 
+          onClick={() => setIsSearchOpen(true)}
+          className="p-2.5 bg-background border-2 border-border rounded-xl text-muted-foreground sm:hidden active:scale-95"
+        >
+          <Search className="w-5 h-5" />
+        </button>
+
+        {/* BARRE DE RECHERCHE DESKTOP / OVERLAY MOBILE */}
+        <div className={cn(
+          "absolute inset-x-0 top-0 h-20 bg-secondary z-[60] flex items-center px-4 transition-all duration-300 sm:relative sm:inset-auto sm:h-auto sm:bg-transparent sm:flex sm:p-0 sm:max-w-[400px] sm:w-full",
+          isSearchOpen ? "translate-y-0 opacity-100" : "-translate-y-full opacity-0 sm:translate-y-0 sm:opacity-100"
+        )}>
+          <div className="relative w-full group">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-primary" />
+            <Input 
+              autoFocus={isSearchOpen}
+              placeholder="RECHERCHER..." 
+              className="h-12 sm:h-11 bg-background border-2 border-border pl-11 pr-12 sm:pr-4 font-tech text-[10px] tracking-[0.1em] text-foreground focus-visible:ring-0 focus-visible:border-primary rounded-xl w-full"
+            />
+            {/* Bouton pour fermer la recherche sur mobile uniquement */}
+            <button 
+              onClick={() => setIsSearchOpen(false)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 p-1 sm:hidden text-muted-foreground"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <div className="absolute right-3 top-1/2 -translate-y-1/2 hidden md:flex items-center gap-1 px-2 py-1 bg-secondary border border-border rounded-md opacity-60">
+              <Command className="w-3 h-3 text-primary" />
+              <span className="font-tech text-[8px] font-bold">K</span>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* 2. ACTIONS ET PROFIL : Haute Distinction */}
-      <div className="flex items-center gap-4 sm:gap-6">
+      {/* 2. SECTION DROITE : ACTIONS ET PROFIL */}
+      <div className="flex items-center gap-2 sm:gap-6 flex-shrink-0">
         
-        {/* NOTIFICATIONS - Sans Blur, Plus Net */}
-        <button className="relative p-3 bg-background border-2 border-border rounded-xl hover:border-primary/40 text-muted-foreground hover:text-primary transition-all group">
-          <Bell className="w-5 h-5 group-hover:rotate-12 transition-transform" />
-          <span className="absolute top-2.5 right-2.5 w-2.5 h-2.5 bg-success rounded-full border-2 border-secondary shadow-[0_0_10px_rgba(34,197,94,0.5)]" />
+        <button className="relative p-2.5 bg-background border-2 border-border rounded-xl text-muted-foreground hover:text-primary transition-all group">
+          <Bell className="w-5 h-5 group-hover:rotate-12" />
+          <span className="absolute top-2 right-2 w-2 h-2 bg-success rounded-full border-2 border-secondary animate-pulse" />
         </button>
 
-        {/* USER PROFILE SECTION */}
-        <div className="flex items-center gap-4 pl-6 border-l-2 border-border h-10">
-          <div className="text-right hidden sm:block">
-            <h4 className="text-[13px] font-display uppercase italic tracking-tight text-foreground leading-none">
+        <div className="flex items-center gap-2 sm:gap-4 pl-2 sm:pl-6 border-l-2 border-border h-10">
+          
+          <div className="text-right hidden md:block">
+            <h4 className="text-[13px] font-display uppercase italic tracking-tight text-foreground leading-none truncate max-w-[100px]">
               {user.prenom} <span className="text-primary font-bold">{user.nom}</span>
             </h4>
             <div className="flex items-center justify-end gap-1.5 mt-1.5">
               <span className="font-tech text-[8px] font-black text-muted-foreground uppercase tracking-widest">
-                {user.role}_NODE
+                {user.role}
               </span>
               <ShieldCheck className="w-3 h-3 text-primary/60" />
             </div>
           </div>
           
-          {/* AVATAR AVEC CADRE NET */}
-          <div className="relative group cursor-pointer active:scale-95 transition-transform">
-            <Avatar className="h-11 w-11 sm:h-12 sm:w-12 border-2 border-primary rounded-xl relative bg-background p-0.5 overflow-hidden">
-              <AvatarImage 
-                src={user.avatar_url || ""} 
-                alt={user.nom} 
-                className="object-cover rounded-lg" 
-              />
-              <AvatarFallback className="bg-primary/10 text-primary font-display italic text-sm font-black">
+          <div className="relative group flex-shrink-0">
+            <Avatar className="h-10 w-10 sm:h-12 sm:w-12 border-2 border-primary rounded-xl bg-background p-0.5 transition-transform active:scale-90">
+              <AvatarImage src={user.avatar_url || ""} className="object-cover rounded-lg" />
+              <AvatarFallback className="bg-primary/10 text-primary font-display italic text-xs font-black">
                 {initials}
               </AvatarFallback>
             </Avatar>
-            
-            {/* Indicateur de Statut Online - NULLE PART AILLEURS */}
-            <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-secondary rounded-lg flex items-center justify-center border-2 border-border shadow-lg">
-                <div className="w-2 h-2 bg-success rounded-full animate-pulse" />
+            <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-secondary rounded-lg flex items-center justify-center border-2 border-border">
+                <div className="w-1.5 h-1.5 bg-success rounded-full animate-pulse" />
             </div>
           </div>
         </div>
       </div>
-    </header>
+    </div>
   );
 }
