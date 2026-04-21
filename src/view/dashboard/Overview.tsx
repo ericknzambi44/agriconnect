@@ -57,7 +57,7 @@ export default function DashboardOverview() {
           </h1>
           
           <p className="font-tech text-muted-foreground/80 text-[10px] md:text-[11px] uppercase tracking-[0.2em] flex items-center gap-2">
-            Sector_Bunia <span className="text-primary">/</span> Node_ID: <span className="text-foreground">@{profile?.role}</span>
+            Sector_Bunia <span className="text-primary">/</span> zone: <span className="text-foreground">@{profile?.role}</span>
           </p>
         </div>
         

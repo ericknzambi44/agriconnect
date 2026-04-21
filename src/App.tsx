@@ -26,7 +26,7 @@ export default function App() {
     return (
       <div className="min-h-screen bg-[#050505] flex items-center justify-center">
         <div className="text-emerald-500 animate-pulse font-black uppercase italic tracking-widest text-[10px]">
-          Initialisation Pishopy Infrastructure...
+          Initialisation Agriconnect...
         </div>
       </div>
     );

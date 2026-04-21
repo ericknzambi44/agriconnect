@@ -155,7 +155,7 @@ export default function Recoltes() {
                     {produit.annonce && produit.annonce.length > 0 ? (
                       <div className="flex items-center gap-3 px-6 py-3 bg-primary/10 border border-primary/30 rounded-2xl shadow-glow-primary/10">
                         <Zap size={14} className="text-primary fill-primary animate-pulse" />
-                        <span className="text-[10px] font-black text-primary uppercase tracking-[0.3em] italic">SYNC_ACTIF</span>
+                        <span className="text-[10px] font-black text-primary uppercase tracking-[0.3em] italic">Actif sur le marcher</span>
                       </div>
                     ) : (
                       <div className="flex items-center gap-3 px-6 py-3 bg-background/50 border border-border/40 rounded-2xl">

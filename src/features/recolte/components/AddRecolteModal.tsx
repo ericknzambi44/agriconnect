@@ -115,7 +115,7 @@ export function AddRecolteModal() {
             
             {/* ZONE UPLOAD - LOOK CARTE MARKET */}
             <div className="space-y-3">
-              <label className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/60 ml-1">Media_Capture</label>
+              <label className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/60 ml-1">Photo produit</label>
               <div className="relative group">
                 {!previewUrl ? (
                   <label className="flex flex-col items-center justify-center w-full h-44 rounded-[2.5rem] border-2 border-dashed border-primary/10 bg-background/50 hover:bg-primary/5 hover:border-primary/40 transition-all duration-500 cursor-pointer group/upload overflow-hidden">
@@ -145,7 +145,7 @@ export function AddRecolteModal() {
 
             {/* DÉSIGNATION - STYLE HEADER MARKET */}
             <div className="space-y-3">
-              <label className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/60 ml-1">Label_Identification</label>
+              <label className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/60 ml-1">Nom du produit</label>
               <Input 
                 {...register("nom_prod")} 
                 placeholder="EX: MAÏS_GRAIN_TYPE_B" 
@@ -156,7 +156,7 @@ export function AddRecolteModal() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-3">
-                  <label className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/60 ml-1">Classification</label>
+                  <label className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/60 ml-1">Categorie</label>
                   <Controller
                     name="categorie_id"
                     control={control}
@@ -180,7 +180,7 @@ export function AddRecolteModal() {
                 </div>
 
                 <div className="space-y-3">
-                  <label className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/60 ml-1">Timestamp</label>
+                  <label className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/60 ml-1">Date recolte</label>
                   <div className="relative">
                     <CalendarDays className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-primary z-10" strokeWidth={3} />
                     <Input 
@@ -195,7 +195,7 @@ export function AddRecolteModal() {
 
             <div className="grid grid-cols-2 gap-6">
               <div className="space-y-3">
-                <label className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/60 ml-1">Volume_Input</label>
+                <label className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/60 ml-1">Quantite</label>
                 <div className="flex bg-background/50 border border-border/40 rounded-2xl overflow-hidden focus-within:border-primary/40 transition-colors">
                   <Input 
                     type="number" 
@@ -215,6 +215,7 @@ export function AddRecolteModal() {
                           value={field.value}
                           className="bg-transparent text-primary font-black uppercase text-[10px] outline-none cursor-pointer tracking-widest"
                         >
+                          <option value="Unite">UNITE</option>
                           <option value="kg">KG</option>
                           <option value="tonne">T</option>
                           <option value="sac">SAC</option>
@@ -227,7 +228,7 @@ export function AddRecolteModal() {
               </div>
 
               <div className="space-y-3">
-                <label className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/60 ml-1">Valeur_USD</label>
+                <label className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/60 ml-1">Valeur/unite en $</label>
                 <div className="relative group">
                   <BadgeDollarSign className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-primary" strokeWidth={3} />
                   <Input 
@@ -250,7 +251,7 @@ export function AddRecolteModal() {
                 <Loader2 className="animate-spin w-6 h-6" />
               ) : (
                 <span className="flex items-center gap-4">
-                  INITIALISER_LE_FLUX
+                  INITIALISER
                   <Zap className="w-5 h-5 fill-primary-foreground" />
                 </span>
               )}
