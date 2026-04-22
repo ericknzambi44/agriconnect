@@ -1,22 +1,21 @@
-import { Store, ShoppingBag, Truck, ShieldCheck, Loader2, Info, Zap } from "lucide-react";
+import { Store, ShoppingBag, Truck, ShieldCheck, Loader2, Info, Zap, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
-// Configuration des modes avec lexique technique
 const ROLE_MAP: Record<string, { icon: any, desc: string, tag: string }> = {
   VENDEUR: { 
     icon: Store, 
-    desc: "Déploiement des stocks et gestion des actifs agricoles.",
+    desc: "Déploiement des stocks et gestion des actifs.",
     tag: "PRODUCER_NODE"
   },
   ACHETEUR: { 
     icon: ShoppingBag, 
-    desc: "Acquisition de ressources en circuit court sécurisé.",
+    desc: "Acquisition de ressources en circuit sécurisé.",
     tag: "CONSUMER_NODE"
   },
   TRANSPORTEUR: { 
     icon: Truck, 
-    desc: "Optimisation logistique et exécution des flux physiques.",
+    desc: "Optimisation logistique et exécution des flux.",
     tag: "LOGISTICS_NODE"
   },
 };
@@ -25,39 +24,37 @@ export function RoleSwitcher({ currentRoleId, roles, onRoleChange, loading }: an
   
   const handleRoleClick = (roleId: number, roleName: string) => {
     const promise = onRoleChange(roleId);
-    
     toast.promise(promise, {
-      loading: `Migration du noyau vers ${roleName}...`,
+      loading: `Migration vers ${roleName}...`,
       success: `Terminal configuré : Mode ${roleName} actif.`,
       error: (err) => `Échec de reconfiguration : ${err.message}`
     });
   };
 
   return (
-    <div className="bg-secondary border-2 border-border rounded-[2.5rem] p-6 md:p-8 space-y-8 relative overflow-hidden shadow-2xl">
+    <div className="bg-secondary/50 border-2 border-border rounded-[1.5rem] md:rounded-[2.5rem] p-4 md:p-8 space-y-6 md:space-y-8 relative overflow-hidden shadow-2xl">
       
-      {/* SCANNER BACKGROUND EFFECT */}
-      <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-primary/40 to-transparent animate-[scan_3s_linear_infinite]" />
-      <div className="absolute -bottom-24 -right-24 w-64 h-64 bg-primary/[0.03] blur-[100px] pointer-events-none" />
+      {/* SCANNER EFFECT */}
+      <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-primary/50 to-transparent animate-[scan_4s_linear_infinite]" />
 
-      {/* HEADER DE SECTION */}
-      <div className="flex items-center justify-between relative z-10">
-        <div className="space-y-1">
-          <h2 className="text-2xl font-display font-black uppercase italic tracking-tighter text-foreground">
-            Privilèges <span className="text-primary text-glow-primary">Système</span>
+      {/* HEADER : Adaptatif */}
+      <div className="flex items-center justify-between relative z-10 px-1">
+        <div className="min-w-0">
+          <h2 className="text-[clamp(1.1rem,5vw,1.6rem)] font-display font-black uppercase italic tracking-tighter text-foreground leading-none truncate">
+            PRIVILÈGES_<span className="text-primary">SYSTÈME</span>
           </h2>
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-success animate-pulse" />
-            <p className="font-tech text-[10px] text-muted-foreground uppercase tracking-[0.4em] font-black">Autorisation_Active</p>
+          <div className="flex items-center gap-2 mt-1.5">
+            <div className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
+            <p className="font-tech text-[7px] md:text-[9px] text-muted-foreground uppercase tracking-[0.3em] font-black italic opacity-70">AUTORISATION_ACTIVE</p>
           </div>
         </div>
-        <div className="p-4 bg-background border-2 border-primary/20 rounded-2xl shadow-inner">
-           <ShieldCheck className="w-6 h-6 text-primary" />
+        <div className="p-3 md:p-4 bg-background border border-primary/20 rounded-xl md:rounded-2xl shrink-0 ml-4">
+           <ShieldCheck className="w-5 h-5 md:w-6 md:h-6 text-primary" />
         </div>
       </div>
       
-      {/* GRID : SÉLECTEUR DE PROTOCOLE */}
-      <div className="flex flex-col gap-6 relative z-10">
+      {/* GRID : Sélecteur vertical */}
+      <div className="flex flex-col gap-3 md:gap-5 relative z-10">
         {roles.map((role: any) => {
           const roleKey = role.titre_role.toUpperCase();
           const config = ROLE_MAP[roleKey] || { icon: Zap, desc: "Accès standard au réseau", tag: "GUEST_NODE" };
@@ -70,60 +67,61 @@ export function RoleSwitcher({ currentRoleId, roles, onRoleChange, loading }: an
               onClick={() => !isActive && handleRoleClick(role.id, role.titre_role)}
               disabled={loading}
               className={cn(
-                "group relative flex flex-col p-6 rounded-[2rem] border-2 transition-all duration-500 text-left overflow-hidden",
+                "group relative flex flex-col p-4 md:p-6 rounded-[1.2rem] md:rounded-[2rem] border-2 transition-all duration-500 text-left overflow-hidden",
                 isActive 
-                  ? "bg-primary/5 border-primary shadow-[0_15px_30px_rgba(0,0,0,0.2)] scale-[1.02]" 
-                  : "bg-background border-border hover:border-primary/40 hover:bg-primary/[0.02] active:scale-98"
+                  ? "bg-primary/5 border-primary shadow-glow-primary scale-[1.01] md:scale-[1.02]" 
+                  : "bg-background border-border hover:border-primary/30 hover:bg-primary/[0.01] active:scale-95"
               )}
             >
-              <div className="flex items-center justify-between mb-5">
-                <div className="flex items-center gap-6">
-                  {/* Icône de rôle stylisée */}
+              <div className="flex items-center justify-between mb-3 md:mb-4">
+                <div className="flex items-center gap-3 md:gap-5 min-w-0">
+                  {/* Icône adaptative */}
                   <div className={cn(
-                    "p-5 rounded-2xl transition-all duration-500 relative border-2",
+                    "p-3 md:p-4 rounded-xl border transition-all duration-500 shrink-0",
                     isActive 
-                      ? "bg-primary border-primary text-primary-foreground shadow-[0_0_20px_rgba(var(--primary),0.4)]" 
-                      : "bg-secondary border-border text-muted-foreground group-hover:text-primary group-hover:border-primary/30"
+                      ? "bg-primary border-primary text-primary-foreground shadow-lg" 
+                      : "bg-secondary border-border text-muted-foreground group-hover:text-primary group-hover:border-primary/20"
                   )}>
-                    <Icon className={cn("w-6 h-6 md:w-7 md:h-7 transition-transform group-hover:scale-110", isActive && "animate-pulse")} />
+                    <Icon size={18} className={cn("md:w-6 md:h-6", isActive && "animate-pulse")} />
                   </div>
 
-                  <div className="flex flex-col">
+                  <div className="flex flex-col min-w-0">
                     <span className={cn(
-                        "font-display italic font-black uppercase tracking-tight text-base md:text-lg transition-colors",
-                        isActive ? "text-primary" : "text-foreground/40 group-hover:text-foreground"
+                        "font-display italic font-black uppercase tracking-tight text-sm md:text-lg truncate",
+                        isActive ? "text-primary" : "text-foreground/50 group-hover:text-foreground"
                     )}>
                         {role.titre_role}
                     </span>
                     <span className={cn(
-                      "font-tech text-[8px] tracking-[0.5em] uppercase mt-1.5 font-black",
-                      isActive ? "text-primary/60" : "text-muted-foreground/30"
+                      "font-tech text-[7px] md:text-[8px] tracking-[0.3em] uppercase mt-0.5 font-black truncate opacity-60",
+                      isActive ? "text-primary" : "text-muted-foreground"
                     )}>
                       {config.tag}
                     </span>
                   </div>
                 </div>
                 
-                {isActive && (
-                   <div className="px-4 py-1.5 bg-success/10 border-2 border-success/20 rounded-full">
-                      <span className="font-tech text-[9px] text-success font-black uppercase tracking-widest">Connecté</span>
+                {isActive ? (
+                   <div className="hidden xs:flex px-3 py-1 bg-success/10 border border-success/30 rounded-full shrink-0">
+                      <span className="font-tech text-[8px] text-success font-black uppercase">ACTIVE</span>
                    </div>
+                ) : (
+                  <ChevronRight size={14} className="text-muted-foreground/20 group-hover:text-primary group-hover:translate-x-1 transition-all" />
                 )}
               </div>
 
-              {/* Description Technique */}
+              {/* Description : Texte plus petit sur mobile */}
               <p className={cn(
-                "font-tech text-[10px] md:text-[11px] leading-relaxed pl-1 transition-colors italic tracking-wide uppercase",
-                isActive ? "text-foreground/80" : "text-muted-foreground/40 group-hover:text-muted-foreground/60"
+                "font-tech text-[8px] md:text-[10px] leading-relaxed pl-1 italic tracking-wide uppercase",
+                isActive ? "text-foreground/80" : "text-muted-foreground/40"
               )}>
                 {config.desc}
               </p>
 
-              {/* Loader (Overlay Cyber) */}
+              {/* Loader Overlay */}
               {loading && !isActive && (
-                 <div className="absolute inset-0 bg-secondary/90 backdrop-blur-sm flex flex-col items-center justify-center animate-in fade-in duration-300 z-50">
-                    <Loader2 className="w-10 h-10 animate-spin text-primary mb-3" />
-                    <span className="font-tech text-[10px] text-primary uppercase tracking-[0.6em] font-black">Sync_In_Progress</span>
+                 <div className="absolute inset-0 bg-background/80 backdrop-blur-[2px] flex items-center justify-center z-50">
+                    <Loader2 className="w-6 h-6 animate-spin text-primary" />
                  </div>
               )}
             </button>
@@ -131,20 +129,18 @@ export function RoleSwitcher({ currentRoleId, roles, onRoleChange, loading }: an
         })}
       </div>
 
-      {/* FOOTER ADVISORY */}
-      <div className="group/info flex items-start gap-5 p-6 bg-primary/5 border-2 border-primary/10 rounded-[1.8rem] relative z-10 transition-all hover:bg-primary/[0.08] hover:border-primary/20">
-        <div className="p-2.5 bg-primary/10 rounded-xl">
-          <Info className="w-4 h-4 text-primary" />
-        </div>
-        <p className="font-tech text-[9px] font-black text-primary/60 uppercase leading-relaxed tracking-[0.15em] italic">
-          Attention : La permutation des privilèges réinitialise vos <span className="text-primary underline decoration-dotted">Smart_Contracts</span> et vos accès prioritaires au Hub de Bunia.
+      {/* FOOTER : Version compacte sur mobile */}
+      <div className="flex items-start gap-3 md:gap-4 p-4 bg-primary/5 border border-primary/10 rounded-[1.2rem] md:rounded-[1.8rem] relative z-10">
+        <Info className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+        <p className="font-tech text-[7px] md:text-[9px] font-bold text-primary/70 uppercase leading-normal tracking-wider italic">
+          <span className="hidden xs:inline">Note de sécurité : </span>La permutation réinitialise vos protocoles de <span className="text-primary underline">Smart_Contracts</span>.
         </p>
       </div>
 
       <style>{`
         @keyframes scan {
           0% { transform: translateX(-100%); opacity: 0; }
-          50% { opacity: 1; }
+          50% { opacity: 0.5; }
           100% { transform: translateX(100%); opacity: 0; }
         }
       `}</style>

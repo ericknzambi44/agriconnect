@@ -19,9 +19,7 @@ export interface Profile {
   avatar_url: string | null;
   role_id: number;
   address_id: string;
-  // --- AJOUT CHAMP AGENCE ---
   id_agence: string | null; 
-  // --------------------------
   role?: Role;
   adresse?: any;
 }
@@ -31,13 +29,13 @@ export const useProfile = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [roles, setRoles] = useState<Role[]>([]);
 
-  // 1. RÉCUPÉRATION DES RÔLES DISPONIBLES
+  // 1. RÉCUPÉRATION DES RÔLES
   const fetchRoles = useCallback(async () => {
     const { data } = await supabase.from('role').select('*');
     if (data) setRoles(data);
   }, []);
 
-  // 2. RÉCUPÉRATION DU PROFIL COMPLET (Intégration id_agence)
+  // 2. RÉCUPÉRATION DU PROFIL (Fetch initial)
   const fetchProfile = useCallback(async () => {
     setIsLoading(true);
     try {
@@ -50,7 +48,7 @@ export const useProfile = () => {
           *,
           role:role_id (id, titre_role),
           adresse:address_id (*)
-        `) // Le '*' ici récupère automatiquement id_agence si la colonne existe en DB
+        `)
         .eq('id', user.id)
         .single();
 
@@ -63,12 +61,47 @@ export const useProfile = () => {
     }
   }, []);
 
+  // --- LOGIQUE DE SYNCHRONISATION TEMPS RÉEL (REALTIME) ---
   useEffect(() => {
     fetchRoles();
     fetchProfile();
-  }, [fetchProfile, fetchRoles]);
 
-  // 3. MISE À JOUR UNIVERSELLE (Inchangée pour ne rien casser)
+    let channel: any;
+
+    // On récupère l'ID utilisateur pour écouter uniquement SES changements
+    const setupSubscription = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      channel = supabase
+        .channel(`profile-changes-${user.id}`)
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'utilisateurs',
+            filter: `id=eq.${user.id}`,
+          },
+          () => {
+            // DÈS QU'UNE MODIF EST DÉTECTÉE (Même si c'est le rôle) :
+            // On relance le fetch pour que TOUTE l'app se synchronise
+            fetchProfile();
+          }
+        )
+        .subscribe();
+    };
+
+    setupSubscription();
+
+    // Nettoyage de la souscription quand on quitte la page
+    return () => {
+      if (channel) supabase.removeChannel(channel);
+    };
+  }, [fetchProfile, fetchRoles]);
+  // -------------------------------------------------------
+
+  // 3. MISE À JOUR UNIVERSELLE
   const updateProfile = async (formData: any) => {
     setIsLoading(true);
     try {
@@ -104,11 +137,11 @@ export const useProfile = () => {
 
       if (userError) throw new Error(`Erreur Identité: ${userError.message}`);
 
-      toast.success("PROFIL SYNCHRONISÉ", {
-        description: "Vos informations ont été mises à jour avec succès."
+      toast.success("SYNCHRONISATION TERMINÉE", {
+        description: "Matrice d'identité mise à jour."
       });
       
-      await fetchProfile();
+      // Pas besoin de fetchProfile() ici car le Realtime va le détecter !
       return { success: true };
     } catch (err: any) {
       toast.error("ÉCHEC DE MISE À JOUR", { description: err.message });
@@ -129,13 +162,9 @@ export const useProfile = () => {
 
       if (error) throw error;
 
-      toast.success("RÔLE MODIFIÉ", {
-        description: "Votre interface va s'adapter à votre nouveau rôle."
-      });
-      
-      await fetchProfile();
+      // Note: On ne fait pas fetchProfile() ici non plus, le Realtime s'en occupe
     } catch (err: any) {
-      toast.error("ERREUR DE RÔLE", { description: err.message });
+      toast.error("ERREUR DE PROTOCOLE", { description: err.message });
     } finally {
       setIsLoading(false);
     }
