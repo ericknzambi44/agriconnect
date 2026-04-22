@@ -33,12 +33,12 @@ L'application utilise des technologies modernes pour garantir performance et ré
 
 | Ingénieur | Rôle & Responsabilités | Profil & Expertises |
 | :--- | :--- | :--- |
-| **Ir Erick Nzambi** | **Lead Full-Stack**<br>Développement React/TS et connexion Supabase. | `Full-stack`, `Clean Arch/DDD`, `Python/django`, `Rust`, `React`  |
+| **Ir Erick Nzambi** | **Lead Full-Stack**<br>Développement React/TS et connexion Supabase. | `Full-stack`, `Clean Arch/DDD`, `Python/django/rest-framework`, `Rust`, `React/ts/shadcn-ui` , `DevOps`  |
 | **Ir Asianzu Azima** | **DB Lead & Mobile Dev**<br>Conception de la base de données et interfaces mobiles. | `Flutter`, `SQL`, `Web` |
 | **Ir Sifa Fwacan** | **Web Dev & Designer DB**<br>Co-conception de la base de données et intégration frontend. | `JavaScript`, `SQL` |
 | **Ir Aimé Muziabaku** | **Analyste & Web Dev**<br>Collecte des besoins et développement backend. | `PHP`, `Analyse de données` |
 | **Ir Faya Gracian** | **UI/UX & Mobile Contributor**<br>Garant du Responsive Design et développement mobile. | `Flutter`, `Design Réactif` |
-| **Ir Benjamin Kahongya** | **Backend Engineer & Modélisateur**<br>Modélisation technique et Diagramme de Classe. | `Java`, `Spring`, `UML` |
+| **Ir Benjamin Kahongya** | **Backend Engineer & Modélisateur**<br>Modélisation technique et Diagramme de Classe. | `Java`, `Spring`, `UML`, ` DevOps`, `Analiste métier` |
 
 > **Travail Collectif :** L'ensemble de l'équipe a participé activement à la conception des diagrammes de Cas d'Utilisation (Use Case), de Séquence et à la rédaction de la documentation technique.
 
