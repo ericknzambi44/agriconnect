@@ -2,27 +2,7 @@
 import { supabase } from '@/supabase';
 import { useState, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
-
-export interface Role {
-  id: number;
-  titre_role: string;
-}
-
-export interface Profile {
-  id: string;
-  email: string;
-  nom: string;
-  post_nom: string;
-  prenom: string;
-  numero_tel: string;
-  sexe: string;
-  avatar_url: string | null;
-  role_id: number;
-  address_id: string;
-  id_agence: string | null; 
-  role?: Role;
-  adresse?: any;
-}
+import { Profile, Role } from '../types';
 
 export const useProfile = () => {
   const [isLoading, setIsLoading] = useState(false);

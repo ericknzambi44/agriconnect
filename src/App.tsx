@@ -15,7 +15,7 @@ import SubscriptionView from './features/abonnenent/view/SubscriptionView';
 import { useAuthSession } from '@/features/auth/hooks/use-auth-session';
 import MarketView from './features/marcher/view/MarketView';
 import { AgencyTerminalView } from './features/transport/view/AgencyTerminalView';
-
+import { NotificationCenterView } from './features/notification/components/NotificationCenterView';
 
 
 export default function App() {
@@ -25,7 +25,7 @@ export default function App() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-[#050505] flex items-center justify-center">
-        <div className="text-emerald-500 animate-pulse font-black uppercase italic tracking-widest text-[10px]">
+        <div className="text-primary animate-pulse font-black uppercase italic tracking-widest text-[10px]">
           Initialisation Agriconnect...
         </div>
       </div>
@@ -39,11 +39,15 @@ export default function App() {
         <Route path="/" element={<Navigate to="/login" replace />} />
         <Route path="/login" element={<LoginView />} />
         <Route path="/signup" element={<SignUpView />} />
+        
 
         {/* --- ZONE PRIVÉE (DASHBOARD) --- */}
         <Route path="/dashboard" element={<DashboardLayout />}>
           <Route index element={<Overview />} />
           <Route path="profile" element={<ProfileView />} />
+          
+          {/* ROUTE NOTIFICATIONS AJOUTÉE ICI */}
+          <Route path="notifications" element={<NotificationCenterView />} />
           
           <Route path="subscription" element={<SubscriptionView userId={profile?.id || ''} />} />
        

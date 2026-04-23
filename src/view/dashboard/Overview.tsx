@@ -53,7 +53,7 @@ export default function DashboardOverview() {
           </div>
           
           <h1 className="text-6xl md:text-7xl font-display italic tracking-tighter leading-none text-foreground uppercase">
-            Vue <span className="text-primary">d'ensemble</span>
+            Dash<span className="text-primary">board</span>
           </h1>
           
           <p className="font-tech text-muted-foreground/80 text-[10px] md:text-[11px] uppercase tracking-[0.2em] flex items-center gap-2">
@@ -127,9 +127,7 @@ export default function DashboardOverview() {
                 Agri_Connect<br/><span className="text-primary/80">Visualiseur</span>
               </h2>
 
-              <div className="mt-10 px-8 py-3 border-2 border-primary bg-primary text-primary-foreground font-tech text-[11px] font-black uppercase tracking-[0.5em]">
-                Analyse_Faisceau_OK
-              </div>
+              
            </div>
         </Card>
 

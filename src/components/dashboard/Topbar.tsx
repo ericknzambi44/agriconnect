@@ -3,6 +3,9 @@ import { Search, Bell, Command, Menu, ShieldCheck, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
+import { useNotifications } from '@/features/notification/hook/useNotifications';
+// Import du hook pour les notifications
+
 
 interface TopbarProps {
   user: {
@@ -16,6 +19,9 @@ interface TopbarProps {
 
 export function Topbar({ user, onMenuClick }: TopbarProps) {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  // Consommation du hook pour le badge dynamique
+  const { unreadCount } = useNotifications();
+  
   const initials = `${user.prenom[0]}${user.nom[0]}`.toUpperCase();
 
   return (
@@ -68,9 +74,26 @@ export function Topbar({ user, onMenuClick }: TopbarProps) {
       {/* 2. SECTION DROITE : ACTIONS ET PROFIL */}
       <div className="flex items-center gap-2 sm:gap-6 flex-shrink-0">
         
+        {/* BOUTON NOTIFICATION DYNAMIQUE */}
         <button className="relative p-2.5 bg-background border-2 border-border rounded-xl text-muted-foreground hover:text-primary transition-all group">
-          <Bell className="w-5 h-5 group-hover:rotate-12" />
-          <span className="absolute top-2 right-2 w-2 h-2 bg-success rounded-full border-2 border-secondary animate-pulse" />
+          <Bell className="w-5 h-5 group-hover:rotate-12 transition-transform" />
+          
+          {unreadCount > 0 && (
+            <>
+              {/* Badge avec nombre +X */}
+              <span className={cn(
+                "absolute -top-1 -right-1 z-10",
+                "min-w-[1.2rem] h-4.5 px-1",
+                "bg-primary text-white font-tech font-black text-[9px]",
+                "flex items-center justify-center rounded-lg shadow-lg shadow-primary/20",
+                "border-2 border-secondary animate-in zoom-in duration-300"
+              )}>
+                {unreadCount > 9 ? "+9" : `+${unreadCount}`}
+              </span>
+              {/* Effet pulse derrière le badge */}
+              <span className="absolute -top-1 -right-1 w-4.5 h-4.5 bg-primary/40 rounded-lg animate-ping pointer-events-none" />
+            </>
+          )}
         </button>
 
         <div className="flex items-center gap-2 sm:gap-4 pl-2 sm:pl-6 border-l-2 border-border h-10">

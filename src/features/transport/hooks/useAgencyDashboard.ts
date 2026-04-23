@@ -16,7 +16,6 @@ export function useAgencyDashboard() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.user) return;
 
-      // 1. Récupérer le lien Agent -> Agence
       const { data: linkData } = await supabase
         .from('agents_agence')
         .select('agence_id')
@@ -24,7 +23,6 @@ export function useAgencyDashboard() {
         .maybeSingle();
 
       if (linkData) {
-        // 2. Récupérer les détails de l'agence
         const { data: agenceDetails } = await supabase
           .from('agence')
           .select('*')
@@ -38,7 +36,6 @@ export function useAgencyDashboard() {
             ville_agence: agenceDetails.ville_territoire 
           });
 
-          // 3. Stats basées sur les expéditions liées à cette agence de retrait
           const { data: myExps } = await supabase
             .from('expedition')
             .select('statut_expedition')
@@ -46,7 +43,6 @@ export function useAgencyDashboard() {
 
           if (myExps) {
             setMyStats({
-              // EN_TRANSIT = Colis en route vers cette agence ou déjà déposés
               toDeliver: myExps.filter(e => e.statut_expedition === 'EN_TRANSIT').length,
               completed: myExps.filter(e => e.statut_expedition === 'LIVRE').length,
             });
@@ -54,8 +50,7 @@ export function useAgencyDashboard() {
         }
       }
 
-      // 4. OPPORTUNITÉS (Colis en attente de dépôt partout dans le réseau)
-      const { data: globalOpps, error: oppError } = await supabase
+      const { data: globalOpps } = await supabase
         .from('expedition')
         .select(`
           id,
@@ -65,24 +60,17 @@ export function useAgencyDashboard() {
           commande:commande_id (
             prix_total_commande,
             quantite_commandee,
-            annonce:annonce_id (
-              produit:prod_id (nom_prod)
-            )
+            annonce:annonce_id (produit:prod_id (nom_prod))
           ),
           vendeur:utilisateurs!vendeur_id (nom, prenom, numero_tel)
         `)
         .eq('statut_expedition', 'A_DEPOSER')
         .order('created_at', { ascending: false });
 
-      if (oppError) {
-        console.error("[FETCH OPPS] Erreur SQL:", oppError.message);
-        setOpportunities([]);
-      } else {
-        setOpportunities(globalOpps || []);
-      }
+      setOpportunities(globalOpps || []);
 
     } catch (err: any) {
-      console.error("[FETCH CONTEXT] Global Error:", err);
+      console.error("[FETCH CONTEXT] Erreur silencieuse");
     } finally {
       setLoading(false);
     }
@@ -90,7 +78,7 @@ export function useAgencyDashboard() {
 
   useEffect(() => { fetchAgencyContext(); }, [fetchAgencyContext]);
 
-  // --- SCAN DE CODE ---
+  // --- SCAN DE CODE (AVEC VÉRIFICATION D'USAGE) ---
   const processCode = async (code: string) => {
     const cleanCode = code?.trim().toUpperCase();
     if (!cleanCode || cleanCode.length < 6) return null;
@@ -100,18 +88,12 @@ export function useAgencyDashboard() {
       const { data, error } = await supabase
         .from('expedition')
         .select(`
-          id,
-          code_depot,
-          code_retrait,
-          statut_expedition,
-          vendeur_id,
-          acheteur_id,
-          commande_id,
-          id_agence_retrait,
+          id, code_depot, code_retrait, statut_expedition,
+          code_depot_used_at, code_retrait_used_at,
+          vendeur_id, acheteur_id, commande_id, id_agence_retrait,
           commande:commande_id (
             prix_total_commande,
             quantite_commandee,
-            destination_ville,
             annonce:annonce_id (produit:prod_id (nom_prod))
           ),
           vendeur:utilisateurs!vendeur_id (nom, prenom, numero_tel),
@@ -121,12 +103,29 @@ export function useAgencyDashboard() {
         .maybeSingle();
 
       if (error || !data) {
-        toast.error("Code invalide ou introuvable");
+        toast.error("Code inconnu ou expédition introuvable");
         return null;
       }
 
       const isDepot = data.code_depot === cleanCode;
       const isRetrait = data.code_retrait === cleanCode;
+
+      // LOGIQUE ANTI-DOUBLE : Vérification des timestamps
+      if (isDepot && data.code_depot_used_at) {
+        toast.error(`Code de dépôt déjà utilisé le ${new Date(data.code_depot_used_at).toLocaleString()}`);
+        return null;
+      }
+
+      if (isRetrait && data.code_retrait_used_at) {
+        toast.error(`Code de retrait déjà utilisé le ${new Date(data.code_retrait_used_at).toLocaleString()}`);
+        return null;
+      }
+
+      // Protection Agence de retrait
+      if (isRetrait && data.id_agence_retrait !== agency?.id) {
+        toast.error("Attention : ce colis est destiné à une autre agence.");
+        return null;
+      }
 
       return { 
         ...data, 
@@ -134,50 +133,53 @@ export function useAgencyDashboard() {
       };
 
     } catch (err) {
-      console.error("[PROCESS CODE] Exception:", err);
       return null;
     } finally {
       setProcessing(false);
     }
   };
 
-  // --- CONFIRMATION DE L'ACTION ---
+  // --- CONFIRMATION (MISE À JOUR DES TIMESTAMPS) ---
   const confirmAction = async (expId: string, type: 'DEPOT' | 'RETRAIT') => {
     if (!agency?.id) {
-      toast.error("Contexte agence manquant");
+      toast.error("Erreur de session agence");
       return false;
     }
     setProcessing(true);
     
     try {
-      // Pour le DEPOT, on passe en EN_TRANSIT (le trigger SQL créera le code_retrait)
-      // Pour le RETRAIT, on passe en LIVRE
+      const now = new Date().toISOString();
       const updatePayload: any = { 
-        statut_expedition: type === 'DEPOT' ? 'EN_TRANSIT' : 'LIVRE' 
+        statut_expedition: type === 'DEPOT' ? 'EN_TRANSIT' : 'LIVRE',
+        // On marque l'usage immédiat du code concerné
+        [type === 'DEPOT' ? 'code_depot_used_at' : 'code_retrait_used_at']: now
       };
 
-      const { data, error } = await supabase
-        .from('expedition')
-        .update(updatePayload)
-        .eq('id', expId)
-        .select(); 
-
-      if (error) throw error;
-
-      if (!data || data.length === 0) {
-        toast.error("Mise à jour échouée");
-        return false;
+      if (type === 'DEPOT') {
+        updatePayload.id_agence_depot = agency.id; 
       }
 
-      toast.success(type === 'DEPOT' ? "Colis en transit ! 🚀" : "Colis livré ! ✅");
+      const { error } = await supabase
+        .from('expedition')
+        .update(updatePayload)
+        .eq('id', expId);
+
+      if (error) {
+        if (error.code === 'P0001') {
+          toast.error("Action refusée : le flux est déjà verrouillé.");
+        } else {
+          toast.error("Erreur de synchronisation.");
+        }
+        throw error;
+      }
+
+      toast.success(type === 'DEPOT' ? "Réception validée ! 🚀" : "Livraison terminée ! ✅");
       
-      // Rafraîchissement global des stats et opportunités
       await fetchAgencyContext();
       return true;
 
     } catch (err: any) {
-      console.error("[CONFIRM_ACTION] Erreur:", err);
-      toast.error("Échec de la validation");
+      console.error("[CONFIRM_ACTION] Erreur technique");
       return false;
     } finally {
       setProcessing(false);

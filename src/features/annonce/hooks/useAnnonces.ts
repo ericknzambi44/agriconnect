@@ -14,7 +14,7 @@ export function useAnnonces() {
   }) => {
     setLoading(true);
     
-    console.log("🚀 [PiedZyne_Engine] Initialisation publication annonce...");
+    console.log("🚀 Initialisation publication annonce...");
 
     try {
       const { data: { user }, error: authError } = await supabase.auth.getUser();
