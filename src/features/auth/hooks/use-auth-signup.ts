@@ -1,11 +1,9 @@
 // src/features/auth/hooks/use-auth-signup.ts
 import { supabase } from '@/supabase';
 import { useState, useEffect, useCallback } from 'react';
+import { Role } from '../types';
 
-export interface Role {
-  id: number;
-  titre_role: string;
-}
+
 
 export const useAuthSignUp = () => {
   const [isLoading, setIsLoading] = useState(false);

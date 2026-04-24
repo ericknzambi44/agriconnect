@@ -1,25 +1,9 @@
 // src/features/auth/hooks/use-auth-session.ts
 import { useEffect, useState } from 'react';
 import { supabase } from '@/supabase';
+import { SupabaseUserResponse, UserProfile } from '../types';
 
-export interface UserProfile {
-  id: string;
-  nom: string;
-  prenom: string;
-  role: 'vendeur' | 'acheteur' | 'transporteur';
-  avatar_url?: string | null;
-  id_agence?: string | null; 
-}
 
-interface SupabaseUserResponse {
-  id: string;
-  nom: string;
-  prenom: string;
-  avatar_url: string | null;
-  role: { titre_role: string } | { titre_role: string }[] | null;
-  // On gère les deux cas de retour possibles de Supabase
-  agents_agence: any; 
-}
 
 export const useAuthSession = () => {
   const [profile, setProfile] = useState<UserProfile | null>(null);

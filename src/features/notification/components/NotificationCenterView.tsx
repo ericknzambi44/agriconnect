@@ -64,7 +64,7 @@ export function NotificationCenterView() {
 
         {/* FOOTER DISCRET */}
         <div className="px-8 py-4 bg-background/40 border-t border-border/40 flex justify-between items-center">
-          <span className="font-tech text-[7px] text-muted-foreground/30 uppercase tracking-[0.4em]">Protocol_Nexus_v1.2</span>
+          <span className="font-tech text-[7px] text-muted-foreground/30 uppercase tracking-[0.4em]">Protocol_agriconnect_v1.0</span>
           <div className="flex gap-1">
              <div className="w-1 h-1 bg-primary rounded-full animate-pulse" />
              <div className="w-1 h-1 bg-primary/20 rounded-full" />
@@ -154,7 +154,7 @@ function EmptyState() {
     <div className="py-32 flex flex-col items-center justify-center text-center opacity-30">
       <BellOff size={48} className="mb-4 text-muted-foreground" />
       <h3 className="font-display text-2xl uppercase italic">Silence_Radio</h3>
-      <p className="font-tech text-[9px] uppercase tracking-[0.3em] mt-2">Flux de données vide</p>
+      <p className="font-tech text-[9px] uppercase tracking-[0.3em] mt-2">Vous avez aucune notification</p>
     </div>
   );
 }
