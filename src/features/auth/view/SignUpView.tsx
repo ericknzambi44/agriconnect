@@ -1,3 +1,4 @@
+// src/features/auth/views/SignUpView.tsx
 import React, { useState } from 'react';
 import { useAuthSignUp } from '@/features/auth/hooks/use-auth-signup';
 import { Button } from "@/components/ui/button";
@@ -7,8 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Loader2, MapPin, User, CheckCircle2, ArrowRight, ArrowLeft, Phone, Mail } from "lucide-react";
-import { useNavigate } from 'react-router-dom';
+import { Loader2, CheckCircle2, ArrowRight, ArrowLeft, Phone, Mail, ShieldCheck, MapPin, Activity } from "lucide-react";
+import { useNavigate, Link } from 'react-router-dom';
 
 export default function SignUpView() {
   const { signUp, isLoading, error: serverError, roles } = useAuthSignUp();
@@ -19,9 +20,9 @@ export default function SignUpView() {
   
   const [formData, setFormData] = useState({
     email: '', 
-    numero_tel: '', // Ajout du numéro de téléphone
+    numero_tel: '', 
     mot_de_pass: '', 
-    confirm_password: '', // Ajout de la confirmation du mot de passe
+    confirm_password: '', 
     nom: '', post_nom: '', prenom: '',
     sexe: '', role_id: '', avatar_url: '',
     pays: 'RDC', province: '', ville: '', commune: '', quartier: '', avenue: '', numero: ''
@@ -29,16 +30,16 @@ export default function SignUpView() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
-    setLocalError(null); // On efface l'erreur locale quand l'utilisateur tape
+    setLocalError(null);
   };
 
   const validateIdentityStep = () => {
     if (formData.mot_de_pass !== formData.confirm_password) {
-      setLocalError("Les mots de passe ne correspondent pas.");
+      setLocalError("CONFLIT : LES CLÉS DE SÉCURITÉ NE CORRESPONDENT PAS.");
       return false;
     }
     if (!formData.email && !formData.numero_tel) {
-      setLocalError("Veuillez fournir un Email OU un Numéro de téléphone.");
+      setLocalError("REQUIS : FOURNIR EMAIL OU TÉLÉPHONE.");
       return false;
     }
     setLocalError(null);
@@ -52,40 +53,39 @@ export default function SignUpView() {
   };
 
   const handleSubmit = async () => {
-    // Petit check final avant l'envoi
     if (!validateIdentityStep()) {
       setStep("identity");
       return;
     }
-
     const result = await signUp(formData);
     if (result?.success) {
       setIsSuccess(true);
     }
   };
 
-  // On combine l'erreur du serveur (hook) et l'erreur locale (validation front)
   const displayError = localError || serverError;
 
+  // --- ÉTAT SUCCÈS ---
   if (isSuccess) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4 bg-background">
-        <Card className="w-full max-w-md bg-glass-agri/50 border-none shadow-[0_0_50px_rgba(0,0,0,0.8)] overflow-hidden animate-in fade-in zoom-in-95 duration-500">
-          <CardContent className="pt-12 pb-12 text-center space-y-6">
+      <div className="min-h-screen w-full bg-background flex items-center justify-center p-6">
+        <Card className="w-full max-w-[480px] bg-glass border-2 border-primary/30 rounded-[3rem] shadow-2xl animate-in zoom-in-95 duration-500">
+          <CardContent className="pt-16 pb-16 text-center space-y-8 px-10">
             <div className="flex justify-center">
-              <div className="rounded-full bg-primary/20 p-6 shadow-[0_0_50px_rgba(34,197,94,0.3)] animate-bounce">
-                <CheckCircle2 className="w-20 h-20 text-primary" strokeWidth={3} />
+              <div className="rounded-[2.5rem] bg-primary/10 p-8 border-2 border-primary/40 shadow-glow-primary animate-bounce">
+                <CheckCircle2 className="w-16 h-16 text-primary" strokeWidth={2.5} />
               </div>
             </div>
-            <h2 className="text-3xl font-black text-glow-green uppercase tracking-tighter italic">
-              Compte Créé !
-            </h2>
-            <p className="text-foreground/80 font-bold">
-              Bienvenue dans l'écosystème <span className="text-primary">AgriConnect</span>. 
-              Votre aventure commence maintenant.
-            </p>
-            <Button className="btn-elite w-full shadow-lg" onClick={() => navigate('/login')}>
-              Accéder à la connexion
+            <div>
+              <h2 className="text-4xl font-display text-glow-primary uppercase italic tracking-tighter">
+                Matricule_OK
+              </h2>
+              <p className="font-tech text-[10px] text-muted-foreground uppercase tracking-[0.3em] mt-4 leading-relaxed">
+                Votre profil a été injecté avec succès dans le réseau <span className="text-primary font-black">AgriConnect</span>.
+              </p>
+            </div>
+            <Button className="btn-elite w-full h-16 shadow-xl" onClick={() => navigate('/login')}>
+              Accéder au Terminal
             </Button>
           </CardContent>
         </Card>
@@ -93,33 +93,45 @@ export default function SignUpView() {
     );
   }
 
-  if (roles.length === 0 && isLoading) {
-    return <SignUpSkeleton />;
-  }
+  if (roles.length === 0 && isLoading) return <SignUpSkeleton />;
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-background selection:bg-primary selection:text-white">
-      <Card className="w-full max-w-3xl bg-glass-agri border-none shadow-[0_0_50px_rgba(0,0,0,0.5)] overflow-hidden">
-        <div className="h-1.5 w-full bg-input/30">
+    // Centrage parfait sur l'écran
+    <div className="min-h-screen w-full bg-background flex items-center justify-center p-6 md:p-12 relative overflow-hidden">
+      
+      {/* GLOW DE FOND */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/5 blur-[140px] rounded-full animate-pulse" />
+      </div>
+
+      <Card className="w-full max-w-[650px] bg-glass border-2 border-border/50 rounded-[2.5rem] shadow-[0_50px_100px_-20px_rgba(0,0,0,1)] relative z-10 overflow-hidden">
+        
+        {/* PROGRESS BAR ÉLITE */}
+        <div className="h-1.5 w-full bg-secondary">
           <div 
-            className="h-full bg-gradient-to-r from-primary via-accent to-primary shadow-[0_0_15px_var(--color-primary)] transition-all duration-500"
+            className="h-full bg-gradient-to-r from-primary via-accent to-primary shadow-glow-primary transition-all duration-700 ease-out"
             style={{ width: step === "identity" ? "50%" : "100%" }}
           ></div>
         </div>
         
-        <CardHeader className="text-center pt-10">
-          <CardTitle className="text-5xl font-black text-glow-green tracking-tighter uppercase italic">
-            Agri<span className="text-accent text-glow-yellow">Connect</span>
+        <CardHeader className="text-center pt-10 pb-4">
+          <div className="flex justify-center mb-4">
+             <div className="w-14 h-14 rounded-2xl bg-secondary border border-primary/20 flex items-center justify-center shadow-inner">
+                <ShieldCheck className="w-8 h-8 text-primary" />
+             </div>
+          </div>
+          <CardTitle className="text-4xl md:text-5xl font-display text-glow-primary tracking-tighter italic">
+            AGRI<span className="text-accent">CONNECT</span>
           </CardTitle>
-          <CardDescription className="text-foreground/70 font-black uppercase tracking-[0.3em] text-[10px] mt-2">
-            Technologie • Agriculture • Performance
+          <CardDescription className="font-tech text-[9px] text-muted-foreground/40 uppercase tracking-[0.4em] mt-3">
+            Nouveau_Protocole_Enregistrement
           </CardDescription>
         </CardHeader>
 
-        <CardContent className="px-8 pb-10">
+        <CardContent className="px-8 md:px-12 pb-12">
           {displayError && (
-            <div className="mb-6 p-4 bg-destructive/20 border-l-4 border-destructive text-white rounded-r-lg text-sm font-bold animate-in fade-in slide-in-from-top-2">
-              <span className="opacity-70">ERREUR:</span> {displayError}
+            <div className="mb-8 p-4 bg-destructive/10 border-l-2 border-destructive text-destructive font-tech text-[10px] uppercase tracking-widest animate-in slide-in-from-top-2">
+              <span className="opacity-50">Log_Erreur :</span> {displayError}
             </div>
           )}
 
@@ -130,59 +142,52 @@ export default function SignUpView() {
             </TabsList>
 
             {/* --- ÉTAPE 1 : IDENTITÉ --- */}
-            <TabsContent value="identity" className="space-y-6 animate-in fade-in slide-in-from-left-6 duration-300">
+            <TabsContent value="identity" className="space-y-6 animate-in fade-in slide-in-from-left-6 duration-500">
               
-              {/* Ligne 1 : Nom / Prénom */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <Label className="text-xs font-black uppercase tracking-widest text-primary/80">Nom de famille</Label>
-                  <Input name="nom" placeholder="NZAMBI" className="h-12 bg-input/50 border-none font-bold placeholder:text-foreground/20 focus:border-active-green" onChange={handleChange} />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div className="space-y-2.5">
+                  <Label className="font-tech text-[9px] text-primary/60 uppercase tracking-[0.2em] ml-2">Nom_Famille</Label>
+                  <Input name="nom" placeholder="NOM" className="h-14 bg-secondary/50 border-border/50 rounded-2xl font-bold text-white placeholder:text-white/40 focus:border-primary/50 transition-all uppercase px-6" onChange={handleChange} />
                 </div>
-                <div className="space-y-2">
-                  <Label className="text-xs font-black uppercase tracking-widest text-primary/80">Prénom</Label>
-                  <Input name="prenom" placeholder="ERICK" className="h-12 bg-input/50 border-none font-bold placeholder:text-foreground/20" onChange={handleChange} />
-                </div>
-              </div>
-
-              {/* Ligne 2 : Contact (Email / Tél) */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <Label className="text-xs font-black uppercase tracking-widest text-primary/80 flex items-center gap-2">
-                    <Mail className="w-3 h-3" /> Email 
-                  </Label>
-                  <Input name="email" type="email" placeholder="erick@agri.cd" className="h-12 bg-input/50 border-none font-bold placeholder:text-foreground/20" onChange={handleChange} />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-xs font-black uppercase tracking-widest text-primary/80 flex items-center gap-2">
-                    <Phone className="w-3 h-3" /> Téléphone <span className="text-foreground/40 lowercase text-[10px]">(Optionnel si Email)</span>
-                  </Label>
-                  <Input name="numero_tel" type="tel" placeholder="+243..." className="h-12 bg-input/50 border-none font-bold placeholder:text-foreground/20" onChange={handleChange} />
+                <div className="space-y-2.5">
+                  <Label className="font-tech text-[9px] text-primary/60 uppercase tracking-[0.2em] ml-2">Prénom_Alpha</Label>
+                  <Input name="prenom" placeholder="PRÉNOM" className="h-14 bg-secondary/50 border-border/50 rounded-2xl font-bold text-white placeholder:text-white/40 focus:border-primary/50 transition-all uppercase px-6" onChange={handleChange} />
                 </div>
               </div>
 
-              {/* Ligne 3 : Sexe / Rôle */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <Label className="text-xs font-black uppercase tracking-widest text-primary/80">Sexe</Label>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div className="space-y-2.5">
+                  <Label className="font-tech text-[9px] text-primary/60 uppercase tracking-[0.2em] ml-2 flex items-center gap-2"><Mail size={10}/> Email_Data</Label>
+                  <Input name="email" type="email" placeholder="ERIK@AGRI.CD" className="h-14 bg-secondary/50 border-border/50 rounded-2xl font-bold text-white placeholder:text-white/40 focus:border-primary/50 px-6" onChange={handleChange} />
+                </div>
+                <div className="space-y-2.5">
+                  <Label className="font-tech text-[9px] text-primary/60 uppercase tracking-[0.2em] ml-2 flex items-center gap-2"><Phone size={10}/> Téléphone_Com</Label>
+                  <Input name="numero_tel" type="tel" placeholder="+243..." className="h-14 bg-secondary/50 border-border/50 rounded-2xl font-bold text-white placeholder:text-white/40 focus:border-primary/50 px-6" onChange={handleChange} />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div className="space-y-2.5">
+                  <Label className="font-tech text-[9px] text-primary/60 uppercase tracking-[0.2em] ml-2">Genre_Sexe</Label>
                   <Select onValueChange={(v) => setFormData({...formData, sexe: v})}>
-                    <SelectTrigger className="h-12 bg-input/50 border-none font-bold">
+                    <SelectTrigger className="h-14 bg-secondary/50 border-border/50 rounded-2xl font-bold text-white uppercase px-6">
                       <SelectValue placeholder="SÉLECTIONNER" />
                     </SelectTrigger>
-                    <SelectContent className="bg-card border-primary/20">
-                      <SelectItem value="M" className="font-bold">MASCULIN</SelectItem>
-                      <SelectItem value="F" className="font-bold">FÉMININ</SelectItem>
+                    <SelectContent className="bg-secondary border-border shadow-2xl">
+                      <SelectItem value="M" className="font-tech text-[10px]">MASCULIN</SelectItem>
+                      <SelectItem value="F" className="font-tech text-[10px]">FÉMININ</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="space-y-2">
-                  <Label className="text-xs font-black uppercase tracking-widest text-primary/80">Rôle Acteur</Label>
+                <div className="space-y-2.5">
+                  <Label className="font-tech text-[9px] text-primary/60 uppercase tracking-[0.2em] ml-2">Fonction_Rôle</Label>
                   <Select onValueChange={(v) => setFormData({...formData, role_id: v})}>
-                    <SelectTrigger className="h-12 bg-input/50 border-primary/30 font-bold text-accent shadow-[0_0_10px_rgba(255,193,7,0.1)]">
-                      <SelectValue placeholder="VOTRE FONCTION" />
+                    <SelectTrigger className="h-14 bg-secondary/50 border-border/50 rounded-2xl font-bold text-accent shadow-sm px-6 uppercase">
+                      <SelectValue placeholder="RÔLE SYSTÈME" />
                     </SelectTrigger>
-                    <SelectContent className="bg-card border-primary/20">
+                    <SelectContent className="bg-secondary border-border">
                       {roles.map((role) => (
-                        <SelectItem key={role.id} value={role.id.toString()} className="font-bold uppercase tracking-tight">
+                        <SelectItem key={role.id} value={role.id.toString()} className="font-tech text-[10px] uppercase">
                           {role.titre_role}
                         </SelectItem>
                       ))}
@@ -191,74 +196,78 @@ export default function SignUpView() {
                 </div>
               </div>
 
-              {/* Ligne 4 : Sécurité */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 bg-black/20 rounded-xl border border-white/5">
-                <div className="space-y-2">
-                  <Label className="text-xs font-black uppercase tracking-widest text-primary/80">Mot de passe</Label>
-                  <Input name="mot_de_pass" type="password" placeholder="••••••••••••" className="h-12 bg-input/50 border-none font-bold" onChange={handleChange} />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5 p-5 bg-background/50 rounded-3xl border border-white/5">
+                <div className="space-y-2.5">
+                  <Label className="font-tech text-[9px] text-primary/60 uppercase tracking-[0.2em] ml-2">Clé_Accès</Label>
+                  <Input name="mot_de_pass" type="password" placeholder="••••••••••••" className="h-14 bg-secondary/50 border-border/50 rounded-2xl font-bold text-white placeholder:text-white/40 focus:border-primary/50 px-6" onChange={handleChange} />
                 </div>
-                <div className="space-y-2">
-                  <Label className="text-xs font-black uppercase tracking-widest text-primary/80">Confirmer Mot de passe</Label>
-                  <Input name="confirm_password" type="password" placeholder="••••••••••••" className="h-12 bg-input/50 border-none font-bold" onChange={handleChange} />
+                <div className="space-y-2.5">
+                  <Label className="font-tech text-[9px] text-primary/60 uppercase tracking-[0.2em] ml-2">Confirmation</Label>
+                  <Input name="confirm_password" type="password" placeholder="••••••••••••" className="h-14 bg-secondary/50 border-border/50 rounded-2xl font-bold text-white placeholder:text-white/40 focus:border-primary/50 px-6" onChange={handleChange} />
                 </div>
               </div>
 
-              <Button onClick={handleNext} className="w-full btn-elite h-14 group shadow-lg shadow-primary/20 mt-4">
-                <span className="drop-shadow-[0_2px_2px_rgba(0,0,0,0.5)]">Continuer vers Localisation</span>
+              <Button onClick={handleNext} className="btn-elite w-full h-16 mt-4">
+                Étape_Suivante: Localisation
                 <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </Button>
             </TabsContent>
 
-            {/* --- ÉTAPE 2 : ADRESSE (Reste identique, juste la taille max du card ajustée) --- */}
-            <TabsContent value="address" className="space-y-6 animate-in fade-in slide-in-from-right-6 duration-300">
-              <div className="grid grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <Label className="text-xs font-black uppercase tracking-widest text-primary/80">Province</Label>
-                  <Input name="province" placeholder="NORD-KIVU" className="h-12 bg-input/50 border-none font-bold" onChange={handleChange} />
+            {/* --- ÉTAPE 2 : ADRESSE --- */}
+            <TabsContent value="address" className="space-y-6 animate-in fade-in slide-in-from-right-6 duration-500">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div className="space-y-2.5">
+                  <Label className="font-tech text-[9px] text-primary/60 uppercase tracking-[0.2em] ml-2">Province_Region</Label>
+                  <Input name="province" placeholder="NORD-KIVU" className="h-14 bg-secondary/50 border-border/50 rounded-2xl font-bold text-white placeholder:text-white/40 focus:border-primary/50 px-6" onChange={handleChange} />
                 </div>
-                <div className="space-y-2">
-                  <Label className="text-xs font-black uppercase tracking-widest text-primary/80">Ville / Territoire</Label>
-                  <Input name="ville" placeholder="GOMA" className="h-12 bg-input/50 border-none font-bold" onChange={handleChange} />
+                <div className="space-y-2.5">
+                  <Label className="font-tech text-[9px] text-primary/60 uppercase tracking-[0.2em] ml-2">Ville_Territoire</Label>
+                  <Input name="ville" placeholder="BUNIA" className="h-14 bg-secondary/50 border-border/50 rounded-2xl font-bold text-white placeholder:text-white/40 focus:border-primary/50 px-6" onChange={handleChange} />
                 </div>
               </div>
               
-              <div className="grid grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <Label className="text-xs font-black uppercase tracking-widest text-primary/80">Commune</Label>
-                  <Input name="commune" placeholder="GOMA" className="h-12 bg-input/50 border-none font-bold" onChange={handleChange} />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div className="space-y-2.5">
+                  <Label className="font-tech text-[9px] text-primary/60 uppercase tracking-[0.2em] ml-2">Commune</Label>
+                  <Input name="commune" placeholder="COMMUNE" className="h-14 bg-secondary/50 border-border/50 rounded-2xl font-bold text-white placeholder:text-white/40 focus:border-primary/50 px-6" onChange={handleChange} />
                 </div>
-                <div className="space-y-2">
-                  <Label className="text-xs font-black uppercase tracking-widest text-primary/80">Quartier</Label>
-                  <Input name="quartier" placeholder="KYESHERO" className="h-12 bg-input/50 border-none font-bold" onChange={handleChange} />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-3 gap-6">
-                <div className="col-span-2 space-y-2">
-                  <Label className="text-xs font-black uppercase tracking-widest text-primary/80">Avenue</Label>
-                  <Input name="avenue" placeholder="DE LA PAIX" className="h-12 bg-input/50 border-none font-bold" onChange={handleChange} />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-xs font-black uppercase tracking-widest text-primary/80">N°</Label>
-                  <Input name="numero" placeholder="44" className="h-12 bg-input/50 border-none font-bold text-center" onChange={handleChange} />
+                <div className="space-y-2.5">
+                  <Label className="font-tech text-[9px] text-primary/60 uppercase tracking-[0.2em] ml-2">Quartier</Label>
+                  <Input name="quartier" placeholder="QUARTIER" className="h-14 bg-secondary/50 border-border/50 rounded-2xl font-bold text-white placeholder:text-white/40 focus:border-primary/50 px-6" onChange={handleChange} />
                 </div>
               </div>
 
-              <div className="flex flex-col md:flex-row gap-4 mt-8">
-                <Button variant="ghost" onClick={() => setStep("identity")} className="flex-1 font-black uppercase tracking-widest text-xs h-14 border border-white/5 hover:bg-white/5">
-                  <ArrowLeft className="mr-2 w-4 h-4" /> Retour
+              <div className="grid grid-cols-4 gap-5">
+                <div className="col-span-3 space-y-2.5">
+                  <Label className="font-tech text-[9px] text-primary/60 uppercase tracking-[0.2em] ml-2 flex items-center gap-2"><MapPin size={10}/> Avenue_Rue</Label>
+                  <Input name="avenue" placeholder="NOM DE L'AVENUE" className="h-14 bg-secondary/50 border-border/50 rounded-2xl font-bold text-white placeholder:text-white/40 focus:border-primary/50 px-6" onChange={handleChange} />
+                </div>
+                <div className="space-y-2.5">
+                  <Label className="font-tech text-[9px] text-primary/60 uppercase tracking-[0.2em] ml-2">N°</Label>
+                  <Input name="numero" placeholder="44" className="h-14 bg-secondary/50 border-border/50 rounded-2xl font-bold text-white placeholder:text-white/40 focus:border-primary/50 text-center" onChange={handleChange} />
+                </div>
+              </div>
+
+              <div className="flex flex-col md:flex-row gap-5 mt-8">
+                <Button variant="ghost" onClick={() => setStep("identity")} className="h-16 flex-1 font-tech text-[10px] uppercase border border-border/40 rounded-2xl hover:bg-white/5 transition-all">
+                  <ArrowLeft size={16} className="mr-3" /> Retour_ID
                 </Button>
-                <Button onClick={handleSubmit} disabled={isLoading} className="flex-[2] btn-elite h-14 bg-gradient-to-r from-primary to-green-700 shadow-xl shadow-primary/20">
+                <Button onClick={handleSubmit} disabled={isLoading} className="btn-elite h-16 flex-[2] shadow-primary/20">
                   {isLoading ? (
-                    <Loader2 className="animate-spin mr-2" />
+                    <Loader2 className="animate-spin w-5 h-5" />
                   ) : (
-                    <CheckCircle2 className="mr-2 w-5 h-5 drop-shadow-md" />
+                    <>Injecter_Profil <Activity size={18} className="ml-3" /></>
                   )}
-                  <span className="drop-shadow-[0_2px_2px_rgba(0,0,0,0.5)]">Finaliser mon Profil</span>
                 </Button>
               </div>
             </TabsContent>
           </Tabs>
+
+          <div className="mt-8 text-center">
+            <Link to="/login" className="font-tech text-[9px] text-muted-foreground/50 hover:text-accent flex items-center justify-center gap-2 transition-all uppercase tracking-widest italic">
+              Terminal de connexion déjà actif ? Accéder
+            </Link>
+          </div>
         </CardContent>
       </Card>
     </div>
@@ -267,18 +276,19 @@ export default function SignUpView() {
 
 function SignUpSkeleton() {
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-background">
-      <Card className="w-full max-w-3xl bg-glass-agri border-none p-12 space-y-8">
-        <div className="space-y-2 flex flex-col items-center">
-          <Skeleton className="h-12 w-64 bg-primary/20" />
-          <Skeleton className="h-4 w-40 bg-white/5" />
+    <div className="min-h-screen flex items-center justify-center p-6 bg-background">
+      <Card className="w-full max-w-[650px] bg-glass border-none p-12 space-y-8 rounded-[2.5rem]">
+        <div className="space-y-4 flex flex-col items-center">
+          <Skeleton className="h-16 w-80 bg-primary/10 rounded-2xl" />
+          <Skeleton className="h-4 w-48 bg-white/5" />
         </div>
-        <div className="grid grid-cols-2 gap-6">
-          <Skeleton className="h-14 bg-input/50 rounded-lg" />
-          <Skeleton className="h-14 bg-input/50 rounded-lg" />
+        <div className="grid grid-cols-2 gap-6 pt-10">
+          <Skeleton className="h-14 bg-secondary rounded-2xl" />
+          <Skeleton className="h-14 bg-secondary rounded-2xl" />
+          <Skeleton className="h-14 bg-secondary rounded-2xl" />
+          <Skeleton className="h-14 bg-secondary rounded-2xl" />
         </div>
-        <Skeleton className="h-14 w-full bg-input/50 rounded-lg" />
-        <Skeleton className="h-14 w-full bg-primary/30 rounded-lg mt-6" />
+        <Skeleton className="h-16 w-full bg-primary/20 rounded-2xl" />
       </Card>
     </div>
   );

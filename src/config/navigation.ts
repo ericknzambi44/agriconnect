@@ -9,12 +9,14 @@ import {
   ShoppingCart, 
   Leaf, 
   Building2, 
-  LayoutDashboardIcon
+  LayoutDashboardIcon,
+  Bell
 } from "lucide-react";
 
 // 1. On définit les liens communs à tout le monde
 export const COMMON_ROUTES = [
   { name: "Vue d'ensemble", href: "/dashboard", icon: LayoutDashboardIcon },
+  { name: "Notifications", href: "/dashboard/notifications", icon: Bell }, // AJOUT ICI
   { name: "Gestion Profil", href: "/dashboard/profile", icon: UserCog },
   { name: "Abonnement", href: "/dashboard/subscription", icon: CreditCard },
   { name: "Paramètres", href: "/dashboard/settings", icon: Settings },
@@ -29,7 +31,6 @@ export const ROLE_SPECIFIC_ROUTES = {
     { name: "Marché Agricole", href: "/dashboard/marche", icon: ShoppingCart },
   ],
   transporteur: [
-    // On utilise "Terminal Agence" pour la clarté et on ajoute isAgencyOnly
     { 
       name: "Terminal Agence", 
       href: "/dashboard/missions", 
@@ -42,7 +43,5 @@ export const ROLE_SPECIFIC_ROUTES = {
 // 3. Fonction utilitaire pour récupérer les bons liens
 export const getNavigationForRole = (role: string) => {
   const roleRoutes = ROLE_SPECIFIC_ROUTES[role as keyof typeof ROLE_SPECIFIC_ROUTES] || [];
-  
-  // On met les routes spécifiques en premier, suivies des routes communes
   return [...roleRoutes, ...COMMON_ROUTES];
 };
