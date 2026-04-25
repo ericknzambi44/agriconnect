@@ -70,7 +70,7 @@ export default function ProfileView() {
             {[
               { val: "identity", icon: User, label: "IDENTITÉ" },
               { val: "location", icon: MapPin, label: "POSITION" },
-              { val: "roles", icon: ShieldCheck, label: "RANGS" },
+              { val: "roles", icon: ShieldCheck, label: "ROLE" },
               { val: "danger", icon: Lock, label: "SÉCURITÉ" }
             ].map((tab) => (
               <TabsTrigger 
