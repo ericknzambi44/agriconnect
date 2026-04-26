@@ -1,20 +1,32 @@
 // src/features/transport/components/AgencyTerminalView.tsx
 import React, { useState } from 'react';
 import { useAgencyDashboard } from '../hooks/useAgencyDashboard';
+import { useAgencyTerminalAccess } from '../hooks/use-agency-terminal-access';
+import { useNavigate } from 'react-router-dom';
 import { 
   Building2, PackageSearch, Truck, ArrowRight, Loader2,
   MapPin, Phone, User, ShoppingBag, History, Radar, Globe, 
-  ShieldCheck, LayoutDashboard, Zap, Hash, CheckCircle2, Search
+  ShieldCheck, LayoutDashboard, Zap, Hash, CheckCircle2, Search,
+  Lock, CreditCard
 } from 'lucide-react';
 import { cn } from "@/lib/utils";
 
 const cardStyle = "bg-secondary border-2 border-border rounded-[24px] md:rounded-[32px] overflow-hidden transition-all duration-500 hover:border-primary/20 shadow-xl";
 
 export function AgencyTerminalView() {
-  const { agency, myStats, opportunities, loading, processing, processCode, confirmAction } = useAgencyDashboard();
+
+
+  // 1. Accès et Identité (Gardien)
+  const { isAuthorized, subscription, agency, isLoading: accessLoading } = useAgencyTerminalAccess();
+  
+  // 2. Données et Actions (Moteur) - On lui passe l'ID de l'agence trouvée
+  const { myStats, opportunities, loading: dataLoading, processing, processCode, confirmAction } = useAgencyDashboard(agency?.id);
+  
   const [activeTab, setActiveTab] = useState<'terminal' | 'market'>('terminal');
   const [inputCode, setInputCode] = useState("");
   const [scannedExp, setScannedExp] = useState<any>(null);
+  const navigate = useNavigate(); 
+  
 
   const handleScan = async () => {
     if (inputCode.length < 6) return;
@@ -26,15 +38,18 @@ export function AgencyTerminalView() {
   };
 
   const handleConfirm = async () => {
-    if (!scannedExp) return;
+    // Double vérification de sécurité avant confirmation
+    if (!scannedExp || !isAuthorized) return; 
     const success = await confirmAction(scannedExp.id, scannedExp.actionType);
     if (success) setScannedExp(null);
   };
 
-  if (loading) return (
+  const isLoading = accessLoading || dataLoading;
+
+  if (isLoading) return (
     <div className="flex flex-col items-center justify-center py-20 min-h-[60vh] bg-background">
       <Loader2 className="w-10 h-10 text-primary animate-spin mb-4" />
-      <p className="text-primary/40 text-[9px] font-black uppercase tracking-[0.4em] animate-pulse">CHARGE_TERMINAL...</p>
+      <p className="text-primary/40 text-[9px] font-black uppercase tracking-[0.4em] animate-pulse">SYNCHRONISATION_PROTOCOLE...</p>
     </div>
   );
 
@@ -57,11 +72,20 @@ export function AgencyTerminalView() {
           </div>
           <div className="min-w-0">
             <h1 className="text-2xl md:text-4xl font-display font-black italic uppercase tracking-tighter leading-none">
-              {agency?.nom_agence || 'PIEDZYNE'}<span className="text-primary">.</span>LOG
+              {agency?.nom || 'PIEDZYNE'}<span className="text-primary">.</span>LOG
             </h1>
-            <p className="font-tech text-muted-foreground text-[10px] font-bold uppercase tracking-widest mt-1 flex items-center gap-2">
-              <MapPin size={12} className="text-primary" /> {agency?.ville_agence || 'HUB_CENTRAL'}
-            </p>
+            <div className="flex items-center gap-3 mt-1 flex-wrap">
+              <p className="font-tech text-muted-foreground text-[10px] font-bold uppercase tracking-widest flex items-center gap-1.5">
+                <MapPin size={12} className="text-primary" /> {agency?.ville_territoire || 'HUB_CENTRAL'}
+              </p>
+              {/* Badge d'Abonnement Injecté */}
+              <div className={cn(
+                  "px-2 py-0.5 rounded-md font-tech text-[8px] font-black border",
+                  isAuthorized ? "bg-success/10 border-success/20 text-success" : "bg-destructive/10 border-destructive/20 text-destructive"
+              )}>
+                  {isAuthorized ? `PRO ACTIF : ${subscription?.daysRemaining}J` : "ABONNEMENT REQUIS"}
+              </div>
+            </div>
           </div>
         </div>
 
@@ -77,12 +101,44 @@ export function AgencyTerminalView() {
             
             {/* COLONNE GAUCHE : SCANNER */}
             <div className="lg:col-span-7 space-y-6">
+              
+              {/* ALERTE ABONNEMENT (Uniquement si non autorisé) */}
+              {!isAuthorized && (
+                <div className="bg-primary/10 border-2 border-primary/20 rounded-3xl p-5 md:p-6 flex flex-col md:flex-row items-center gap-4 md:gap-6 animate-in slide-in-from-top-4">
+                  <div className="w-12 h-12 md:w-16 md:h-16 bg-primary/20 rounded-2xl flex items-center justify-center flex-shrink-0">
+                    <CreditCard className="text-primary" size={28} />
+                  </div>
+                  <div className="flex-1 text-center md:text-left">
+                    <h3 className="font-display font-black italic uppercase text-base md:text-lg text-primary">Activer Accès Terminal Agence</h3>
+                    <p className="text-[11px] md:text-xs text-muted-foreground font-medium mt-1">
+                      Pour valider les opérations et accéder aux contacts du réseau, un abonnement est requis.
+                    </p>
+                  </div>
+                  <button 
+                         onClick={() => navigate('/dashboard/subscription')}
+                         className="w-full md:w-auto bg-primary text-primary-foreground px-6 py-3 rounded-xl font-display font-black italic text-sm transition-transform active:scale-95 shadow-lg shadow-primary/20"
+                         >
+                               S'ABONNER
+                  </button>
+                </div>
+              )}
+
               <div className="grid grid-cols-2 gap-4">
                 <MiniStat label="À RECEVOIR" value={myStats.toDeliver} variant="primary" />
                 <MiniStat label="TRAITÉS" value={myStats.completed} variant="success" />
               </div>
 
               <section className={cn(cardStyle, "p-6 md:p-10 flex flex-col justify-center min-h-[350px] md:min-h-[450px] relative")}>
+                {/* OVERLAY DE BLOCAGE VISUEL */}
+                {!isAuthorized && (
+                  <div className="absolute inset-0 bg-background/50 backdrop-blur-[2px] z-20 flex flex-col items-center justify-center pointer-events-none rounded-[24px] md:rounded-[32px]">
+                    <div className="bg-background/90 border-2 border-border p-4 rounded-2xl flex items-center gap-3 shadow-2xl mb-4">
+                      <Lock className="text-primary" size={20} />
+                      <span className="font-tech text-[10px] font-black uppercase tracking-widest text-primary">Verrouillé</span>
+                    </div>
+                  </div>
+                )}
+
                 <div className="relative z-10 w-full max-w-xl mx-auto space-y-8">
                   <div className="text-center space-y-2">
                     <h2 className="font-tech text-[10px] font-black uppercase tracking-[0.3em] text-primary flex justify-center items-center gap-2">
@@ -97,7 +153,8 @@ export function AgencyTerminalView() {
                       value={inputCode}
                       onChange={(e) => setInputCode(e.target.value.toUpperCase())}
                       onKeyDown={(e) => e.key === 'Enter' && handleScan()}
-                      className="w-full bg-background border-2 border-border rounded-2xl py-8 md:py-12 text-center text-4xl md:text-6xl font-tech font-black tracking-[0.2em] text-primary focus:border-primary outline-none transition-all shadow-inner placeholder:text-muted-foreground/5"
+                      disabled={!isAuthorized}
+                      className="w-full bg-background border-2 border-border rounded-2xl py-8 md:py-12 text-center text-4xl md:text-6xl font-tech font-black tracking-[0.2em] text-primary focus:border-primary outline-none transition-all shadow-inner placeholder:text-muted-foreground/5 disabled:opacity-50"
                       placeholder="000000"
                     />
                     <Hash className="absolute left-6 top-1/2 -translate-y-1/2 text-primary/10 hidden md:block" size={40} />
@@ -105,7 +162,7 @@ export function AgencyTerminalView() {
                   
                   <button 
                     onClick={handleScan}
-                    disabled={processing || inputCode.length < 6}
+                    disabled={processing || inputCode.length < 6 || !isAuthorized}
                     className="w-full bg-primary text-primary-foreground font-display font-black italic py-6 md:py-8 rounded-2xl flex items-center justify-center gap-4 text-lg md:text-xl transition-all active:scale-[0.98] shadow-lg shadow-primary/20 disabled:opacity-30"
                   >
                     {processing ? <Loader2 className="animate-spin" /> : <Search size={24} />}
@@ -126,7 +183,7 @@ export function AgencyTerminalView() {
                          {isDepot ? <PackageSearch size={14} /> : <CheckCircle2 size={14} />}
                          {isDepot ? 'DÉPÔT' : 'RETRAIT'}
                        </div>
-                       <button onClick={() => setScannedExp(null)} className="text-muted-foreground hover:text-foreground font-bold p-2">ANNULER</button>
+                       <button onClick={() => setScannedExp(null)} className="text-muted-foreground hover:text-foreground font-bold p-2 text-xs md:text-sm">ANNULER</button>
                     </div>
 
                     <div className="space-y-4 flex-1">
@@ -159,11 +216,14 @@ export function AgencyTerminalView() {
 
                     <button 
                       onClick={handleConfirm}
-                      disabled={processing}
-                      className={cn("w-full py-6 md:py-8 rounded-2xl text-white font-display font-black italic flex items-center justify-center gap-3 text-lg md:text-xl shadow-xl transition-all active:scale-[0.98]", actionBg)}
+                      disabled={processing || !isAuthorized}
+                      className={cn(
+                        "w-full py-6 md:py-8 rounded-2xl text-white font-display font-black italic flex items-center justify-center gap-3 text-lg md:text-xl shadow-xl transition-all active:scale-[0.98]", 
+                        !isAuthorized ? "bg-muted-foreground/30 grayscale cursor-not-allowed" : actionBg
+                      )}
                     >
-                      {processing ? <Loader2 className="animate-spin" /> : <ShieldCheck size={24} />}
-                      {isDepot ? "VALIDER LE DÉPÔT" : "VALIDER LE RETRAIT"}
+                      {processing ? <Loader2 className="animate-spin" /> : (!isAuthorized ? <Lock size={24} /> : <ShieldCheck size={24} />)}
+                      {!isAuthorized ? "ABONNEMENT REQUIS" : (isDepot ? "VALIDER LE DÉPÔT" : "VALIDER LE RETRAIT")}
                     </button>
                   </div>
                 </div>
@@ -179,9 +239,18 @@ export function AgencyTerminalView() {
           </div>
         ) : (
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+             
+             {/* BANNIÈRE RÉSEAU */}
+             <div className="mb-8 p-4 bg-secondary rounded-2xl border border-border flex items-center gap-4">
+                <Globe className="text-primary animate-spin-slow" size={24} />
+                <p className="text-[10px] md:text-xs font-tech font-black uppercase tracking-widest">
+                  Réseau Global : {opportunities.length} Colis attendent un transporteur.
+                </p>
+             </div>
+
              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                 {opportunities.map((opp) => (
-                  <div key={opp.id} className={cn(cardStyle, "flex flex-col border-t-primary/20")}>
+                  <div key={opp.id} className={cn(cardStyle, "flex flex-col border-t-primary/20", !isAuthorized && "opacity-70")}>
                     <div className="p-6 flex-1 space-y-4">
                       <div className="flex justify-between items-start">
                         <div className="w-12 h-12 bg-background rounded-xl flex items-center justify-center border border-border">
@@ -206,9 +275,15 @@ export function AgencyTerminalView() {
                       </div>
                     </div>
                     <div className="p-2 border-t border-border">
-                      <a href={`tel:${opp.vendeur?.numero_tel}`} className="w-full bg-secondary hover:bg-primary hover:text-white py-4 rounded-xl flex items-center justify-center gap-3 font-tech text-[10px] font-black uppercase tracking-widest transition-all">
-                        <Phone size={14} /> CONTACTER
-                      </a>
+                      {isAuthorized ? (
+                        <a href={`tel:${opp.vendeur?.numero_tel}`} className="w-full bg-secondary hover:bg-primary hover:text-white py-4 rounded-xl flex items-center justify-center gap-3 font-tech text-[10px] font-black uppercase tracking-widest transition-all">
+                          <Phone size={14} /> CONTACTER LE VENDEUR
+                        </a>
+                      ) : (
+                        <div className="w-full bg-background border border-border py-4 rounded-xl flex items-center justify-center gap-3 font-tech text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 cursor-not-allowed">
+                          <Lock size={14} /> CONTACT MASQUÉ
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -220,7 +295,7 @@ export function AgencyTerminalView() {
   );
 }
 
-// --- SOUS-COMPOSANTS OPTIMISÉS ---
+// --- SOUS-COMPOSANTS ---
 
 function TabButton({ active, onClick, icon, label, count }: any) {
   return (
