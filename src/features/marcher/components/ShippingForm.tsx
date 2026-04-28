@@ -1,5 +1,5 @@
 import React from 'react';
-import { MapPin, Home, Building2, Truck, AlertTriangle, ChevronDown } from 'lucide-react';
+import { MapPin, Home, Building2, Truck, AlertTriangle, ChevronDown, Info } from 'lucide-react';
 import { cn } from "@/lib/utils";
 
 interface ShippingFormProps {
@@ -10,111 +10,118 @@ interface ShippingFormProps {
 
 export const ShippingForm = ({ data, onChange, agences }: ShippingFormProps) => {
   return (
-    <div className="relative w-full space-y-4 md:space-y-6 p-4 md:p-8 bg-secondary border-2 border-border rounded-[1.5rem] md:rounded-[2.5rem] overflow-hidden shadow-2xl transition-all duration-500">
+    <div className="relative w-full space-y-6 md:space-y-8 p-5 md:p-10 bg-secondary/40 border-2 border-white/10 rounded-[2rem] md:rounded-[3rem] overflow-hidden shadow-2xl transition-all duration-500">
       
-      {/* RAIL DE FLUX LOGISTIQUE (Visuel dynamique) */}
-      <div className="absolute top-0 left-0 w-1 md:w-1.5 h-full bg-gradient-to-b from-primary/40 via-primary/5 to-transparent" />
+      {/* RAIL DE FLUX LOGISTIQUE */}
+      <div className="absolute top-0 left-0 w-1.5 h-full bg-gradient-to-b from-primary/60 via-primary/10 to-transparent" />
 
-      {/* HEADER : IDENTITÉ DU PROTOCOLE */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pl-2">
-        <div className="flex items-center gap-3">
-          <div className="p-2.5 bg-primary/10 rounded-xl border border-primary/20 shrink-0 shadow-inner">
-            <Truck size={20} className="text-primary md:w-6 md:h-6" />
+      {/* HEADER : IDENTITÉ DU PROTOCOLE (Agrandi) */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pl-3">
+        <div className="flex items-center gap-4">
+          <div className="p-3 bg-primary/20 rounded-2xl border border-primary/30 shrink-0 shadow-glow-primary/10">
+            <Truck size={28} className="text-primary" />
           </div>
           <div className="min-w-0">
-            <h3 className="font-display font-black italic uppercase text-base md:text-xl tracking-tighter text-foreground leading-none truncate">
-              DESTINATION_COLIS
+            <h3 className="font-display font-black italic uppercase text-lg md:text-2xl tracking-tighter text-white leading-none">
+              COORDONNÉES_<span className="text-primary">LIVRAISON</span>
             </h3>
-            <p className="font-tech text-[7px] md:text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em] md:tracking-[0.4em] mt-1.5 italic opacity-70">
-              LOG_PROTOCOL_ITURI_2.1
-            </p>
+           
           </div>
         </div>
         
-        {/* Badge Status - Auto-hide sur très petits écrans */}
-        <div className="hidden xs:flex items-center gap-2 px-3 py-1.5 bg-background/50 backdrop-blur-sm border border-border rounded-full self-start sm:self-center">
-          <div className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse shadow-[0_0_8px_rgba(var(--primary),0.6)]" />
-          <span className="font-tech text-[8px] font-black text-primary uppercase italic tracking-tighter">READY_TO_SHIP</span>
+        <div className="flex items-center gap-2 px-4 py-2 bg-black/40 backdrop-blur-md border border-white/10 rounded-xl self-start sm:self-center">
+          <div className="w-2 h-2 bg-primary rounded-full animate-pulse shadow-[0_0_10px_rgba(var(--primary),0.8)]" />
+          <span className="font-tech text-[10px] font-black text-white uppercase italic tracking-wider">ACTIVE_NODE</span>
         </div>
       </div>
 
-      {/* GRILLE D'INPUTS INTELLIGENTE */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 pl-2">
+      {/* GRILLE D'INPUTS : Labels clairs et inputs larges */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 pl-3">
         
         {/* LOCALITÉ CIBLE */}
-        <div className="group space-y-2">
-          <label className="font-tech text-[8px] md:text-[10px] font-black text-muted-foreground/40 uppercase tracking-[0.2em] ml-1 italic transition-colors group-focus-within:text-primary/50">
-            _Localité_Cible
-          </label>
+        <div className="group space-y-3">
+          <div className="flex items-center gap-2 ml-1">
+            <div className="w-1 h-3 bg-primary rounded-full" />
+            <label className="font-tech text-[10px] md:text-[12px] font-black text-white uppercase tracking-widest italic group-focus-within:text-primary transition-colors">
+              VILLE_DESTINATION
+            </label>
+          </div>
           <div className="relative">
-            <Home className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/20 group-focus-within:text-primary transition-all duration-300" />
+            <Home className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground/30 group-focus-within:text-primary transition-all duration-300" />
             <input
               type="text"
-              placeholder="BUNIA, GOMA, KOMANDA..."
-              className="w-full h-12 md:h-14 bg-background border-2 border-border rounded-xl md:rounded-2xl pl-12 pr-4 font-tech text-[11px] md:text-xs italic uppercase text-foreground focus:border-primary transition-all outline-none shadow-inner tracking-widest placeholder:text-muted-foreground/20"
+              placeholder="EX: BUNIA, GOMA, BUTEMBO..."
+              className="w-full h-14 md:h-16 bg-black/40 border-2 border-white/5 rounded-2xl pl-14 pr-6 font-tech text-sm md:text-base italic uppercase text-white focus:border-primary transition-all outline-none tracking-widest placeholder:opacity-20"
               value={data.ville}
               onChange={(e) => onChange('ville', e.target.value)}
             />
           </div>
         </div>
 
-        {/* POINT RELAIS (SELECT OPTIMISÉ) */}
-        <div className="group space-y-2">
-          <label className="font-tech text-[8px] md:text-[10px] font-black text-muted-foreground/40 uppercase tracking-[0.2em] ml-1 italic transition-colors group-focus-within:text-primary/50">
-            _Point_Relais_Optionnel
-          </label>
+        {/* POINT RELAIS */}
+        <div className="group space-y-3">
+          <div className="flex items-center gap-2 ml-1">
+            <div className="w-1 h-3 bg-primary rounded-full" />
+            <label className="font-tech text-[10px] md:text-[12px] font-black text-white uppercase tracking-widest italic group-focus-within:text-primary transition-colors">
+              AGENCE_DE_RETRAIT
+            </label>
+          </div>
           <div className="relative">
-            <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/20 group-focus-within:text-primary transition-all duration-300" />
+            <Building2 className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground/30 group-focus-within:text-primary transition-all duration-300" />
             <select
-              className="w-full h-12 md:h-14 bg-background border-2 border-border rounded-xl md:rounded-2xl pl-12 pr-10 font-tech text-[10px] md:text-xs italic uppercase text-foreground focus:border-primary transition-all outline-none appearance-none cursor-pointer truncate shadow-inner"
+              className="w-full h-14 md:h-16 bg-black/40 border-2 border-white/5 rounded-2xl pl-14 pr-12 font-tech text-xs md:text-sm italic uppercase text-white focus:border-primary transition-all outline-none appearance-none cursor-pointer truncate shadow-inner"
               value={data.agenceId}
               onChange={(e) => onChange('agenceId', e.target.value)}
             >
-              <option value="" className="bg-secondary text-muted-foreground">_CHOISIR_PLUS_TARD</option>
+              <option value="" className="bg-[#0a0a0a] text-muted-foreground">_SÉLECTIONNER_UNE_AGENCE</option>
               {agences.map((ag) => (
-                <option key={ag.id} value={ag.id} className="bg-secondary text-foreground">
+                <option key={ag.id} value={ag.id} className="bg-[#0a0a0a] text-white">
                   {ag.nom}
                 </option>
               ))}
             </select>
-            <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/30 pointer-events-none group-focus-within:text-primary transition-colors" />
+            <ChevronDown className="absolute right-5 top-1/2 -translate-y-1/2 w-5 h-5 text-primary/40 pointer-events-none group-focus-within:rotate-180 transition-transform duration-300" />
           </div>
         </div>
       </div>
 
-      {/* COORDONNÉES PRÉCISES (TEXTAREA FLEXIBLE) */}
-      <div className="group space-y-2 pl-2">
-        <label className="font-tech text-[8px] md:text-[10px] font-black text-muted-foreground/40 uppercase tracking-[0.2em] ml-1 italic transition-colors group-focus-within:text-primary/50">
-          _Précisions_Géographiques
-        </label>
+      {/* COORDONNÉES PRÉCISES (TEXTAREA) */}
+      <div className="group space-y-3 pl-3">
+        <div className="flex items-center gap-2 ml-1">
+          <div className="w-1 h-3 bg-primary rounded-full" />
+          <label className="font-tech text-[10px] md:text-[12px] font-black text-white uppercase tracking-widest italic group-focus-within:text-primary transition-colors">
+            PRÉCISIONS_ADRESSE_&_RÉFÉRENCES
+          </label>
+        </div>
         <div className="relative">
-          <MapPin className="absolute left-4 top-4 w-4 h-4 text-muted-foreground/20 group-focus-within:text-primary transition-all duration-300" />
+          <MapPin className="absolute left-5 top-5 w-5 h-5 text-muted-foreground/30 group-focus-within:text-primary transition-all duration-300" />
           <textarea
-            placeholder="AVENUE, QUARTIER, RÉFÉRENCE PHYSIQUE..."
-            className="w-full h-28 md:h-36 bg-background border-2 border-border rounded-xl md:rounded-2xl pl-12 pr-4 pt-3.5 font-tech text-[10px] md:text-xs italic uppercase text-foreground focus:border-primary transition-all outline-none resize-none shadow-inner leading-relaxed placeholder:text-muted-foreground/20"
+            placeholder="AVENUE, QUARTIER, NUMÉRO, RÉFÉRENCE PHYSIQUE (EX: EN FACE DE L'ÉCOLE...)"
+            className="w-full h-32 md:h-44 bg-black/40 border-2 border-white/5 rounded-2xl pl-14 pr-6 pt-5 font-tech text-xs md:text-sm italic uppercase text-white focus:border-primary transition-all outline-none resize-none leading-relaxed placeholder:opacity-20"
             value={data.details}
             onChange={(e) => onChange('details', e.target.value)}
           />
         </div>
       </div>
 
-      {/* ALERT CONTEXTUELLE (Look Industriel) */}
-      <div className="ml-2 p-4 bg-primary/5 border-2 border-primary/10 rounded-2xl md:rounded-[1.5rem] flex gap-4 items-start group/alert">
-        <div className="mt-0.5 p-1.5 bg-primary/10 rounded-lg shrink-0">
-          <AlertTriangle className="w-4 h-4 md:w-5 md:h-5 text-primary animate-pulse group-hover/alert:rotate-12 transition-transform" />
+      {/* ALERT CONTEXTUELLE : Très visible pour la sécurité */}
+      <div className="ml-3 p-5 bg-primary/10 border-2 border-primary/20 rounded-[1.5rem] md:rounded-[2rem] flex gap-5 items-start group/alert shadow-[0_0_20px_rgba(var(--primary),0.05)]">
+        <div className="mt-1 p-2 bg-primary/20 rounded-xl shrink-0">
+          <AlertTriangle className="w-6 h-6 text-primary animate-pulse group-hover/alert:scale-110 transition-transform" />
         </div>
-        <div className="space-y-1.5 min-w-0">
-          <h4 className="font-tech text-[9px] md:text-[11px] font-black text-primary uppercase italic tracking-widest leading-none">
-            AVERTISSEMENT_COORDONNÉES
+        <div className="space-y-2 min-w-0">
+          <h4 className="font-tech text-[11px] md:text-[13px] font-black text-primary uppercase italic tracking-[0.2em] leading-none">
+            AVERTISSEMENT_COORDONNÉES_CRITIQUES
           </h4>
-          <p className="font-tech text-[8px] md:text-[10px] text-foreground/60 leading-snug italic uppercase tracking-tighter max-w-[400px]">
-            L'injection de données erronées entraîne la <span className="text-primary font-black underline decoration-primary/30">perte_totale</span> du colis ou des frais de stockage_node.
+          <p className="font-tech text-[10px] md:text-[12px] text-white/70 leading-relaxed italic uppercase tracking-tight">
+            Toute erreur dans ces informations entraînera une <span className="text-primary font-black underline decoration-primary/40 underline-offset-4">INTERRUPTION_FLUX</span> et des frais de stockage supplémentaires sur le Node de destination.
           </p>
         </div>
       </div>
 
-      {/* DÉCOR DE FOND */}
-      <div className="absolute -bottom-12 -right-12 w-32 h-32 bg-primary/5 blur-[60px] rounded-full pointer-events-none" />
+      {/* DÉCOR DE FOND TECH */}
+      <div className="absolute -top-10 -right-10 w-40 h-40 bg-primary/10 blur-[80px] rounded-full pointer-events-none" />
+      <div className="absolute -bottom-20 -left-10 w-40 h-40 bg-primary/5 blur-[80px] rounded-full pointer-events-none" />
     </div>
   );
 };

@@ -62,15 +62,7 @@ export default function DashboardLayout() {
             </div>
 
             {/* FOOTER : Responsive et aligné */}
-            <footer className="w-full max-w-[1600px] mx-auto px-[clamp(1rem,5vw,3.5rem)] pb-8 mt-auto flex justify-between items-center opacity-40 gap-4">
-              <p className="font-tech text-[clamp(6px,1.5vw,8px)] tracking-[0.3em] whitespace-nowrap uppercase">
-                AGRICONNECT_SYS
-              </p>
-              <div className="h-px flex-1 bg-border" />
-              <p className="font-tech text-[clamp(6px,1.5vw,8px)] tracking-[0.2em] whitespace-nowrap uppercase">
-                BUNIA_DRC
-              </p>
-            </footer>
+          
           </div>
         </main>
       </div>

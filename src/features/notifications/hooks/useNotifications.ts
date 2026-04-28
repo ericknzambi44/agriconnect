@@ -20,6 +20,8 @@ export function useNotifications() {
           expedition:expedition_id (
             code_retrait,
             statut_expedition,
+            acheteur_id,
+            vendeur_id,
             commande:commande_id (
               annonce:annonce_id (produit:prod_id (nom_prod))
             )
@@ -40,16 +42,11 @@ export function useNotifications() {
 
   useEffect(() => {
     if (!profile?.id) return;
-
-    // 1. Chargement initial
     fetchNotifications();
 
-    // 2. Création d'un ID unique pour ce canal spécifique
-    // Cela évite que la Topbar et la View utilisent le même canal "notifs"
     const instanceId = Math.random().toString(36).substring(7);
     const channel = supabase.channel(`notifs_realtime_${instanceId}`);
 
-    // 3. ON définit d'abord les écouteurs
     channel
       .on(
         'postgres_changes',
@@ -59,14 +56,10 @@ export function useNotifications() {
           table: 'notifications',
           filter: `user_id=eq.${profile.id}` 
         },
-        () => {
-          fetchNotifications();
-        }
+        () => fetchNotifications()
       )
-      // 4. ET ENSUITE on souscrit
       .subscribe();
 
-    // 5. Nettoyage lors du démontage du composant
     return () => {
       supabase.removeChannel(channel);
     };
@@ -84,5 +77,5 @@ export function useNotifications() {
     }
   };
 
-  return { notifications, unreadCount, loading, markAsRead };
+  return { notifications, unreadCount, loading, markAsRead, currentUserId: profile?.id };
 }

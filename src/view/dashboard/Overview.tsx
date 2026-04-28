@@ -52,7 +52,7 @@ export default function DashboardOverview() {
             <span className="font-tech text-[10px] tracking-[0.5em] text-primary uppercase font-bold">Terminal_Principal</span>
           </div>
           
-          <h1 className="text-6xl md:text-7xl font-display italic tracking-tighter leading-none text-foreground uppercase">
+          <h1 className="text-4xl md:text-5xl font-display italic tracking-tighter leading-none text-foreground uppercase">
             Vue <span className="text-primary">d'ensemble</span>
           </h1>
           
@@ -109,8 +109,8 @@ export default function DashboardOverview() {
            
            <div className="flex justify-between items-center p-10 relative z-10">
               <div className="flex flex-col gap-1">
-                <h3 className="font-tech font-black uppercase text-[12px] tracking-[0.4em] text-primary">Monitoring_Direct</h3>
-                <span className="font-tech text-[9px] text-muted-foreground font-bold uppercase">Source: AgriConnect_Core</span>
+                <h3 className="font-tech font-black uppercase text-[6px] tracking-[0.4em] text-primary">Monitoring_Direct</h3>
+                <span className="font-tech text-[6px] text-muted-foreground font-bold uppercase">Source: AgriConnect_Core</span>
               </div>
               <div className="px-4 py-1 border border-primary/30 rounded-md bg-primary/5">
                 <span className="font-tech text-[10px] text-primary animate-pulse">SYNC_LIVE</span>

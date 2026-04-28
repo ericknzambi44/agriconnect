@@ -1,6 +1,7 @@
+// src/components/layout/Sidebar.tsx
 import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { LogOut, ChevronRight, X, ShieldCheck } from "lucide-react";
+import { LogOut, ChevronRight, X, ShieldCheck, Fingerprint, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from '@/supabase';
 import { getNavigationForRole } from "@/config/navigation";
@@ -24,40 +25,45 @@ export function Sidebar({ role, isOpen, onClose }: SidebarProps) {
 
   return (
     <aside className={cn(
-      "fixed left-0 top-0 h-screen w-[clamp(260px,80vw,288px)] flex flex-col z-[100] transition-transform duration-500 ease-in-out",
-      "bg-secondary border-r-2 border-border shadow-[10px_0_30px_rgba(0,0,0,0.5)]",
+      "fixed left-0 top-0 h-screen w-[280px] flex flex-col z-[100] transition-all duration-500 ease-in-out",
+      "bg-[#070707]/95 backdrop-blur-2xl border-r border-white/5 shadow-[20px_0_50px_rgba(0,0,0,0.8)]",
       "lg:translate-x-0", 
       isOpen ? "translate-x-0" : "-translate-x-full"
     )}>
       
-      {/* BOUTON FERMER (MOBILE) - Zone de clic optimisée */}
+      {/* BOUTON FERMER (MOBILE) */}
       <button 
         onClick={onClose}
-        className="absolute top-4 right-4 p-3 lg:hidden text-muted-foreground hover:text-primary transition-all active:scale-90 z-[110] bg-background/50 rounded-lg"
+        className="absolute top-6 right-[-50px] p-3 lg:hidden text-white bg-[#070707] border border-white/10 rounded-r-xl transition-all active:scale-90"
       >
-        <X className="w-6 h-6" />
+        <X className="w-5 h-5" />
       </button>
 
-      {/* LOGO SECTION : Taille fluide pour ne pas étouffer le haut */}
-      <div className="p-[clamp(1.5rem,5vw,2rem)] pb-6 relative shrink-0">
-        <h2 className="text-[clamp(1.8rem,6vw,2.6rem)] font-display italic tracking-[-0.08em] leading-none select-none flex flex-wrap items-baseline">
-          <span className="text-foreground">Agri</span>
-          <span className="text-primary text-glow-primary">Connect</span>
+      {/* SECTION LOGO : Look "Flux_MSG" */}
+      <div className="p-8 pb-10 shrink-0">
+        <div className="flex items-center gap-2 mb-2">
+            <Zap size={10} className="text-primary animate-pulse" />
+            <span className="font-tech text-[8px] text-primary/60 font-black uppercase tracking-[0.4em]">Secure_Terminal</span>
+        </div>
+        
+        <h2 className="text-3xl font-display font-black italic tracking-tighter leading-none flex flex-col">
+          <span className="text-white">AGRI_</span>
+          <span className="text-primary text-glow-primary">CONNECT</span>
         </h2>
         
-        <div className="mt-4 inline-flex items-center gap-3 px-3 py-1.5 bg-background border-2 border-primary/20 rounded-lg">
+        <div className="mt-6 flex items-center gap-3 px-4 py-2 bg-white/[0.02] border border-white/5 rounded-xl">
           <div className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-40"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-success"></span>
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-40"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
           </div>
-          <span className="font-tech text-[clamp(7px,1.5vw,9px)] font-black uppercase tracking-[0.2em] text-primary italic">
-            {role}_zone
+          <span className="font-tech text-[9px] font-black uppercase tracking-[0.2em] text-white/70 italic">
+            {role}_ACCESS
           </span>
         </div>
       </div>
 
-      {/* NAVIGATION : Scrolling intelligent et espacement dynamique */}
-      <nav className="flex-1 px-4 space-y-1.5 overflow-y-auto no-scrollbar relative py-2">
+      {/* NAVIGATION : Items pro avec effet néon */}
+      <nav className="flex-1 px-4 space-y-1 overflow-y-auto no-scrollbar py-2">
         {navItems.map((item: any) => {
           if (item.isAgencyOnly && !profile?.id_agence) return null;
 
@@ -68,55 +74,69 @@ export function Sidebar({ role, isOpen, onClose }: SidebarProps) {
               onClick={onClose}
               end={item.href === "/dashboard"} 
               className={({ isActive }) => cn(
-                "flex items-center justify-between px-4 py-[clamp(0.75rem,3vh,1rem)] rounded-xl transition-all duration-300 group relative border-2",
+                "flex items-center justify-between px-5 py-4 rounded-2xl transition-all duration-300 group relative overflow-hidden",
                 isActive 
-                  ? "bg-primary/10 border-primary text-foreground shadow-[0_0_15px_rgba(16,185,129,0.1)]" 
-                  : "border-transparent text-muted-foreground hover:text-foreground hover:bg-white/[0.03] hover:border-border",
+                  ? "bg-primary/10 text-white" 
+                  : "text-muted-foreground hover:text-white hover:bg-white/[0.02]",
               )}
             >
-              <div className="flex items-center gap-3 min-w-0">
+              {/* Indicateur actif vertical (Style Flux) */}
+              <div className={cn(
+                "absolute left-0 top-1/4 bottom-1/4 w-1 bg-primary transition-all duration-500",
+                "group-[.active]:opacity-100 opacity-0 group-[.active]:shadow-[4px_0_15px_rgba(var(--primary),0.6)]"
+              )} />
+
+              <div className="flex items-center gap-4 min-w-0">
                 <item.icon className={cn(
-                  "w-5 h-5 shrink-0 transition-all duration-300",
-                  "group-hover:scale-110 group-[.active]:text-primary"
+                  "w-5 h-5 shrink-0 transition-all duration-500",
+                  "group-hover:text-primary group-[.active]:text-primary group-hover:scale-110"
                 )} />
-                <span className="font-tech text-[clamp(8px,1.8vw,10px)] font-black uppercase tracking-[0.15em] leading-none truncate">
+                <span className="font-tech text-[10px] font-black uppercase tracking-[0.2em] leading-none">
                   {item.name}
                 </span>
-                {item.isAgencyOnly && (
-                   <ShieldCheck className="w-3 h-3 text-primary animate-pulse shrink-0" />
-                )}
               </div>
 
               <ChevronRight className={cn(
-                "w-4 h-4 shrink-0 transition-all opacity-0 -translate-x-3 group-hover:opacity-100 group-hover:translate-x-0 group-[.active]:opacity-100 group-[.active]:translate-x-0",
-                "text-primary hidden sm:block"
+                "w-3 h-3 shrink-0 transition-all opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 group-[.active]:opacity-100 group-[.active]:translate-x-0 text-primary"
               )} />
             </NavLink>
           );
         })}
       </nav>
 
-      {/* FOOTER : Shrink-0 pour rester toujours visible en bas */}
-      <div className="p-5 border-t-2 border-border bg-background/30 shrink-0">
+      {/* FOOTER : Ultra Clean & Pro */}
+      <div className="p-6 border-t border-white/5 bg-black/40 shrink-0">
+        <div className="mb-6 flex items-center gap-3 px-4">
+            <Fingerprint size={14} className="text-white/20" />
+            <div className="flex flex-col">
+                <span className="font-tech text-[7px] text-white/20 font-black uppercase tracking-widest leading-none">User_ID</span>
+                <span className="font-tech text-[8px] text-white/40 truncate w-32">
+                  {profile?.id?.substring(0, 12).toUpperCase() || 'ANONYMOUS'}
+                </span>
+            </div>
+        </div>
+
         <button 
           onClick={handleSignOut}
-          className="w-full flex items-center justify-between px-4 py-4 text-muted-foreground hover:text-destructive font-tech text-[9px] font-black uppercase tracking-[0.15em] border-2 border-border hover:border-destructive/40 hover:bg-destructive/5 rounded-2xl transition-all active:scale-95 group"
+          className="w-full flex items-center justify-between px-5 py-4 text-white/40 hover:text-red-500 bg-white/[0.02] hover:bg-red-500/10 border border-white/5 hover:border-red-500/20 rounded-2xl transition-all group active:scale-95"
         >
-          <div className="flex items-center gap-3 min-w-0">
-            <LogOut className="w-4 h-4 shrink-0 group-hover:-translate-x-1 transition-all" />
-            <span className="truncate group-hover:text-destructive">Deconnecter</span>
+          <div className="flex items-center gap-3">
+            <LogOut className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
+            <span className="font-tech text-[9px] font-black uppercase tracking-[0.2em]">Disconnect</span>
           </div>
-          <div className="w-1.5 h-1.5 rounded-full bg-destructive/20 group-hover:bg-destructive shadow-[0_0_8px_rgba(239,68,68,0.5)]" />
+          <div className="w-1.5 h-1.5 rounded-full bg-white/10 group-hover:bg-red-500 shadow-none group-hover:shadow-[0_0_10px_rgba(239,68,68,0.5)] transition-all" />
         </button>
         
-        <p className="mt-4 text-center font-tech text-[7px] text-muted-foreground/30 tracking-[0.3em] uppercase">
-          AgriConnect v.1.0
-        </p>
+        <div className="mt-6 flex justify-between items-center opacity-20 group">
+          <span className="font-tech text-[7px] tracking-[0.5em] uppercase font-black">v.1.0.0</span>
+          <ShieldCheck size={12} />
+        </div>
       </div>
 
       <style>{`
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .text-glow-primary { text-shadow: 0 0 15px rgba(var(--primary), 0.5); }
       `}</style>
     </aside>
   );

@@ -10,7 +10,8 @@ import {
   Leaf, 
   Building2, 
   LayoutDashboardIcon,
-  Bell
+  Bell,
+  Wallet
 } from "lucide-react";
 
 // 1. On définit les liens communs à tout le monde
@@ -19,6 +20,8 @@ export const COMMON_ROUTES = [
   { name: "Notifications", href: "/dashboard/notifications", icon: Bell }, // AJOUT ICI
   { name: "Gestion Profil", href: "/dashboard/profile", icon: UserCog },
   { name: "Abonnement", href: "/dashboard/subscription", icon: CreditCard },
+   { name:"Portefeuille", href: "/dashboard/portefeuille", icon: Wallet },
+
   { name: "Paramètres", href: "/dashboard/settings", icon: Settings },
 ];
 

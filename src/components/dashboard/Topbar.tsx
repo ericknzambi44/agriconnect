@@ -1,8 +1,10 @@
+// src/components/layout/Topbar.tsx
 import React, { useState } from 'react';
-import { Search, Bell, Command, Menu, ShieldCheck, X } from "lucide-react";
+import { Search, Bell, Command, Menu, ShieldCheck, X, Zap } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
+import { useNotifications } from '@/features/notifications/hooks/useNotifications';
 
 interface TopbarProps {
   user: {
@@ -16,86 +18,104 @@ interface TopbarProps {
 
 export function Topbar({ user, onMenuClick }: TopbarProps) {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const { unreadCount } = useNotifications(); // Intégration du hook réel
   const initials = `${user.prenom[0]}${user.nom[0]}`.toUpperCase();
 
   return (
-    <div className="w-full h-full flex items-center justify-between px-[clamp(0.75rem,3vw,2rem)] gap-2 sm:gap-4 relative">
+    <div className="w-full h-full flex items-center justify-between px-4 md:px-8 lg:px-10 gap-4 bg-background/50 backdrop-blur-xl border-b border-white/5 relative z-50">
       
-      {/* 1. SECTION GAUCHE : MENU & RECHERCHE INTELLIGENTE */}
-      <div className="flex items-center gap-2 sm:gap-4 flex-1 min-w-0">
+      {/* 1. SECTION GAUCHE : MENU & SEARCH ADAPTATIF */}
+      <div className="flex items-center gap-4 flex-1 min-w-0">
         <button 
           onClick={onMenuClick}
-          className="p-2.5 bg-background border-2 border-primary/20 rounded-xl text-primary lg:hidden active:scale-95 transition-all flex-shrink-0"
+          className="p-3 bg-white/[0.02] border border-white/10 rounded-xl text-primary lg:hidden active:scale-95 transition-all shrink-0"
         >
           <Menu className="w-5 h-5" />
         </button>
 
-        {/* RECHERCHE MOBILE : Bouton d'activation si écran < sm */}
+        {/* RECHERCHE MOBILE TOGGLE */}
         <button 
           onClick={() => setIsSearchOpen(true)}
-          className="p-2.5 bg-background border-2 border-border rounded-xl text-muted-foreground sm:hidden active:scale-95"
+          className="p-3 bg-white/[0.02] border border-white/10 rounded-xl text-muted-foreground sm:hidden active:scale-95"
         >
           <Search className="w-5 h-5" />
         </button>
 
-        {/* BARRE DE RECHERCHE DESKTOP / OVERLAY MOBILE */}
+        {/* BARRE DE RECHERCHE PRINCIPALE */}
         <div className={cn(
-          "absolute inset-x-0 top-0 h-20 bg-secondary z-[60] flex items-center px-4 transition-all duration-300 sm:relative sm:inset-auto sm:h-auto sm:bg-transparent sm:flex sm:p-0 sm:max-w-[400px] sm:w-full",
+          "absolute inset-x-0 top-0 h-full bg-background z-[60] flex items-center px-4 transition-all duration-300 sm:relative sm:inset-auto sm:h-auto sm:bg-transparent sm:flex sm:p-0 sm:max-w-[450px] sm:w-full",
           isSearchOpen ? "translate-y-0 opacity-100" : "-translate-y-full opacity-0 sm:translate-y-0 sm:opacity-100"
         )}>
           <div className="relative w-full group">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-primary" />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20 group-focus-within:text-primary transition-colors" />
             <Input 
               autoFocus={isSearchOpen}
-              placeholder="RECHERCHER..." 
-              className="h-12 sm:h-11 bg-background border-2 border-border pl-11 pr-12 sm:pr-4 font-tech text-[10px] tracking-[0.1em] text-foreground focus-visible:ring-0 focus-visible:border-primary rounded-xl w-full"
+              placeholder="RECHERCHER DANS LE FLUX..." 
+              className="h-12 sm:h-11 bg-white/[0.02] border border-white/10 pl-11 pr-12 sm:pr-4 font-tech text-[9px] tracking-[0.2em] text-white focus-visible:ring-1 focus-visible:ring-primary/50 focus-visible:border-primary/50 rounded-xl w-full transition-all"
             />
-            {/* Bouton pour fermer la recherche sur mobile uniquement */}
+            {/* Close mobile search */}
             <button 
               onClick={() => setIsSearchOpen(false)}
               className="absolute right-3 top-1/2 -translate-y-1/2 p-1 sm:hidden text-muted-foreground"
             >
               <X className="w-5 h-5" />
             </button>
-            <div className="absolute right-3 top-1/2 -translate-y-1/2 hidden md:flex items-center gap-1 px-2 py-1 bg-secondary border border-border rounded-md opacity-60">
-              <Command className="w-3 h-3 text-primary" />
-              <span className="font-tech text-[8px] font-bold">K</span>
+            
+            {/* Shortcut Desktop */}
+            <div className="absolute right-3 top-1/2 -translate-y-1/2 hidden md:flex items-center gap-1.5 px-2 py-1 bg-black border border-white/10 rounded-md opacity-40 group-focus-within:opacity-100 transition-opacity">
+              <Command size={10} className="text-primary" />
+              <span className="font-tech text-[8px] font-black text-white">K</span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* 2. SECTION DROITE : ACTIONS ET PROFIL */}
-      <div className="flex items-center gap-2 sm:gap-6 flex-shrink-0">
+      {/* 2. SECTION DROITE : NOTIFICATIONS & PROFIL */}
+      <div className="flex items-center gap-3 sm:gap-6 shrink-0">
         
-        <button className="relative p-2.5 bg-background border-2 border-border rounded-xl text-muted-foreground hover:text-primary transition-all group">
-          <Bell className="w-5 h-5 group-hover:rotate-12" />
-          <span className="absolute top-2 right-2 w-2 h-2 bg-success rounded-full border-2 border-secondary animate-pulse" />
+        {/* BOUTON NOTIFICATION SYNCHRONISÉ */}
+        <button className="relative p-3 bg-white/[0.02] border border-white/10 rounded-xl text-white/60 hover:text-primary transition-all group overflow-hidden">
+          <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+          <Bell className="w-5 h-5 relative z-10 group-hover:animate-bounce" />
+          
+          {unreadCount > 0 && (
+            <div className="absolute top-2 right-2 flex h-4 w-4 items-center justify-center">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-40"></span>
+              <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-primary text-[8px] font-black text-primary-foreground items-center justify-center">
+                {unreadCount > 9 ? '+9' : unreadCount}
+              </span>
+            </div>
+          )}
         </button>
 
-        <div className="flex items-center gap-2 sm:gap-4 pl-2 sm:pl-6 border-l-2 border-border h-10">
+        {/* PROFIL UTILISATEUR */}
+        <div className="flex items-center gap-3 sm:gap-4 pl-3 sm:pl-6 border-l border-white/10 h-10">
           
-          <div className="text-right hidden md:block">
-            <h4 className="text-[13px] font-display uppercase italic tracking-tight text-foreground leading-none truncate max-w-[100px]">
-              {user.prenom} <span className="text-primary font-bold">{user.nom}</span>
-            </h4>
-            <div className="flex items-center justify-end gap-1.5 mt-1.5">
-              <span className="font-tech text-[8px] font-black text-muted-foreground uppercase tracking-widest">
-                {user.role}
-              </span>
-              <ShieldCheck className="w-3 h-3 text-primary/60" />
+          <div className="text-right hidden sm:block">
+            <div className="flex items-center justify-end gap-2 mb-0.5">
+               <span className="font-tech text-[7px] font-black text-primary uppercase tracking-[0.3em]">Online</span>
+               <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
             </div>
+            <h4 className="text-[13px] font-display font-black uppercase italic tracking-tighter text-white leading-none truncate max-w-[120px]">
+              {user.prenom} <span className="text-primary">{user.nom}</span>
+            </h4>
           </div>
           
-          <div className="relative group flex-shrink-0">
-            <Avatar className="h-10 w-10 sm:h-12 sm:w-12 border-2 border-primary rounded-xl bg-background p-0.5 transition-transform active:scale-90">
+          <div className="relative group shrink-0">
+            {/* Lueur d'avatar */}
+            <div className="absolute -inset-1 bg-primary/20 rounded-xl blur-sm opacity-0 group-hover:opacity-100 transition-opacity" />
+            
+            <Avatar className="h-10 w-10 md:h-12 md:w-12 border border-primary/40 rounded-xl bg-black p-0.5 transition-transform active:scale-95 cursor-pointer relative z-10">
               <AvatarImage src={user.avatar_url || ""} className="object-cover rounded-lg" />
-              <AvatarFallback className="bg-primary/10 text-primary font-display italic text-xs font-black">
+              <AvatarFallback className="bg-primary/5 text-primary font-display italic text-xs font-black">
                 {initials}
               </AvatarFallback>
             </Avatar>
-            <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-secondary rounded-lg flex items-center justify-center border-2 border-border">
-                <div className="w-1.5 h-1.5 bg-success rounded-full animate-pulse" />
+            
+            <div className="absolute -bottom-1 -right-1 z-20">
+               <div className="bg-black border border-white/10 p-0.5 rounded-md">
+                  <ShieldCheck size={10} className="text-primary" />
+               </div>
             </div>
           </div>
         </div>

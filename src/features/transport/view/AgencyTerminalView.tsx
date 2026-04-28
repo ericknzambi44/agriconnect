@@ -1,32 +1,36 @@
-// src/features/transport/components/AgencyTerminalView.tsx
 import React, { useState } from 'react';
 import { useAgencyDashboard } from '../hooks/useAgencyDashboard';
 import { useAgencyTerminalAccess } from '../hooks/use-agency-terminal-access';
 import { useNavigate } from 'react-router-dom';
 import { 
-  Building2, PackageSearch, Truck, ArrowRight, Loader2,
-  MapPin, Phone, User, ShoppingBag, History, Radar, Globe, 
+  Building2, PackageSearch, Truck, Loader2,
+  MapPin, Phone, User, Radar, 
   ShieldCheck, LayoutDashboard, Zap, Hash, CheckCircle2, Search,
-  Lock, CreditCard
+  Lock, Globe, ChevronRight
 } from 'lucide-react';
 import { cn } from "@/lib/utils";
+import { toast } from 'sonner';
 
-const cardStyle = "bg-secondary border-2 border-border rounded-[24px] md:rounded-[32px] overflow-hidden transition-all duration-500 hover:border-primary/20 shadow-xl";
+/**
+ * STYLE : Cartes plus fines et cohérentes avec le dashboard
+ */
+const cardStyle = "bg-secondary/30 border border-border/40 rounded-[20px] overflow-hidden transition-all duration-300 hover:border-primary/30 shadow-lg backdrop-blur-md";
 
 export function AgencyTerminalView() {
-
-
-  // 1. Accès et Identité (Gardien)
-  const { isAuthorized, subscription, agency, isLoading: accessLoading } = useAgencyTerminalAccess();
-  
-  // 2. Données et Actions (Moteur) - On lui passe l'ID de l'agence trouvée
-  const { myStats, opportunities, loading: dataLoading, processing, processCode, confirmAction } = useAgencyDashboard(agency?.id);
+  const { isAuthorized, agency, isLoading: accessLoading } = useAgencyTerminalAccess();
+  const { 
+    myStats, 
+    opportunities, 
+    loading: dataLoading, 
+    processing, 
+    processCode, 
+    confirmAction 
+  } = useAgencyDashboard(agency?.id);
   
   const [activeTab, setActiveTab] = useState<'terminal' | 'market'>('terminal');
   const [inputCode, setInputCode] = useState("");
   const [scannedExp, setScannedExp] = useState<any>(null);
   const navigate = useNavigate(); 
-  
 
   const handleScan = async () => {
     if (inputCode.length < 6) return;
@@ -34,300 +38,260 @@ export function AgencyTerminalView() {
     if (result) {
       setScannedExp(result);
       setInputCode(""); 
+      toast.success("Code identifié");
     }
   };
 
   const handleConfirm = async () => {
-    // Double vérification de sécurité avant confirmation
     if (!scannedExp || !isAuthorized) return; 
     const success = await confirmAction(scannedExp.id, scannedExp.actionType);
     if (success) setScannedExp(null);
   };
 
-  const isLoading = accessLoading || dataLoading;
-
-  if (isLoading) return (
-    <div className="flex flex-col items-center justify-center py-20 min-h-[60vh] bg-background">
-      <Loader2 className="w-10 h-10 text-primary animate-spin mb-4" />
-      <p className="text-primary/40 text-[9px] font-black uppercase tracking-[0.4em] animate-pulse">SYNCHRONISATION_PROTOCOLE...</p>
+  if (accessLoading || dataLoading) return (
+    <div className="flex h-[50vh] w-full items-center justify-center">
+      <Loader2 className="w-8 h-8 text-primary animate-spin" />
     </div>
   );
 
   const isDepot = scannedExp?.actionType === 'DEPOT';
-  const actionColor = isDepot ? 'text-primary' : 'text-success';
-  const actionBg = isDepot ? 'bg-primary' : 'bg-success';
-  const clientData = isDepot ? scannedExp?.vendeur : scannedExp?.acheteur;
+  const actor = isDepot ? scannedExp?.vendeur : scannedExp?.acheteur;
+  const actionColor = isDepot ? 'text-primary' : 'text-emerald-500';
+  const actionBg = isDepot ? 'bg-primary' : 'bg-emerald-500';
 
   return (
-    <div className="w-full min-h-screen flex flex-col selection:bg-primary/30 font-sans pb-20 pt-4 px-4 md:px-6 bg-background text-foreground">
+    <div className="w-full space-y-6 animate-in fade-in duration-500 font-sans">
       
-      {/* HEADER COMPACT & RESPONSIVE */}
-      <header className="w-full mb-8 flex flex-col lg:flex-row justify-between items-center border-b-2 border-border pb-6 gap-6">
-        <div className="flex items-center gap-4 w-full lg:w-auto">
-          <div className="relative flex-shrink-0">
-            <div className="absolute -inset-1 bg-primary/20 rounded-xl blur-lg opacity-50"></div>
-            <div className="relative w-14 h-14 bg-secondary border-2 border-primary/30 rounded-xl flex items-center justify-center shadow-lg">
-              <Truck className="text-primary" size={28} />
-            </div>
+      {/* 1. TOOLBAR : Resserrée pour éviter l'effet "éparpillé" */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-secondary/10 p-4 rounded-2xl border border-border/40">
+        <div className="flex items-center gap-3">
+          <div className="p-2.5 bg-primary/10 rounded-xl border border-primary/20">
+            <Building2 className="text-primary" size={20} />
           </div>
-          <div className="min-w-0">
-            <h1 className="text-2xl md:text-4xl font-display font-black italic uppercase tracking-tighter leading-none">
-              {agency?.nom || 'PIEDZYNE'}<span className="text-primary">.</span>LOG
-            </h1>
-            <div className="flex items-center gap-3 mt-1 flex-wrap">
-              <p className="font-tech text-muted-foreground text-[10px] font-bold uppercase tracking-widest flex items-center gap-1.5">
-                <MapPin size={12} className="text-primary" /> {agency?.ville_territoire || 'HUB_CENTRAL'}
-              </p>
-              {/* Badge d'Abonnement Injecté */}
-              <div className={cn(
-                  "px-2 py-0.5 rounded-md font-tech text-[8px] font-black border",
-                  isAuthorized ? "bg-success/10 border-success/20 text-success" : "bg-destructive/10 border-destructive/20 text-destructive"
-              )}>
-                  {isAuthorized ? `PRO ACTIF : ${subscription?.daysRemaining}J` : "ABONNEMENT REQUIS"}
-              </div>
-            </div>
+          <div className="flex flex-col">
+            <h2 className="text-lg font-display font-black italic uppercase tracking-tight text-foreground leading-none">
+              Terminal <span className="text-primary">Logistique</span>
+            </h2>
+            <p className="font-tech text-[8px] text-muted-foreground uppercase tracking-[0.2em] mt-1 flex items-center gap-1.5">
+              <span className={cn("w-1.5 h-1.5 rounded-full animate-pulse", isAuthorized ? "bg-emerald-500" : "bg-red-500")} />
+              {agency?.nom || "HUB_LOC"} — {agency?.ville_territoire}
+            </p>
           </div>
         </div>
 
-        <nav className="flex bg-secondary p-1.5 rounded-2xl border-2 border-border w-full lg:w-auto overflow-x-auto no-scrollbar">
-          <TabButton active={activeTab === 'terminal'} onClick={() => setActiveTab('terminal')} icon={<LayoutDashboard size={16}/>} label="TERMINAL" />
-          <TabButton active={activeTab === 'market'} onClick={() => setActiveTab('market')} icon={<Radar size={16}/>} label="RÉSEAU" count={opportunities.length} />
-        </nav>
-      </header>
+        <div className="flex bg-background/40 p-1 rounded-lg border border-border w-full md:w-72">
+          <TabButton active={activeTab === 'terminal'} onClick={() => setActiveTab('terminal')} icon={<LayoutDashboard size={12}/>} label="SCANNER" />
+          <TabButton active={activeTab === 'market'} onClick={() => setActiveTab('market')} icon={<Radar size={12}/>} label="FLUX" count={opportunities.length} />
+        </div>
+      </div>
 
-      <main className="w-full flex-1">
-        {activeTab === 'terminal' ? (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            
-            {/* COLONNE GAUCHE : SCANNER */}
-            <div className="lg:col-span-7 space-y-6">
-              
-              {/* ALERTE ABONNEMENT (Uniquement si non autorisé) */}
-              {!isAuthorized && (
-                <div className="bg-primary/10 border-2 border-primary/20 rounded-3xl p-5 md:p-6 flex flex-col md:flex-row items-center gap-4 md:gap-6 animate-in slide-in-from-top-4">
-                  <div className="w-12 h-12 md:w-16 md:h-16 bg-primary/20 rounded-2xl flex items-center justify-center flex-shrink-0">
-                    <CreditCard className="text-primary" size={28} />
-                  </div>
-                  <div className="flex-1 text-center md:text-left">
-                    <h3 className="font-display font-black italic uppercase text-base md:text-lg text-primary">Activer Accès Terminal Agence</h3>
-                    <p className="text-[11px] md:text-xs text-muted-foreground font-medium mt-1">
-                      Pour valider les opérations et accéder aux contacts du réseau, un abonnement est requis.
-                    </p>
-                  </div>
-                  <button 
-                         onClick={() => navigate('/dashboard/subscription')}
-                         className="w-full md:w-auto bg-primary text-primary-foreground px-6 py-3 rounded-xl font-display font-black italic text-sm transition-transform active:scale-95 shadow-lg shadow-primary/20"
-                         >
-                               S'ABONNER
-                  </button>
-                </div>
-              )}
-
-              <div className="grid grid-cols-2 gap-4">
-                <MiniStat label="À RECEVOIR" value={myStats.toDeliver} variant="primary" />
-                <MiniStat label="TRAITÉS" value={myStats.completed} variant="success" />
-              </div>
-
-              <section className={cn(cardStyle, "p-6 md:p-10 flex flex-col justify-center min-h-[350px] md:min-h-[450px] relative")}>
-                {/* OVERLAY DE BLOCAGE VISUEL */}
-                {!isAuthorized && (
-                  <div className="absolute inset-0 bg-background/50 backdrop-blur-[2px] z-20 flex flex-col items-center justify-center pointer-events-none rounded-[24px] md:rounded-[32px]">
-                    <div className="bg-background/90 border-2 border-border p-4 rounded-2xl flex items-center gap-3 shadow-2xl mb-4">
-                      <Lock className="text-primary" size={20} />
-                      <span className="font-tech text-[10px] font-black uppercase tracking-widest text-primary">Verrouillé</span>
-                    </div>
-                  </div>
-                )}
-
-                <div className="relative z-10 w-full max-w-xl mx-auto space-y-8">
-                  <div className="text-center space-y-2">
-                    <h2 className="font-tech text-[10px] font-black uppercase tracking-[0.3em] text-primary flex justify-center items-center gap-2">
-                      <Zap size={14} className="animate-pulse" /> SCANNER_CODE_FLUX
-                    </h2>
-                    <p className="text-muted-foreground text-[11px] uppercase font-bold">Entrez le code de dépôt ou retrait</p>
-                  </div>
-                  
-                  <div className="relative group">
-                    <input 
-                      type="text"
-                      value={inputCode}
-                      onChange={(e) => setInputCode(e.target.value.toUpperCase())}
-                      onKeyDown={(e) => e.key === 'Enter' && handleScan()}
-                      disabled={!isAuthorized}
-                      className="w-full bg-background border-2 border-border rounded-2xl py-8 md:py-12 text-center text-4xl md:text-6xl font-tech font-black tracking-[0.2em] text-primary focus:border-primary outline-none transition-all shadow-inner placeholder:text-muted-foreground/5 disabled:opacity-50"
-                      placeholder="000000"
-                    />
-                    <Hash className="absolute left-6 top-1/2 -translate-y-1/2 text-primary/10 hidden md:block" size={40} />
-                  </div>
-                  
-                  <button 
-                    onClick={handleScan}
-                    disabled={processing || inputCode.length < 6 || !isAuthorized}
-                    className="w-full bg-primary text-primary-foreground font-display font-black italic py-6 md:py-8 rounded-2xl flex items-center justify-center gap-4 text-lg md:text-xl transition-all active:scale-[0.98] shadow-lg shadow-primary/20 disabled:opacity-30"
-                  >
-                    {processing ? <Loader2 className="animate-spin" /> : <Search size={24} />}
-                    ANALYSER LE CODE
-                  </button>
-                </div>
-              </section>
+      {activeTab === 'terminal' ? (
+        <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
+          
+          {/* SCANNER (7 COL) */}
+          <div className="xl:col-span-7 space-y-6">
+            <div className="grid grid-cols-2 gap-4">
+              <StatCard label="EN TRANSIT" value={myStats.toDeliver} icon={<Truck size={12}/>} color="primary" />
+              <StatCard label="SUCCÈS" value={myStats.completed} icon={<CheckCircle2 size={12}/>} color="success" />
             </div>
 
-            {/* COLONNE DROITE : RÉSULTAT SCAN */}
-            <div className="lg:col-span-5">
-              {scannedExp ? (
-                <div className={cn("p-1 h-full rounded-[28px] md:rounded-[36px] shadow-2xl animate-in zoom-in-95 duration-300", actionBg)}>
-                  <div className="bg-secondary rounded-[26px] md:rounded-[34px] p-5 md:p-8 h-full flex flex-col gap-6">
-                    
-                    <div className="flex justify-between items-center bg-background/40 p-3 rounded-xl border border-white/5">
-                       <div className={cn("flex items-center gap-2 px-3 py-1 rounded-lg font-tech text-[10px] font-black uppercase", isDepot ? 'bg-primary/20 text-primary' : 'bg-success/20 text-success')}>
-                         {isDepot ? <PackageSearch size={14} /> : <CheckCircle2 size={14} />}
-                         {isDepot ? 'DÉPÔT' : 'RETRAIT'}
-                       </div>
-                       <button onClick={() => setScannedExp(null)} className="text-muted-foreground hover:text-foreground font-bold p-2 text-xs md:text-sm">ANNULER</button>
-                    </div>
+            <div className={cn(cardStyle, "relative p-8 md:p-12 min-h-[420px] flex flex-col items-center justify-center")}>
+              {!isAuthorized && <LockOverlay onSubscribe={() => navigate('/dashboard/subscription')} />}
+              
+              <div className="w-full max-w-sm space-y-8 text-center relative z-10">
+                <div className="space-y-2">
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary font-tech text-[8px] font-black uppercase tracking-widest">
+                    <Zap size={10} className="animate-pulse" /> Saisie sécurisée
+                  </div>
+                  <h3 className="text-2xl font-display font-black italic uppercase text-foreground">Code_Expédition</h3>
+                </div>
 
-                    <div className="space-y-4 flex-1">
-                      {/* BOX PRODUIT */}
-                      <div className="p-5 bg-background/50 rounded-2xl border-2 border-border">
-                        <p className="font-tech text-[9px] text-muted-foreground font-black uppercase mb-1">DÉTAILS_FRET</p>
-                        <h3 className="text-xl md:text-2xl font-display font-black italic uppercase leading-tight truncate">
-                          {scannedExp.commande?.annonce?.produit?.nom_prod || 'PRODUIT_AGRI'}
-                        </h3>
-                        <div className="flex justify-between mt-4 pt-3 border-t border-border/50 items-end">
-                            <span className="font-tech text-[10px] font-bold text-muted-foreground">{scannedExp.commande?.quantite_commandee || 1} UNITÉ(S)</span>
-                            <span className={cn("text-2xl font-tech font-black", actionColor)}>{scannedExp.commande?.prix_total_commande || 0} USD</span>
+                <div className="relative">
+                  <input 
+                    type="text"
+                    maxLength={6}
+                    value={inputCode}
+                    onChange={(e) => setInputCode(e.target.value.toUpperCase())}
+                    onKeyDown={(e) => e.key === 'Enter' && handleScan()}
+                    className="w-full bg-background/20 border-2 border-border rounded-2xl py-8 text-center text-5xl font-tech font-black tracking-[0.3em] text-primary focus:border-primary transition-all outline-none"
+                    placeholder="------"
+                  />
+                  <Hash className="absolute left-6 top-1/2 -translate-y-1/2 text-border/20" size={32} />
+                </div>
+
+                <button 
+                  onClick={handleScan}
+                  disabled={processing || inputCode.length < 6}
+                  className="w-full bg-primary text-primary-foreground py-5 rounded-xl font-display font-black italic text-xl flex items-center justify-center gap-3 hover:brightness-105 active:scale-[0.98] transition-all shadow-lg shadow-primary/20"
+                >
+                  {processing ? <Loader2 className="animate-spin" /> : <Search size={22} />}
+                  VÉRIFIER
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* RÉSULTAT SCAN (5 COL) */}
+          <div className="xl:col-span-5">
+            {scannedExp ? (
+              <div className={cn("rounded-[28px] p-[1.5px] animate-in zoom-in-95 duration-300 shadow-xl", actionBg)}>
+                <div className="bg-background rounded-[26px] p-6 space-y-6">
+                  <div className="flex justify-between items-center">
+                    <span className={cn("px-3 py-1 rounded-lg font-tech text-[9px] font-black uppercase tracking-widest", isDepot ? 'bg-primary/10 text-primary' : 'bg-emerald-500/10 text-emerald-400')}>
+                       {isDepot ? 'FLUX : DÉPÔT' : 'FLUX : RETRAIT'}
+                    </span>
+                    <button onClick={() => setScannedExp(null)} className="text-muted-foreground hover:text-foreground font-tech text-[9px] uppercase font-black transition-colors italic">Fermer</button>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div className="bg-secondary/20 rounded-2xl p-5 border border-border">
+                      <p className="font-tech text-[8px] text-muted-foreground font-black uppercase mb-1">Désignation</p>
+                      <h4 className="text-xl font-display font-black italic uppercase text-foreground leading-tight truncate">
+                        {scannedExp.productName}
+                      </h4>
+                      
+                      <div className="flex justify-between items-end mt-6">
+                        <div>
+                          <p className="font-tech text-[7px] text-muted-foreground uppercase font-black">Destination</p>
+                          <p className="text-xs font-bold flex items-center gap-1"><MapPin size={12} className="text-primary"/> {scannedExp.destination}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-tech text-[7px] text-muted-foreground uppercase font-black">Valeur</p>
+                          <p className={cn("text-2xl font-tech font-black tracking-tighter", actionColor)}>{scannedExp.commande?.prix_total_commande}$</p>
                         </div>
                       </div>
-
-                      {/* BOX CLIENT */}
-                      <div className="p-5 bg-background/50 rounded-2xl border-2 border-border space-y-4">
-                          <p className="font-tech text-[9px] text-muted-foreground font-black uppercase tracking-widest">{isDepot ? 'VENDEUR_EXPÉDITEUR' : 'ACHETEUR_DESTINATAIRE'}</p>
-                          <p className="font-display font-black italic text-lg uppercase truncate">{clientData?.nom || "AGENT_EXTERNE"}</p>
-                          <div className="flex items-center justify-between bg-background p-3 rounded-xl border border-border">
-                            <span className="font-tech font-bold text-sm tracking-widest">{clientData?.numero_tel || "INCONNU"}</span>
-                            {clientData?.numero_tel && (
-                              <a href={`tel:${clientData?.numero_tel}`} className={cn("p-2 rounded-lg text-white", actionBg)}>
-                                <Phone size={18} />
-                              </a>
-                            )}
-                          </div>
-                      </div>
                     </div>
 
+                    <div className="flex items-center gap-4 bg-secondary/10 p-4 rounded-2xl border border-border/50">
+                      <div className="w-11 h-11 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                        <User size={20} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-tech text-[7px] text-muted-foreground uppercase">{isDepot ? 'Expéditeur' : 'Client'}</p>
+                        <p className="font-display font-black text-sm text-foreground uppercase truncate">{actor?.nom}</p>
+                      </div>
+                      <a href={`tel:${actor?.numero_tel}`} className="p-3 bg-primary text-primary-foreground rounded-xl hover:scale-105 transition-transform">
+                        <Phone size={16} />
+                      </a>
+                    </div>
+                  </div>
+
+                  <button 
+                    onClick={handleConfirm}
+                    disabled={processing}
+                    className={cn("w-full py-6 rounded-2xl text-white font-display font-black italic text-xl flex items-center justify-center gap-3 transition-all", actionBg)}
+                  >
+                    {processing ? <Loader2 className="animate-spin" /> : <ShieldCheck size={24} />}
+                    {isDepot ? "VALIDER RÉCEPTION" : "VALIDER REMISE"}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="h-full min-h-[350px] border-2 border-dashed border-border rounded-[28px] flex flex-col items-center justify-center text-center p-8 bg-secondary/5">
+                 <Radar className="text-muted-foreground/20 animate-spin-slow mb-4" size={56} />
+                 <p className="text-muted-foreground/30 font-tech font-black uppercase text-[8px] tracking-[0.4em]">En attente de flux terminal...</p>
+              </div>
+            )}
+          </div>
+        </div>
+      ) : (
+        /* SECTION RÉSEAU : Cartes plus petites (Grid x3 ou x4) */
+        <div className="space-y-6 animate-in slide-in-from-bottom-4 duration-500">
+          <div className="bg-primary/90 p-8 rounded-[24px] overflow-hidden relative group shadow-xl">
+            <div className="relative z-10 space-y-1">
+              <h3 className="text-3xl font-display font-black italic uppercase text-primary-foreground tracking-tight">Opportunités</h3>
+              <p className="font-tech text-[9px] text-primary-foreground/80 font-black uppercase tracking-[0.4em]">
+                {opportunities.length} Colis détectés dans votre secteur
+              </p>
+            </div>
+            <Globe className="absolute right-[-20px] top-[-10px] text-primary-foreground/10 group-hover:rotate-12 transition-transform duration-[4s]" size={180} />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {opportunities.map((opp) => (
+              <div key={opp.id} className={cardStyle}>
+                <div className="p-5 space-y-5">
+                  <div className="flex justify-between items-start">
+                    <div className="px-2.5 py-1 bg-primary/10 rounded-lg text-primary font-tech text-[8px] font-black uppercase">
+                      A_RECEPTIONNER
+                    </div>
+                    <span className="text-xl font-tech font-black text-foreground tracking-tighter">
+                      {opp.commande?.prix_total_commande}$
+                    </span>
+                  </div>
+                  
+                  <div className="space-y-1">
+                    <h4 className="text-base font-display font-black italic uppercase text-foreground line-clamp-1">
+                      {opp.commande?.annonce?.produit?.nom_prod || 'PRODUIT_AGRI'}
+                    </h4>
+                    <p className="text-[9px] font-tech font-bold text-muted-foreground uppercase flex items-center gap-1">
+                      <MapPin size={10} className="text-primary"/> {opp.commande?.destination_ville}
+                    </p>
+                  </div>
+
+                  <div className="pt-4 border-t border-border/50 flex items-center justify-between">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <div className="w-8 h-8 rounded-full bg-secondary border border-border flex flex-shrink-0 items-center justify-center font-display font-black text-[10px] text-primary">
+                        {opp.vendeur?.nom?.substring(0,1)}
+                      </div>
+                      <span className="text-[8px] font-tech font-black text-muted-foreground uppercase truncate">{opp.vendeur?.nom}</span>
+                    </div>
                     <button 
-                      onClick={handleConfirm}
-                      disabled={processing || !isAuthorized}
+                      onClick={() => isAuthorized ? (window.location.href = `tel:${opp.vendeur?.numero_tel}`) : toast.error("Licence requise")}
                       className={cn(
-                        "w-full py-6 md:py-8 rounded-2xl text-white font-display font-black italic flex items-center justify-center gap-3 text-lg md:text-xl shadow-xl transition-all active:scale-[0.98]", 
-                        !isAuthorized ? "bg-muted-foreground/30 grayscale cursor-not-allowed" : actionBg
+                        "p-2.5 rounded-lg transition-all",
+                        isAuthorized ? "bg-primary text-primary-foreground hover:scale-110" : "bg-muted text-muted-foreground cursor-not-allowed"
                       )}
                     >
-                      {processing ? <Loader2 className="animate-spin" /> : (!isAuthorized ? <Lock size={24} /> : <ShieldCheck size={24} />)}
-                      {!isAuthorized ? "ABONNEMENT REQUIS" : (isDepot ? "VALIDER LE DÉPÔT" : "VALIDER LE RETRAIT")}
+                      {isAuthorized ? <Phone size={14} /> : <Lock size={14} />}
                     </button>
                   </div>
                 </div>
-              ) : (
-                <div className="h-full min-h-[300px] border-4 border-dashed border-border rounded-[32px] flex flex-col items-center justify-center text-center p-8 bg-secondary/20">
-                   <Radar className="text-primary/10 mb-4 animate-pulse" size={48} />
-                   <p className="text-muted-foreground/30 font-tech font-black uppercase text-[10px] tracking-[0.3em]">
-                     EN ATTENTE DE SCAN...
-                   </p>
-                </div>
-              )}
-            </div>
+              </div>
+            ))}
           </div>
-        ) : (
-          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-             
-             {/* BANNIÈRE RÉSEAU */}
-             <div className="mb-8 p-4 bg-secondary rounded-2xl border border-border flex items-center gap-4">
-                <Globe className="text-primary animate-spin-slow" size={24} />
-                <p className="text-[10px] md:text-xs font-tech font-black uppercase tracking-widest">
-                  Réseau Global : {opportunities.length} Colis attendent un transporteur.
-                </p>
-             </div>
-
-             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                {opportunities.map((opp) => (
-                  <div key={opp.id} className={cn(cardStyle, "flex flex-col border-t-primary/20", !isAuthorized && "opacity-70")}>
-                    <div className="p-6 flex-1 space-y-4">
-                      <div className="flex justify-between items-start">
-                        <div className="w-12 h-12 bg-background rounded-xl flex items-center justify-center border border-border">
-                          <ShoppingBag className="text-primary/60" size={20} />
-                        </div>
-                        <span className="text-2xl font-tech font-black text-success tracking-tighter">
-                          {opp.commande?.prix_total_commande}$
-                        </span>
-                      </div>
-                      <h4 className="text-lg font-display font-black italic leading-tight uppercase line-clamp-2">
-                        {opp.commande?.annonce?.produit?.nom_prod || 'PRODUIT_RÉSEAU'}
-                      </h4>
-                      <div className="space-y-2 pt-4 border-t border-border font-tech text-[9px] font-black text-muted-foreground uppercase tracking-widest">
-                        <div className="flex items-center gap-3">
-                          <MapPin size={12} className="text-primary" />
-                          <span className="truncate">{opp.destination_ville}</span>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <User size={12} className="text-primary" />
-                          <span className="truncate">{opp.vendeur?.nom}</span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="p-2 border-t border-border">
-                      {isAuthorized ? (
-                        <a href={`tel:${opp.vendeur?.numero_tel}`} className="w-full bg-secondary hover:bg-primary hover:text-white py-4 rounded-xl flex items-center justify-center gap-3 font-tech text-[10px] font-black uppercase tracking-widest transition-all">
-                          <Phone size={14} /> CONTACTER LE VENDEUR
-                        </a>
-                      ) : (
-                        <div className="w-full bg-background border border-border py-4 rounded-xl flex items-center justify-center gap-3 font-tech text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 cursor-not-allowed">
-                          <Lock size={14} /> CONTACT MASQUÉ
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ))}
-             </div>
-          </div>
-        )}
-      </main>
+        </div>
+      )}
     </div>
   );
 }
 
-// --- SOUS-COMPOSANTS ---
-
+// COMPOSANTS INTERNES
 function TabButton({ active, onClick, icon, label, count }: any) {
   return (
     <button 
       onClick={onClick}
       className={cn(
-        "flex-1 px-5 py-3 rounded-xl flex items-center justify-center gap-3 font-tech text-[10px] font-black uppercase tracking-widest transition-all",
-        active 
-          ? "bg-primary text-primary-foreground shadow-lg" 
-          : "text-muted-foreground/60 hover:text-primary"
+        "flex-1 py-2 px-3 rounded-md flex items-center justify-center gap-2 font-tech text-[9px] font-black uppercase tracking-widest transition-all",
+        active ? "bg-primary text-primary-foreground shadow-md" : "text-muted-foreground hover:text-foreground"
       )}
     >
       {icon} <span className="hidden sm:inline">{label}</span>
-      {count !== undefined && (
-        <span className={cn("ml-1 px-1.5 py-0.5 rounded-md text-[8px]", active ? "bg-white/20" : "bg-border")}>
-          {count}
-        </span>
-      )}
+      {count !== undefined && <span className={cn("ml-1 px-1.5 py-0.5 rounded text-[8px]", active ? "bg-white/20" : "bg-primary/10")}>{count}</span>}
     </button>
   );
 }
 
-function MiniStat({ label, value, variant }: { label: string, value: any, variant: 'primary' | 'success' }) {
-  const themes = {
-    primary: "text-primary border-primary/10 bg-primary/5",
-    success: "text-success border-success/10 bg-success/5"
-  };
-  
+function StatCard({ label, value, icon, color }: any) {
+  const styles = color === 'primary' ? "text-primary border-primary/20 bg-primary/5" : "text-emerald-500 border-emerald-500/20 bg-emerald-500/5";
   return (
-    <div className={cn("p-5 rounded-2xl border-2 flex flex-col shadow-sm", themes[variant])}>
-      <p className="font-tech text-[8px] font-black uppercase tracking-widest opacity-60 mb-1">{label}</p>
+    <div className={cn("p-4 rounded-2xl border flex flex-col justify-between h-28 relative overflow-hidden", styles)}>
+      <span className="font-tech text-[8px] font-black uppercase tracking-[0.2em] opacity-70">{label}</span>
       <p className="text-3xl font-tech font-black tracking-tighter">{value}</p>
+      <div className="absolute right-2 bottom-2 opacity-10">{icon}</div>
+    </div>
+  );
+}
+
+function LockOverlay({ onSubscribe }: { onSubscribe: () => void }) {
+  return (
+    <div className="absolute inset-0 bg-background/90 backdrop-blur-xl z-40 flex flex-col items-center justify-center p-8 text-center rounded-[20px]">
+      <Lock className="text-primary mb-4" size={32} />
+      <h3 className="text-xl font-display font-black italic uppercase text-foreground">Accès bloqué</h3>
+      <p className="text-[9px] text-muted-foreground font-black uppercase tracking-widest mt-2 mb-6">Licence Agence requise</p>
+      <button onClick={onSubscribe} className="px-6 py-3 bg-primary text-primary-foreground rounded-xl font-display font-black italic text-sm flex items-center gap-2 hover:scale-105 transition-transform">
+        ACTIVER <ChevronRight size={16} />
+      </button>
     </div>
   );
 }

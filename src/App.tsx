@@ -16,6 +16,7 @@ import { useAuthSession } from '@/features/auth/hooks/use-auth-session';
 import MarketView from './features/marcher/view/MarketView';
 import { AgencyTerminalView } from './features/transport/view/AgencyTerminalView';
 import { NotificationCenterView } from './features/notifications/components/NotificationCenterView';
+import { WalletView } from './features/portefeuille/components/WalletView';
 
 
 export default function App() {
@@ -33,7 +34,7 @@ export default function App() {
   }
 
   return (
-    <BrowserRouter>
+    <BrowserRouter >
       <Routes>
         {/* --- ZONE PUBLIQUE --- */}
         <Route path="/" element={<Navigate to="/login" replace />} />
@@ -47,9 +48,10 @@ export default function App() {
           <Route path="profile" element={<ProfileView />} />
           
           {/* ROUTE NOTIFICATIONS AJOUTÉE ICI */}
-          <Route path="notifications" element={<NotificationCenterView />} />
+       <Route path="notifications" element={<NotificationCenterView  />} />
           
           <Route path="subscription" element={<SubscriptionView userId={profile?.id || ''} />} />
+         < Route path="portefeuille" element={<WalletView/>} />
        
           <Route path="settings" element={<div className="p-8 text-white">Paramètres...</div>} />
           

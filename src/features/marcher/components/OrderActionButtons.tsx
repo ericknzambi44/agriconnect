@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button } from "@/components/ui/button";
-import { Edit3, Trash2, Lock, Zap } from "lucide-react";
+import { Edit3, Trash2, Lock, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface Props {
@@ -10,62 +10,63 @@ interface Props {
 }
 
 export function OrderActionButtons({ status, onEdit, onCancel }: Props) {
-  // Statut de modification autorisé uniquement en attente
-  const canInteract = status === 'en_attente';
+  const canInteract = status === 'en_attente' || status === 'PENDING';
 
-  // ÉTAT VERROUILLÉ : Adaptatif
+  // --- ÉTAT VERROUILLÉ : Plus lisible et plus pro ---
   if (!canInteract) {
     return (
-      <div className="flex items-center gap-2 px-3 py-2 bg-secondary/30 rounded-lg border border-border/50 opacity-50 select-none shrink-0 transition-all duration-300">
-        <Lock size={10} className="text-muted-foreground shrink-0 md:w-3 md:h-3" />
-        <span className="font-tech text-[7px] md:text-[8px] font-black text-muted-foreground uppercase tracking-[0.15em] whitespace-nowrap">
-          LOCKED
+      <div className="flex items-center gap-2 px-3 py-1.5 bg-secondary/50 rounded-full border border-white/5 opacity-60 select-none shrink-0">
+        <Lock size={14} className="text-muted-foreground" />
+        <span className="font-tech text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+          VERROUILLÉ
         </span>
       </div>
     );
   }
 
   return (
-    <div className="flex items-center gap-2 sm:gap-3 animate-in fade-in slide-in-from-right-2 duration-500 shrink-0">
+    <div className="flex items-center gap-2.5 sm:gap-4 animate-in fade-in slide-in-from-right-3 duration-500 shrink-0">
       
-      {/* BOUTON MODIFIER : Optimisé pour le tactile */}
+      {/* BOUTON MODIFIER : Cible tactile élargie (44px+) */}
       <Button 
         onClick={(e) => {
           e.stopPropagation();
           onEdit();
         }}
+        variant="outline"
         className={cn(
-          "h-10 w-10 md:h-11 md:w-11 p-0 rounded-xl bg-background border-2 border-border shadow-sm",
-          "hover:border-primary/50 hover:bg-primary/5 text-muted-foreground hover:text-primary",
-          "active:scale-90 active:bg-primary/10 transition-all group relative overflow-hidden shrink-0"
+          "h-11 w-11 md:h-12 md:w-12 p-0 rounded-2xl bg-secondary/40 border-white/10 shadow-lg",
+          "hover:border-primary/50 hover:bg-primary/10 text-foreground hover:text-primary",
+          "active:scale-90 transition-all group shrink-0"
         )}
       >
-        <Edit3 size={16} className="relative z-10 group-hover:rotate-12 transition-transform duration-300 md:w-5 md:h-5" />
-        <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+        <Edit3 size={20} className="group-hover:rotate-12 transition-transform duration-300 md:w-6 md:h-6" />
       </Button>
 
-      {/* BOUTON ANNULER : Style Danger Zone avec protection tactile */}
+      {/* BOUTON ANNULER : Rouge plus visible pour la sécurité */}
       <Button 
         onClick={(e) => {
           e.stopPropagation();
-          if (window.confirm("RÉVOQUER CETTE POSTULATION ?")) {
+          // Une confirmation un peu plus "Tech"
+          if (window.confirm("CONFIRMER LA SUPPRESSION DE L'ORDRE ?")) {
             onCancel();
           }
         }}
+        variant="outline"
         className={cn(
-          "h-10 w-10 md:h-11 md:w-11 p-0 rounded-xl bg-background border-2 border-border shadow-sm",
-          "hover:border-destructive/50 hover:bg-destructive/5 text-muted-foreground hover:text-destructive",
-          "active:scale-90 active:bg-destructive/10 transition-all group relative overflow-hidden shrink-0"
+          "h-11 w-11 md:h-12 md:w-12 p-0 rounded-2xl bg-destructive/5 border-destructive/20 shadow-lg",
+          "hover:border-destructive hover:bg-destructive hover:text-destructive-foreground text-destructive",
+          "active:scale-90 transition-all group shrink-0"
         )}
       >
-        <Trash2 size={16} className="relative z-10 group-hover:scale-110 transition-transform duration-300 md:w-5 md:h-5" />
-        <div className="absolute inset-0 bg-destructive/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+        <Trash2 size={20} className="group-hover:scale-110 transition-transform duration-300 md:w-6 md:h-6" />
       </Button>
 
-      {/* INDICATEUR DE FLUX : Masquage intelligent sur mobile ultra-petit */}
-      <div className="hidden sm:flex flex-col items-center gap-1 opacity-40 group-hover:opacity-100 transition-opacity">
-        <Zap size={10} className="text-primary animate-pulse" />
-        <div className="w-[2px] h-4 bg-gradient-to-b from-primary to-transparent rounded-full" />
+      {/* INDICATEUR D'ÉTAT : Visible uniquement si l'espace le permet */}
+      <div className="hidden lg:flex flex-col items-center gap-1 opacity-20">
+        <div className="w-[1px] h-3 bg-primary" />
+        <AlertCircle size={10} className="text-primary" />
+        <div className="w-[1px] h-3 bg-primary" />
       </div>
 
     </div>
