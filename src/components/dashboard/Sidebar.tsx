@@ -8,7 +8,7 @@ import { getNavigationForRole } from "@/config/navigation";
 import { useAuthSession } from '@/features/auth/hooks/use-auth-session';
 
 interface SidebarProps {
-  role: 'vendeur' | 'acheteur' | 'transporteur';
+  role: 'vendeur' | 'acheteur' | 'transporteur' | 'admin';
   isOpen: boolean;
   onClose: () => void;
 }
