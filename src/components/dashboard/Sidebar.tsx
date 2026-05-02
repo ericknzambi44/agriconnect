@@ -31,10 +31,10 @@ export function Sidebar({ role, isOpen, onClose }: SidebarProps) {
       isOpen ? "translate-x-0" : "-translate-x-full"
     )}>
       
-      {/* BOUTON FERMER (MOBILE) */}
+      {/* BOUTON FERMER (MOBILE) : Repositionné à l'intérieur pour éviter l'offuscation */}
       <button 
         onClick={onClose}
-        className="absolute top-6 right-[-50px] p-3 lg:hidden text-white bg-[#070707] border border-white/10 rounded-r-xl transition-all active:scale-90"
+        className="absolute top-4 right-4 p-2 lg:hidden text-white/40 hover:text-white bg-white/5 hover:bg-white/10 rounded-xl transition-all active:scale-90 z-[110]"
       >
         <X className="w-5 h-5" />
       </button>
@@ -51,12 +51,12 @@ export function Sidebar({ role, isOpen, onClose }: SidebarProps) {
           <span className="text-primary text-glow-primary">CONNECT</span>
         </h2>
         
-        <div className="mt-6 flex items-center gap-3 px-4 py-2 bg-white/[0.02] border border-white/5 rounded-xl">
+        <div className="mt-6 flex items-center gap-3 px-4 py-2 bg-white/[0.02] border border-white/5 rounded-xl max-w-[160px]">
           <div className="relative flex h-2 w-2">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-40"></span>
             <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
           </div>
-          <span className="font-tech text-[9px] font-black uppercase tracking-[0.2em] text-white/70 italic">
+          <span className="font-tech text-[9px] font-black uppercase tracking-[0.2em] text-white/70 italic truncate">
             {role}_ACCESS
           </span>
         </div>
@@ -76,20 +76,20 @@ export function Sidebar({ role, isOpen, onClose }: SidebarProps) {
               className={({ isActive }) => cn(
                 "flex items-center justify-between px-5 py-4 rounded-2xl transition-all duration-300 group relative overflow-hidden",
                 isActive 
-                  ? "bg-primary/10 text-white" 
+                  ? "bg-primary/10 text-white active-nav-item" 
                   : "text-muted-foreground hover:text-white hover:bg-white/[0.02]",
               )}
             >
               {/* Indicateur actif vertical (Style Flux) */}
               <div className={cn(
-                "absolute left-0 top-1/4 bottom-1/4 w-1 bg-primary transition-all duration-500",
-                "group-[.active]:opacity-100 opacity-0 group-[.active]:shadow-[4px_0_15px_rgba(var(--primary),0.6)]"
+                "absolute left-0 top-1/4 bottom-1/4 w-1 bg-primary transition-all duration-500 opacity-0",
+                "group-[.active-nav-item]:opacity-100 group-[.active-nav-item]:shadow-[4px_0_15px_rgba(var(--primary),0.6)]"
               )} />
 
               <div className="flex items-center gap-4 min-w-0">
                 <item.icon className={cn(
                   "w-5 h-5 shrink-0 transition-all duration-500",
-                  "group-hover:text-primary group-[.active]:text-primary group-hover:scale-110"
+                  "group-hover:text-primary group-[.active-nav-item]:text-primary group-hover:scale-110"
                 )} />
                 <span className="font-tech text-[10px] font-black uppercase tracking-[0.2em] leading-none">
                   {item.name}
@@ -97,7 +97,7 @@ export function Sidebar({ role, isOpen, onClose }: SidebarProps) {
               </div>
 
               <ChevronRight className={cn(
-                "w-3 h-3 shrink-0 transition-all opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 group-[.active]:opacity-100 group-[.active]:translate-x-0 text-primary"
+                "w-3 h-3 shrink-0 transition-all opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 group-[.active-nav-item]:opacity-100 group-[.active-nav-item]:translate-x-0 text-primary"
               )} />
             </NavLink>
           );

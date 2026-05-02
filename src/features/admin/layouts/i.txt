@@ -1,8 +1,0 @@
-<Route path="/admin/login" element={<AdminLogin />} />
-
-<Route path="/admin" element={<AdminTerminal />}>
-  <Route index element={<Navigate to="/admin/overview" replace />} />
-  <Route path="overview" element={<AdminOverview />} />
-  <Route path="users" element={<AdminUsers />} />
-  <Route path="agencies" element={<AdminAgencies />} />
-</Route>
