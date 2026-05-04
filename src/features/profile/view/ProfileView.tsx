@@ -1,6 +1,6 @@
 import { IdentityForm } from '../components/IdentityForm';
 import { AddressForm } from '../components/AddressForm';
-import { RoleSwitcher } from '../components/RoleSwitcher';
+//import { RoleSwitcher } from '../components/RoleSwitcher';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card } from "@/components/ui/card";
@@ -96,7 +96,7 @@ export default function ProfileView() {
           <div className="hidden lg:block p-8 bg-secondary/30 border-2 border-border rounded-[2rem] space-y-6 shadow-inner border-t-primary/10">
             <div className="flex items-center gap-2">
                <div className="w-1.5 h-1.5 bg-primary rounded-full animate-ping" />
-               <p className="font-tech text-[9px] text-muted-foreground uppercase tracking-widest font-black italic">_Nexus_Reputation</p>
+               <p className="font-tech text-[9px] text-muted-foreground uppercase tracking-widest font-black italic">_Score_Reputation</p>
             </div>
             <div className="space-y-4">
               <div className="flex justify-between items-end">
@@ -128,14 +128,14 @@ export default function ProfileView() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="roles" className="mt-0 focus-visible:outline-none animate-in fade-in slide-in-from-bottom-4 lg:slide-in-from-right-8 duration-500">
+          {/* <TabsContent value="roles" className="mt-0 focus-visible:outline-none animate-in fade-in slide-in-from-bottom-4 lg:slide-in-from-right-8 duration-500">
             <RoleSwitcher
               currentRoleId={profile?.role_id}
               roles={roles}
               onRoleChange={changeRole}
               loading={isLoading}
             />
-          </TabsContent>
+          </TabsContent> */}
 
           <TabsContent value="danger" className="mt-0 focus-visible:outline-none animate-in fade-in slide-in-from-bottom-4 lg:slide-in-from-right-8 duration-500">
             <Card className="bg-error/5 border-2 border-error p-6 md:p-12 rounded-[1.5rem] md:rounded-[3rem] border-l-[8px] md:border-l-[16px] relative overflow-hidden shadow-2xl">

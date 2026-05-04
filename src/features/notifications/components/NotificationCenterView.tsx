@@ -70,9 +70,9 @@ export function NotificationCenterView() {
         <div className="hidden sm:flex px-6 md:px-10 py-2 bg-white/[0.02] border-b border-white/5 items-center justify-between shrink-0">
             <div className="flex items-center gap-2">
                 <Fingerprint size={10} className="text-primary/30" />
-                <span className="font-tech text-[7px] text-muted-foreground/40 font-bold uppercase tracking-widest italic text-white/40">End_to_End_Encryption_Active</span>
+                <span className="font-tech text-[7px] text-muted-foreground/40 font-bold uppercase tracking-widest italic text-white/40">Notification_Active</span>
             </div>
-            <span className="font-tech text-[7px] text-muted-foreground/30 font-black uppercase tracking-tighter">{notifications?.length} Logs_détectés</span>
+            <span className="font-tech text-[7px] text-muted-foreground/30 font-black uppercase tracking-tighter">{notifications?.length}détectés</span>
         </div>
 
         <div className="flex-1 divide-y divide-white/[0.03]">
