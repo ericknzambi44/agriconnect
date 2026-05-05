@@ -2,7 +2,7 @@
 import { useState, FormEvent } from 'react';
 import { supabase } from '@/supabase';
 import { toast } from 'sonner';
-import { ShieldAlert, Lock, Mail, Loader2, Terminal, Cpu } from 'lucide-react';
+import { ShieldAlert, Lock, Mail, Loader2, Terminal, Cpu, Fingerprint } from 'lucide-react';
 import { useAdminCore } from '../hooks/use-admin-core';
 
 export default function AdminLogin() {
@@ -16,7 +16,7 @@ export default function AdminLogin() {
   const isPending = isAuthenticating || (isSyncing && !!admin);
 
   const handleLogin = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault(); // Empêche strictement le rechargement de la page
+    e.preventDefault();
     
     if (!email || !password) {
       toast.error("PARAMÈTRES_MANQUANTS : Veuillez remplir tous les champs");
@@ -38,8 +38,6 @@ export default function AdminLogin() {
         return;
       }
       
-      // Succès Auth : Le hook useAdminCore détectera le changement d'état 
-      // et procèdera à la vérification des privilèges ROOT
       toast.loading("ACCÈS_AUTORISÉ : Vérification des privilèges...", { id: loginToast });
 
     } catch (error: any) {
@@ -49,117 +47,124 @@ export default function AdminLogin() {
   };
 
   return (
-    <div className="min-h-screen bg-[#020202] flex items-center justify-center p-6 relative overflow-hidden">
-      {/* Grid d'arrière-plan Matrix/Terminal */}
+    <div className="min-h-screen bg-black flex items-center justify-center p-4 relative overflow-hidden font-sans">
+      
+      {/* BACKGROUND TECHNIQUE */}
       <div 
-        className="absolute inset-0 opacity-[0.05] pointer-events-none" 
+        className="absolute inset-0 opacity-[0.03] pointer-events-none" 
         style={{ 
-          backgroundImage: `linear-gradient(to right, #1a1a1a 1px, transparent 1px), linear-gradient(to bottom, #1a1a1a 1px, transparent 1px)`,
-          backgroundSize: '40px 40px' 
+          backgroundImage: `radial-gradient(circle at 2px 2px, white 1px, transparent 0)`,
+          backgroundSize: '32px 32px' 
         }} 
       />
       
-      {/* Effet Glow au centre */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-primary/5 blur-[120px] rounded-full pointer-events-none" />
+      {/* GLOW DE STRUCTURE */}
+      <div className="absolute -top-[10%] -left-[10%] w-[40%] h-[40%] bg-primary/10 blur-[120px] rounded-full pointer-events-none" />
+      <div className="absolute -bottom-[10%] -right-[10%] w-[40%] h-[40%] bg-primary/5 blur-[120px] rounded-full pointer-events-none" />
 
-      <div className="w-full max-w-md relative animate-in fade-in zoom-in duration-700">
+      <div className="w-full max-w-[420px] relative z-10 animate-in fade-in zoom-in duration-1000">
         
-        {/* Header : Branding AgriConnect Admin */}
-        <div className="text-center mb-10">
-          <div className="relative inline-block">
-             <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full animate-pulse" />
-             <div className="relative flex items-center justify-center w-16 h-16 rounded-2xl bg-[#0A0A0A] border border-white/10 mb-4">
-                <Cpu className="text-primary" size={32} strokeWidth={1.5} />
+        {/* LOGO & BRANDING */}
+        <div className="text-center mb-12">
+          <div className="relative inline-flex items-center justify-center mb-6">
+             <div className="absolute inset-0 bg-primary/20 blur-2xl rounded-full" />
+             <div className="relative w-20 h-20 bg-[#0A0A0A] border-2 border-white/10 rounded-[2rem] flex items-center justify-center shadow-2xl">
+                <Cpu className="text-primary" size={40} strokeWidth={1.5} />
              </div>
           </div>
-          <h1 className="text-3xl font-black uppercase italic text-white tracking-tighter">
-            Agri<span className="text-primary underline decoration-2 underline-offset-4">Admin</span>
+          
+          <h1 className="text-4xl md:text-5xl font-black italic uppercase text-white tracking-tighter leading-none">
+            Agri<span className="text-primary">Admin</span>
           </h1>
-          <div className="flex items-center justify-center gap-3 mt-3">
-            <span className="h-[1px] w-6 bg-primary/30"></span>
-            <p className="text-[9px] font-mono text-white/40 uppercase tracking-[0.4em] font-bold">
-                Infrastructure_Security_Portal
-            </p>
-            <span className="h-[1px] w-6 bg-primary/30"></span>
+          
+          <div className="mt-4 inline-flex items-center gap-3 px-4 py-1.5 bg-white/5 border border-white/10 rounded-full">
+            <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+            <span className="text-[9px] font-black text-white/40 uppercase tracking-[0.3em]">
+                Secure Infrastructure Portal
+            </span>
           </div>
         </div>
 
-        {/* Console Box */}
-        <div className="bg-[#0A0A0A]/80 border border-white/5 p-8 md:p-10 rounded-[2.5rem] backdrop-blur-xl shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)]">
-          <form onSubmit={handleLogin} className="space-y-6">
-            <div className="space-y-2">
-              <label className="text-[9px] font-black text-white/30 uppercase ml-1 tracking-widest">
-                Admin_Identifier
+        {/* CONSOLE D'AUTHENTIFICATION */}
+        <div className="bg-[#0A0A0A] border border-white/10 p-8 md:p-10 rounded-[3rem] shadow-[0_40px_80px_-20px_rgba(0,0,0,0.8)]">
+          <form onSubmit={handleLogin} className="space-y-7">
+            
+            {/* EMAIL / IDENTIFIANT */}
+            <div className="space-y-3">
+              <label className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em] ml-2">
+                Identifiant_Session
               </label>
               <div className="relative group">
-                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-primary transition-colors">
-                    <Mail size={16} />
+                <div className="absolute left-5 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-primary transition-colors">
+                    <Mail size={18} />
                 </div>
                 <input
                   type="email"
                   placeholder="NOM@AGRICONNECT.IO"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full bg-white/[0.02] border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-white placeholder:text-white/5 focus:outline-none focus:border-primary/50 focus:bg-white/[0.04] transition-all font-mono text-[11px] uppercase tracking-wider"
+                  className="w-full h-16 bg-white/[0.03] border-2 border-white/5 rounded-2xl pl-14 pr-6 text-white text-xs font-bold uppercase tracking-wider focus:outline-none focus:border-primary/40 focus:bg-white/[0.05] transition-all placeholder:text-white/5"
                   required
                 />
               </div>
             </div>
 
-            <div className="space-y-2">
-              <label className="text-[9px] font-black text-white/30 uppercase ml-1 tracking-widest">
-                Access_Passcode
+            {/* PASSWORD / PASSCODE */}
+            <div className="space-y-3">
+              <label className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em] ml-2">
+                Clé_Accès_Chiffrée
               </label>
               <div className="relative group">
-                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-primary transition-colors">
-                    <Lock size={16} />
+                <div className="absolute left-5 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-primary transition-colors">
+                    <Lock size={18} />
                 </div>
                 <input
                   type="password"
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full bg-white/[0.02] border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-white placeholder:text-white/5 focus:outline-none focus:border-primary/50 focus:bg-white/[0.04] transition-all font-mono text-[11px]"
+                  className="w-full h-16 bg-white/[0.03] border-2 border-white/5 rounded-2xl pl-14 pr-6 text-white focus:outline-none focus:border-primary/40 focus:bg-white/[0.05] transition-all placeholder:text-white/5 tracking-[0.5em]"
                   required
                 />
               </div>
             </div>
 
+            {/* SUBMIT BUTTON */}
             <button
               type="submit"
               disabled={isPending}
-              className="group relative w-full overflow-hidden bg-white hover:bg-primary text-black font-black uppercase italic py-4.5 rounded-2xl transition-all flex items-center justify-center gap-3 mt-4 active:scale-[0.98] disabled:opacity-40 disabled:cursor-wait shadow-2xl shadow-white/5"
+              className="w-full h-16 bg-white hover:bg-primary text-black font-black uppercase italic rounded-2xl transition-all flex items-center justify-center gap-4 mt-4 active:scale-95 disabled:opacity-40 shadow-xl shadow-white/5 group"
             >
               {isPending ? (
                 <>
-                  <Loader2 className="animate-spin text-black" size={18} />
-                  <span className="text-[10px] tracking-[0.2em]">Executing_Sequence...</span>
+                  <Loader2 className="animate-spin" size={20} strokeWidth={3} />
+                  <span className="text-[11px] tracking-widest">Protocol_Syncing...</span>
                 </>
               ) : (
                 <>
-                  <ShieldAlert size={18} className="group-hover:animate-pulse" />
-                  <span className="text-[10px] tracking-[0.2em]">Initialiser_Session_Root</span>
+                  <Fingerprint size={20} strokeWidth={2.5} className="group-hover:scale-110 transition-transform" />
+                  <span className="text-[11px] tracking-[0.2em]">Initialiser_Root</span>
                 </>
               )}
             </button>
           </form>
         </div>
 
-        {/* Interface Footer Info */}
-        <div className="mt-10 flex flex-col items-center gap-4">
-          <div className="flex items-center gap-6">
+        {/* FOOTER INFO TECHNIQUE */}
+        <div className="mt-12 space-y-6">
+          <div className="flex items-center justify-center gap-8">
             <div className="flex items-center gap-2">
-              <div className={`w-1.5 h-1.5 rounded-full ${isSyncing ? 'bg-yellow-500 animate-pulse' : 'bg-primary'}`} />
-              <span className="text-[8px] font-mono text-white/30 uppercase tracking-[0.2em]">Node_Status: {isSyncing ? 'Sync' : 'Ready'}</span>
+              <div className={`w-2 h-2 rounded-full ${isSyncing ? 'bg-amber-500 animate-pulse' : 'bg-emerald-500'}`} />
+              <span className="text-[8px] font-black text-white/20 uppercase tracking-[0.2em]">Network: {isSyncing ? 'Syncing' : 'Online'}</span>
             </div>
-            <div className="h-3 w-[1px] bg-white/10" />
-            <div className="flex items-center gap-2 text-white/30">
-                <Terminal size={10} />
-               
+            <div className="flex items-center gap-2">
+                <Terminal size={12} className="text-white/10" />
+                <span className="text-[8px] font-black text-white/20 uppercase tracking-[0.2em]">v1.0.0_Secure</span>
             </div>
           </div>
-          <p className="text-[7px] text-white/10 font-mono uppercase tracking-[0.4em]">
-            © 2026  Engineering Infrastructure
+          
+          <p className="text-center text-[7px] text-white/10 font-black uppercase tracking-[0.6em]">
+            © 2026  • Cyber-Infrastructure
           </p>
         </div>
       </div>

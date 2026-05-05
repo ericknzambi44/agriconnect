@@ -1,6 +1,5 @@
 // src/features/admin/pages/AdminAgencies.tsx
 import { useState, useMemo } from 'react';
-
 import { 
   Plus, 
   Trash2, 
@@ -11,12 +10,11 @@ import {
   Loader2, 
   Search,
   X,
-  Radio,
-  Navigation,
-  Activity
+  ChevronRight,
+  Globe,
+  AlertCircle
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { cn } from "@/lib/utils";
 import { useAgencyManager } from '../hooks/use-agency-manager';
 
 export default function AdminAgencies() {
@@ -31,7 +29,7 @@ export default function AdminAgencies() {
     telephone_responsable: ''
   });
 
-  // Filtrage intelligent
+  // Filtrage
   const filteredAgencies = useMemo(() => {
     return agencies.filter(a => 
       a.nom?.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -42,32 +40,31 @@ export default function AdminAgencies() {
   const handleCreateAgency = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    const t = toast.loading("Déploiement du Node sur le réseau...");
+    const t = toast.loading("Enregistrement de l'agence...");
 
     try {
       await createAgency(newAgency);
-      toast.success("Node opérationnel", { id: t });
+      toast.success("Agence ajoutée au réseau", { id: t });
       setShowAddModal(false);
       setNewAgency({ nom: '', ville_territoire: '', telephone_responsable: '' });
     } catch (error: any) {
-      toast.error("Échec de l'initialisation", { id: t });
+      toast.error("Erreur d'enregistrement", { id: t });
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const confirmDelete = (id: string, name: string) => {
-    toast.warning(`RÉVOCATION_CRITIQUE`, {
-      description: `Voulez-vous déconnecter "${name}" de l'infrastructure ?`,
-      duration: 8000,
+    toast("SUPPRESSION CRITIQUE", {
+      description: `Voulez-vous vraiment supprimer l'agence "${name}" ?`,
       action: {
-        label: "DÉPLOYER_PURGE",
+        label: "SUPPRIMER",
         onClick: async () => {
           const deletePromise = deleteAgency(id);
           toast.promise(deletePromise, {
-            loading: 'Déconnexion du Node...',
-            success: 'Node purgé avec succès.',
-            error: 'Erreur de protocole.',
+            loading: 'Suppression en cours...',
+            success: 'Agence supprimée.',
+            error: 'Erreur : l\'agence a encore des agents liés.',
           });
         }
       },
@@ -76,192 +73,173 @@ export default function AdminAgencies() {
 
   if (loading && agencies.length === 0) {
     return (
-      <div className="min-h-[70vh] flex flex-col items-center justify-center p-6 text-center space-y-4">
-        <div className="relative">
-            <Loader2 className="animate-spin text-primary" size={40} strokeWidth={1} />
-            <div className="absolute inset-0 bg-primary/20 blur-2xl rounded-full" />
-        </div>
-        <span className="text-[10px] font-mono text-white/40 uppercase tracking-[0.4em] animate-pulse">
-            Sychronizing_Global...
-        </span>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-black">
+        <Loader2 className="animate-spin text-primary mb-4" size={40} />
+        <span className="text-[10px] font-black text-white uppercase tracking-[0.5em]">Chargement Système...</span>
       </div>
     );
   }
 
   return (
-    <div className="p-4 md:p-8 space-y-6 md:space-y-10 max-w-[1600px] mx-auto animate-in fade-in duration-700">
+    <div className="min-h-screen bg-black text-white p-4 md:p-8 font-sans">
       
-      {/* HEADER DE COMMANDE CENTRALISÉ */}
-      <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6">
-        <div className="flex items-center gap-4">
-          <div className="w-14 h-14 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center relative overflow-hidden group">
-            <div className="absolute inset-0 bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity" />
-            <Building2 className="text-primary relative z-10" size={24} />
-          </div>
+      {/* HEADER : STYLE ÉLITE */}
+      <div className="max-w-7xl mx-auto mb-10 space-y-6">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
-            <h1 className="text-2xl md:text-3xl font-black italic uppercase text-white tracking-tighter">
-              Nodes_<span className="text-primary">Agences</span>
+            <h1 className="text-4xl md:text-6xl font-black italic uppercase tracking-tighter leading-none">
+              Réseau <span className="text-primary">Agences</span>
             </h1>
-            <div className="flex items-center gap-3 mt-1">
-                <span className="flex items-center gap-1.5 text-[9px] font-mono text-emerald-500 uppercase font-bold">
-                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                    {agencies.length} Actifs
-                </span>
-                <span className="w-px h-2 bg-white/10" />
-                <span className="text-[9px] font-mono text-white/20 uppercase">Network_v1.0.0</span>
-            </div>
+            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.3em] mt-3 flex items-center gap-2">
+              <span className="w-2 h-2 bg-primary rounded-full animate-pulse" />
+              AgriConnect Administration • {agencies.length} entités actives
+            </p>
           </div>
-        </div>
-
-        <div className="flex flex-col sm:flex-row items-center gap-3">
-          <div className="relative w-full sm:w-72 group">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-primary transition-colors" size={14} />
-            <input 
-              type="text" 
-              placeholder="RECHERCHER_NODE..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-[#0A0A0A] border border-white/5 rounded-2xl py-3.5 pl-11 pr-4 text-[10px] font-mono text-white focus:border-primary/40 outline-none transition-all"
-            />
-          </div>
+          
           <button 
             onClick={() => setShowAddModal(true)}
-            className="w-full sm:w-auto bg-white text-black px-8 py-3.5 rounded-2xl font-black text-[10px] uppercase italic flex items-center justify-center gap-3 hover:bg-primary hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-white/5"
+            className="bg-white text-black h-14 md:h-16 px-8 rounded-2xl font-black text-xs uppercase italic flex items-center justify-center gap-3 hover:bg-primary transition-all active:scale-95 shadow-lg shadow-white/5"
           >
-            <Plus size={16} strokeWidth={3} /> Initialiser
+            <Plus size={20} strokeWidth={3} /> Ajouter une Agence
           </button>
+        </div>
+
+        {/* BARRE DE RECHERCHE HAUTE VISIBILITÉ */}
+        <div className="relative group">
+          <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors" size={20} />
+          <input 
+            type="text" 
+            placeholder="RECHERCHER PAR NOM OU LOCALISATION..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full bg-[#0F0F0F] border-2 border-white/5 rounded-2xl py-5 pl-14 pr-6 text-xs font-black uppercase tracking-widest focus:border-primary/50 outline-none transition-all placeholder:text-white/10"
+          />
         </div>
       </div>
 
-      {/* GRID : BENTO ARCHITECTURE */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-5 md:gap-6">
+      {/* GRID : STYLE BENTO / ADMIN PRO */}
+      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
         {filteredAgencies.map((agency) => (
           <div 
             key={agency.id} 
-            className="group relative bg-[#0A0A0A] border border-white/5 p-6 md:p-8 rounded-[2.5rem] hover:border-primary/30 transition-all duration-500 hover:shadow-[0_20px_40px_-20px_rgba(0,0,0,0.5)] overflow-hidden"
+            className="group relative bg-[#0F0F0F] border border-white/10 rounded-[2rem] p-6 md:p-8 hover:border-primary/40 transition-all duration-300 flex flex-col justify-between overflow-hidden"
           >
-            {/* Background Accent */}
-            <div className="absolute -right-4 -top-4 w-24 h-24 bg-primary/5 blur-3xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
+            {/* Décoration en fond */}
+            <div className="absolute -right-6 -top-6 opacity-[0.02] group-hover:opacity-[0.05] transition-opacity">
+               <Building2 size={120} />
+            </div>
 
-            <div className="flex justify-between items-start mb-8">
-              <div className="flex flex-col gap-1">
-                <div className="w-12 h-12 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-black transition-all duration-500">
-                  <Navigation size={22} />
+            <div>
+              <div className="flex justify-between items-start mb-6">
+                <div className="w-12 h-12 bg-white/5 rounded-xl flex items-center justify-center text-primary border border-white/5 group-hover:bg-primary group-hover:text-black transition-colors">
+                  <Globe size={24} />
                 </div>
-              </div>
-              <div className="flex gap-2">
                 <button 
                   onClick={() => confirmDelete(agency.id, agency.nom)}
-                  className="p-3 bg-red-500/5 hover:bg-red-500 text-red-500/40 hover:text-white rounded-xl transition-all"
+                  className="p-3 bg-red-500/5 hover:bg-red-500 text-red-500 hover:text-white rounded-xl transition-all"
                 >
-                  <Trash2 size={16} />
+                  <Trash2 size={18} />
                 </button>
               </div>
-            </div>
 
-            <div className="space-y-2">
-              <h3 className="text-xl font-black text-white uppercase italic tracking-tighter leading-tight group-hover:text-primary transition-colors">
-                {agency.nom}
-              </h3>
-              <div className="flex items-center gap-2">
-                <MapPin size={12} className="text-white/20" />
-                <p className="text-[10px] font-mono text-white/40 uppercase tracking-widest truncate">
-                  {agency.ville_territoire || "ZONE_NON_DÉFINIE"}
-                </p>
-              </div>
-            </div>
-
-            <div className="mt-10 pt-6 border-t border-white/5 grid grid-cols-2 gap-4">
               <div className="space-y-1">
-                <span className="text-[8px] font-mono text-white/20 uppercase tracking-[0.2em]">Personnel_Actif</span>
-                <div className="flex items-center gap-2 text-white">
-                  <Users size={14} className="text-primary/40" />
-                  <span className="text-xs font-black font-mono">{agency.agents_count?.[0]?.count || 0}</span>
-                </div>
-              </div>
-
-              <div className="space-y-1 text-right">
-                <span className="text-[8px] font-mono text-white/20 uppercase tracking-[0.2em]">Ligne_Directe</span>
-                <div className="flex items-center gap-2 justify-end text-white/60">
-                  <span className="text-[10px] font-mono font-bold">{agency.telephone_responsable || '---'}</span>
-                  <Phone size={12} className="text-primary/40" />
+                <h3 className="text-xl md:text-2xl font-black text-white uppercase italic tracking-tighter leading-tight">
+                  {agency.nom}
+                </h3>
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <MapPin size={14} className="text-primary" />
+                  <p className="text-[10px] font-bold uppercase tracking-widest truncate">
+                    {agency.ville_territoire || "NON DÉFINI"}
+                  </p>
                 </div>
               </div>
             </div>
 
-            {/* Hover Footer Action */}
-            <div className="mt-6 transform translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
-                <button className="w-full py-3 bg-white/5 hover:bg-white/10 rounded-xl text-[9px] font-black uppercase tracking-[0.2em] text-white/60 border border-white/5">
-                    Ouvrir
-                </button>
+            <div className="mt-8 pt-6 border-t border-white/5 flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="flex flex-col">
+                  <span className="text-[8px] font-black text-white/30 uppercase tracking-widest">Effectif</span>
+                  <div className="flex items-center gap-1.5 mt-1">
+                    <Users size={14} className="text-primary" />
+                    <span className="text-sm font-black italic">{agency.agents_count?.[0]?.count || 0}</span>
+                  </div>
+                </div>
+                <div className="w-px h-8 bg-white/10" />
+                <div className="flex flex-col">
+                  <span className="text-[8px] font-black text-white/30 uppercase tracking-widest">Contact</span>
+                  <div className="flex items-center gap-1.5 mt-1">
+                    <Phone size={14} className="text-white/40" />
+                    <span className="text-[10px] font-bold">{agency.telephone_responsable || '---'}</span>
+                  </div>
+                </div>
+              </div>
+              
+              <button className="h-10 w-10 bg-white/5 rounded-full flex items-center justify-center hover:bg-primary hover:text-black transition-all">
+                <ChevronRight size={18} />
+              </button>
             </div>
           </div>
         ))}
 
         {filteredAgencies.length === 0 && (
-          <div className="col-span-full py-32 flex flex-col items-center justify-center border border-dashed border-white/10 rounded-[3rem] bg-white/[0.01]">
-            <Activity size={40} className="text-white/5 mb-4" />
-            <p className="text-[10px] font-mono text-white/20 uppercase tracking-[0.5em]">Aucune_Correspondance</p>
+          <div className="col-span-full py-20 flex flex-col items-center justify-center border-2 border-dashed border-white/5 rounded-[3rem] opacity-30">
+            <AlertCircle size={48} className="mb-4" />
+            <p className="text-xs font-black uppercase tracking-[0.4em]">Aucun résultat système</p>
           </div>
         )}
       </div>
 
-      {/* MODAL / DRAWER MOBILE-FRIENDLY */}
+      {/* MODAL : STYLE DRAWER MOBILE */}
       {showAddModal && (
-        <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-300">
-          <div className="w-full max-w-xl bg-[#080808] border border-white/10 rounded-t-[3rem] sm:rounded-[3rem] overflow-hidden shadow-2xl animate-in slide-in-from-bottom-20 duration-500">
+        <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-4 bg-black/90 backdrop-blur-xl animate-in fade-in duration-300">
+          <div className="w-full max-w-xl bg-[#0A0A0A] border border-white/10 rounded-t-[2.5rem] sm:rounded-[2.5rem] overflow-hidden shadow-2xl">
             
-            <div className="p-8 border-b border-white/5 flex justify-between items-center bg-white/[0.02]">
-              <div className="flex items-center gap-4">
-                <div className="p-3 bg-primary/10 rounded-2xl">
-                    <Radio className="text-primary animate-pulse" size={20} />
-                </div>
-                <div>
-                  <h3 className="text-white font-black text-sm uppercase tracking-widest italic">Déploiement_Node</h3>
-                  <p className="text-[8px] text-white/20 font-mono uppercase mt-0.5 tracking-widest font-bold">Infrastucture_Expansion</p>
-                </div>
+            <div className="p-6 md:p-8 border-b border-white/5 flex justify-between items-center bg-white/[0.02]">
+              <div>
+                <h3 className="text-white font-black text-lg uppercase tracking-tighter italic">Nouvelle Agence</h3>
+                <p className="text-[9px] text-primary font-bold uppercase tracking-widest">Extension du réseau AgriConnect</p>
               </div>
-              <button onClick={() => setShowAddModal(false)} className="p-3 hover:bg-white/5 rounded-2xl text-white/20 hover:text-white transition-colors">
+              <button onClick={() => setShowAddModal(false)} className="p-3 hover:bg-white/5 rounded-2xl transition-colors">
                 <X size={24} />
               </button>
             </div>
 
-            <form onSubmit={handleCreateAgency} className="p-8 space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <form onSubmit={handleCreateAgency} className="p-6 md:p-8 space-y-6">
+              <div className="space-y-4">
                 <div className="space-y-2">
-                    <label className="text-[9px] font-black text-white/30 uppercase tracking-widest ml-1">Désignation</label>
+                    <label className="text-[10px] font-black text-white/40 uppercase tracking-widest ml-1">Nom de l'entité</label>
                     <input required value={newAgency.nom} onChange={e => setNewAgency({...newAgency, nom: e.target.value})}
-                    className="w-full bg-white/[0.03] border border-white/5 rounded-2xl py-4 px-5 text-xs text-white focus:border-primary outline-none transition-all placeholder:text-white/5"
-                    placeholder="ex: NODE_GOMA_OFFICE" />
+                    className="w-full bg-white/[0.03] border-2 border-white/5 rounded-2xl py-4 px-5 text-sm font-bold text-white focus:border-primary outline-none transition-all"
+                    placeholder="Ex: AGENCE_BUNIA_CENTRE" />
                 </div>
 
                 <div className="space-y-2">
-                    <label className="text-[9px] font-black text-white/30 uppercase tracking-widest ml-1">Zone_Urbaine</label>
+                    <label className="text-[10px] font-black text-white/40 uppercase tracking-widest ml-1">Ville / Territoire</label>
                     <input required value={newAgency.ville_territoire} onChange={e => setNewAgency({...newAgency, ville_territoire: e.target.value})}
-                    className="w-full bg-white/[0.03] border border-white/5 rounded-2xl py-4 px-5 text-xs text-white focus:border-primary outline-none transition-all placeholder:text-white/5"
-                    placeholder="ex: GOMA, KIVU" />
+                    className="w-full bg-white/[0.03] border-2 border-white/5 rounded-2xl py-4 px-5 text-sm font-bold text-white focus:border-primary outline-none transition-all"
+                    placeholder="Ex: Bunia, Ituri" />
+                </div>
+
+                <div className="space-y-2">
+                    <label className="text-[10px] font-black text-white/40 uppercase tracking-widest ml-1">Téléphone Responsable</label>
+                    <input value={newAgency.telephone_responsable} onChange={e => setNewAgency({...newAgency, telephone_responsable: e.target.value})}
+                    className="w-full bg-white/[0.03] border-2 border-white/5 rounded-2xl py-4 px-5 text-sm font-bold text-white focus:border-primary outline-none transition-all"
+                    placeholder="+243 ..." />
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <label className="text-[9px] font-black text-white/30 uppercase tracking-widest ml-1">Communication_ID (WhatsApp/Tel)</label>
-                <input value={newAgency.telephone_responsable} onChange={e => setNewAgency({...newAgency, telephone_responsable: e.target.value})}
-                  className="w-full bg-white/[0.03] border border-white/5 rounded-2xl py-4 px-5 text-xs text-white focus:border-primary outline-none transition-all placeholder:text-white/5"
-                  placeholder="+243 ..." />
-              </div>
-
-              <div className="pt-4 flex gap-3">
+              <div className="pt-4 flex flex-col sm:flex-row gap-3">
                 <button 
                     type="button"
                     onClick={() => setShowAddModal(false)}
-                    className="flex-1 py-4 rounded-2xl font-black text-[10px] uppercase text-white/40 border border-white/5 hover:bg-white/5 transition-all"
+                    className="flex-1 py-4 rounded-2xl font-black text-[10px] uppercase text-white/40 border border-white/10 hover:bg-white/5 transition-all"
                 >
-                    Abandonner
+                    Annuler
                 </button>
                 <button disabled={isSubmitting} type="submit"
-                    className="flex-[2] bg-primary text-black py-4 rounded-2xl font-black text-[10px] uppercase italic hover:scale-[1.02] shadow-lg shadow-primary/20 transition-all disabled:opacity-50"
+                    className="flex-[2] bg-primary text-black py-4 rounded-2xl font-black text-[10px] uppercase italic hover:bg-primary/90 transition-all disabled:opacity-50"
                 >
-                    {isSubmitting ? 'SYCHRONISATION_EN_COURS...' : 'DÉPLOYER_SUR_AGRICONNECT'}
+                    {isSubmitting ? 'CRÉATION EN COURS...' : 'CONFIRMER LE DÉPLOIEMENT'}
                 </button>
               </div>
             </form>
