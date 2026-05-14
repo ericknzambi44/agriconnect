@@ -1,100 +1,105 @@
+// components/marketplace/MarketRadar.tsx
 import React from 'react';
-import { Zap, MapPin, TrendingDown, Layers, Radio } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { MarketAnnonce } from '../hooks/useMarketplace';
+import { MapPin, Phone, Sprout, Package, TrendingUp } from "lucide-react";
+import { OrderActionButtons } from './OrderActionButtons';
 
 interface MarketRadarProps {
-  onStreamChange: (streamId: string) => void;
-  activeStream: string;
+  annonces: MarketAnnonce[];
+  loading: boolean;
+  onOrderStart: (annonce: MarketAnnonce) => void;
 }
 
-export function MarketRadar({ onStreamChange, activeStream }: MarketRadarProps) {
-  const streams = [
-    { id: 'all', label: 'GLOBAL', icon: Layers, desc: 'UNITÉS' },
-    { id: 'trending', label: 'TREND', icon: Zap, desc: 'DEMANDE' },
-    { id: 'nearby', label: 'LOCAL', icon: MapPin, desc: 'PROXIM' },
-    { id: 'cheap', label: 'OFFRES', icon: TrendingDown, desc: 'PRIX_BAS' },
-  ];
+export function MarketRadar({ annonces, loading, onOrderStart }: MarketRadarProps) {
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="relative w-16 h-16">
+          <div className="absolute inset-0 border-4 border-primary/30 rounded-full animate-ping" />
+          <div className="absolute inset-2 border-4 border-t-primary rounded-full animate-spin" />
+        </div>
+      </div>
+    );
+  }
+
+  if (annonces.length === 0) {
+    return (
+      <div className="text-center py-16 bg-gradient-to-br from-white/[0.02] to-transparent rounded-3xl border border-white/10 backdrop-blur-sm">
+        <Package className="w-12 h-12 text-white/20 mx-auto mb-3" />
+        <p className="text-white/50 font-black uppercase italic">Aucune annonce disponible</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="relative w-full select-none space-y-1.5 md:space-y-2">
-      
-      {/* 1. HEADER : Minimaliste & High-Tech */}
-      <div className="flex items-center justify-between px-1.5 opacity-80">
-        <div className="flex items-center gap-1.5">
-          <div className="relative h-2 w-2">
-             <div className="absolute inset-0 bg-primary rounded-full animate-ping opacity-40" />
-             <div className="relative h-2 w-2 bg-primary rounded-full shadow-[0_0_8px_rgba(var(--primary),0.8)]" />
-          </div>
-          <h3 className="font-tech text-[8px] md:text-[9px] font-black uppercase tracking-[0.3em] text-muted-foreground">
-            RADAR_<span className="text-foreground">FLUX</span>
-          </h3>
-        </div>
-        
-        <div className="flex items-center gap-1">
-           <span className="font-tech text-[6px] text-primary/40 font-bold uppercase tracking-tighter">BUNIA_ZONE_04</span>
-           <div className="w-1 h-1 rounded-full bg-border" />
-        </div>
-      </div>
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-5">
+      {annonces.map((annonce) => {
+        // Prix affiché : priorité à prix_total sinon calcul
+        const displayPrice = annonce.prix_total || (annonce.quantite_vendre * annonce.produit?.prix_prod);
+        return (
+          <div
+            key={annonce.id}
+            className="group relative bg-gradient-to-b from-white/[0.04] to-black/40 backdrop-blur-sm border border-white/10 rounded-2xl overflow-hidden hover:border-primary/50 hover:shadow-2xl hover:shadow-primary/10 transition-all duration-500 hover:-translate-y-1"
+          >
+            {/* Badge gradient en haut */}
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary via-pink-500 to-primary opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
-      {/* 2. CARROUSEL : Puces (Chips) compactes avec Gradients */}
-      <div className="relative group">
-        <div className="flex gap-1.5 md:gap-2 overflow-x-auto pb-1.5 no-scrollbar px-0.5 snap-x">
-          {streams.map((s) => {
-            const isActive = activeStream === s.id;
-            
-            return (
-              <button
-                key={s.id}
-                onClick={() => onStreamChange(s.id)}
-                className={cn(
-                  "relative flex items-center transition-all duration-300 shrink-0 outline-none snap-start",
-                  "h-8 md:h-10 px-3 md:px-4 rounded-lg border-[1px] transition-all",
-                  isActive 
-                    ? "bg-gradient-to-tr from-primary/20 via-primary/5 to-transparent border-primary/50 shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]" 
-                    : "bg-secondary/20 border-border/20 hover:border-primary/30 hover:bg-secondary/40"
-                )}
-              >
-                {/* Icône Ultra-Fine */}
-                <s.icon 
-                  size={12} 
-                  className={cn(
-                    "transition-all",
-                    isActive ? "text-primary scale-110" : "text-muted-foreground/40"
-                  )} 
-                  strokeWidth={isActive ? 3 : 2} 
-                />
-                
-                {/* Texte : On utilise une typo serrée pour gagner de la place */}
-                <div className={cn(
-                  "flex flex-col items-start overflow-hidden transition-all duration-300",
-                  isActive ? "max-w-[80px] ml-2 opacity-100" : "max-w-0 md:max-w-[70px] opacity-0 md:opacity-60 md:ml-2"
-                )}>
-                  <span className={cn(
-                    "font-display text-[9px] md:text-[10px] font-black uppercase italic tracking-tight whitespace-nowrap",
-                    isActive ? "text-primary" : "text-foreground"
-                  )}>
-                    {s.label}
+            {/* Image avec overlay gradient */}
+            <div className="relative h-44 sm:h-48 overflow-hidden bg-gradient-to-br from-black/60 to-black/20">
+              <img
+                src={annonce.produit?.image || '/api/placeholder/400/300'}
+                alt={annonce.produit?.nom_prod}
+                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
+              <div className="absolute top-2 right-2 bg-black/70 backdrop-blur-sm px-2 py-0.5 rounded-full text-[10px] font-black text-primary uppercase border border-primary/30">
+                {annonce.produit?.categorie?.libelle_categorie}
+              </div>
+            </div>
+
+            {/* Corps */}
+            <div className="p-4 space-y-3">
+              <div>
+                <h3 className="text-white font-black uppercase italic text-base sm:text-lg line-clamp-1">
+                  {annonce.produit?.nom_prod}
+                </h3>
+                <div className="flex items-baseline gap-1 mt-1">
+                  <span className="text-primary font-black text-xl sm:text-2xl">
+                    {displayPrice?.toFixed(2)} $
                   </span>
-                  {/* Petit descripteur invisible sur mobile pour la clarté */}
-                  <span className="hidden md:block font-tech text-[5px] text-muted-foreground/40 uppercase font-black tracking-[0.2em] -mt-0.5">
-                    {s.desc}
+                  <span className="text-white/40 text-[10px] font-black uppercase">
+                    / {annonce.produit?.unite}
                   </span>
                 </div>
+              </div>
 
-                {/* Glow discret en bas si actif */}
-                {isActive && (
-                  <div className="absolute inset-x-0 -bottom-[1px] h-[1px] bg-gradient-to-r from-transparent via-primary to-transparent shadow-[0_0_10px_rgba(var(--primary),0.5)]" />
-                )}
-              </button>
-            );
-          })}
-        </div>
-      </div>
+              {/* Infos vendeur */}
+              <div className="space-y-1.5 text-[11px] font-bold">
+                <div className="flex items-center gap-1.5 text-white/70">
+                  <Phone className="w-3 h-3 text-primary flex-shrink-0" />
+                  <span className="truncate">{annonce.vendeur?.numero_tel || "—"}</span>
+                </div>
+                <div className="flex items-center gap-1.5 text-white/70">
+                  <Sprout className="w-3 h-3 text-primary flex-shrink-0" />
+                  <span className="truncate">{annonce.produit?.lieu_culture || "Lieu inconnu"}</span>
+                </div>
+                <div className="flex items-start gap-1.5 text-white/50 text-[10px]">
+                  <MapPin className="w-3 h-3 mt-0.5 text-primary/70 flex-shrink-0" />
+                  <span className="line-clamp-1">{annonce.vendeur?.adresse?.commune}, {annonce.vendeur?.adresse?.ville}</span>
+                </div>
+              </div>
 
-      <style>{`
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-      `}</style>
+              {/* Stock */}
+              <div className="flex justify-between items-center border-t border-white/10 pt-2 text-[10px] font-black uppercase">
+                <span className="text-white/40">Restant</span>
+                <span className="text-primary">{annonce.quantite_restante} {annonce.produit?.unite}</span>
+              </div>
+
+              <OrderActionButtons annonce={annonce} onOrderStart={onOrderStart} />
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }

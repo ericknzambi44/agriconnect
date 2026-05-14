@@ -1,9 +1,9 @@
+// src/features/recolte/hooks/useRecoltes.ts
 import { useState, useEffect } from 'react';
 import { supabase } from '@/supabase';
 import { useAuthSession } from '@/features/auth/hooks/use-auth-session';
 import { toast } from 'sonner';
 import { Produit } from '../types';
-
 
 export function useRecoltes() {
   const { profile } = useAuthSession();
@@ -17,7 +17,7 @@ export function useRecoltes() {
       const { data, error } = await supabase
         .from('produit')
         .select(`*, annonce(*), categorie(*)`) 
-        .eq('user_id', profile.id) // 🔴 
+        .eq('user_id', profile.id)
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -39,14 +39,14 @@ export function useRecoltes() {
     try {
       let finalImageUrl = payload.image || "";
 
-      // --- GESTION ROBUSTE DE L'IMAGE ---
+      // Gestion de l'image
       if (imageFile) {
         const fileExt = imageFile.name.split('.').pop();
         const cleanFileName = `${Date.now()}-${Math.random().toString(36).substring(2, 7)}.${fileExt}`;
         const filePath = `${profile.id}/${cleanFileName}`;
 
         const { error: uploadError } = await supabase.storage
-          .from('produits') 
+          .from('produits')
           .upload(filePath, imageFile, {
             cacheControl: '3600',
             upsert: false
@@ -64,14 +64,18 @@ export function useRecoltes() {
         finalImageUrl = publicUrl;
       }
 
-      // --- INSERTION DANS LA TABLE PRODUIT ---
+      // Préparation de l'objet à insérer (inclut lieu_culture)
+      const insertData = { 
+        ...payload, 
+        user_id: profile.id,
+        image: finalImageUrl,
+        lieu_culture: payload.lieu_culture || null  
+      };
+
+      // Insertion
       const { data, error } = await supabase
         .from('produit')
-        .insert([{ 
-          ...payload, 
-          user_id: profile.id, // On utilise bien user_id ici
-          image: finalImageUrl 
-        }])
+        .insert([insertData])
         .select(`*, categorie(*)`)
         .single();
 

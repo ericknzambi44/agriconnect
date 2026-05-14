@@ -8,10 +8,11 @@ export const usePayment = () => {
   const [error, setError] = useState<string | null>(null);
 
   const executeOrderAndPayment = async (orderData: any, paymentRequest: PaymentRequest) => {
+    // --- GESTION DE LA CONNEXION ---
     if (!window.navigator.onLine) {
-      toast.error("ERREUR RÉSEAU", {
-        description: "Vérifiez votre connexion internet avant de payer.",
-        className: "bg-red-950 border-red-500 text-white font-black uppercase italic text-[10px]"
+      toast.error("PROBLÈME DE CONNEXION", {
+        description: "Votre appareil semble hors ligne. Veuillez vérifier votre signal internet pour finaliser l'achat.",
+        duration: 5000,
       });
       return { success: false };
     }
@@ -20,14 +21,18 @@ export const usePayment = () => {
     setError(null);
 
     try {
-      // --- ÉTAPE 1 : PAIEMENT MOBILE ---
-      toast.info("INITIALISATION", { description: "Lancement du protocole de paiement..." });
+      // --- ÉTAPE 1 : TRANSACTION MOBILE ---
+      toast.loading("DEMANDE DE PAIEMENT EN COURS...", { 
+        id: "pay-step",
+        description: "Veuillez valider l'opération sur votre téléphone." 
+      });
+      
       const paymentResult = await MockMobileMoneyService.processPayment(paymentRequest);
 
       if (paymentResult.success) {
         
-        // --- ÉTAPE 2 : INSERTION COMMANDE (AVEC DESTINATION) ---
-        // Le Trigger SQL s'activera dès cette insertion car statut_paiement est 'PAYEE'
+        // --- ÉTAPE 2 : SÉCURISATION DE LA COMMANDE ---
+        // Le statut 'PAYEE' déclenche la mise sous séquestre automatique côté serveur
         const { data: commande, error: orderError } = await supabase
           .from('commande')
           .insert([{
@@ -36,9 +41,9 @@ export const usePayment = () => {
             quantite_commandee: Number(orderData.quantite),
             prix_total_commande: Number(orderData.total),
             statut: 'en_attente',
-            statut_paiement: 'PAYEE', // Déclenche le Super-Trigger
+            statut_paiement: 'PAYEE', 
             numero_suivi: paymentResult.transactionId,
-            // NOUVEAUX CHAMPS numero suivie  optionnel
+            // Informations de livraison
             destination_ville: orderData.destination_ville, 
             destination_details: orderData.destination_details,
             id_agence_retrait: orderData.id_agence_retrait || null 
@@ -47,15 +52,16 @@ export const usePayment = () => {
           .single();
 
         if (orderError) {
-          console.error("ERREUR CRITIQUE COMMANDE:", orderError);
-          toast.warning("ALERTE SYSTÈME", {
-            description: "Paiement validé, mais synchronisation base de données échouée. Ref: " + paymentResult.transactionId,
+          console.error("ERREUR ENREGISTREMENT:", orderError);
+          toast.warning("ALERTE DE SYNCHRONISATION", {
+            id: "pay-step",
+            description: "Votre paiement a été prélevé mais la commande a eu un souci. Pas d'inquiétude : votre argent est en sécurité. Réf: " + paymentResult.transactionId,
             duration: 10000,
           });
-          throw new Error("Erreur de synchronisation base de données.");
+          throw new Error("Erreur lors de l'enregistrement de la commande.");
         }
 
-        // --- ÉTAPE 3 : LOG PAIEMENT ---
+        // --- ÉTAPE 3 : ARCHIVAGE DU PAIEMENT ---
         const { error: payError } = await supabase
           .from('payement') 
           .insert([{
@@ -67,27 +73,28 @@ export const usePayment = () => {
           }]);
 
         if (payError) {
-          console.error("Log paiement ignoré (Erreur de liaison):", payError);
+          console.error("Note: Log paiement non critique:", payError);
         }
 
-        // --- OK COOL : TOUT EST BON ---
-        toast.success("ORDRE VALIDÉ", {
-          description: "Le paiement séquestre est actif. Votre colis est en attente d'expédition.",
-          className: "bg-emerald-950 border-emerald-500 text-emerald-500 font-black uppercase italic text-[10px]"
+        // --- MESSAGE FINAL DE CONFIANCE ---
+        toast.success("PAIEMENT RÉUSSI !", {
+          id: "pay-step",
+          description: "Argent sécurisé sous séquestre. Le vendeur préparera votre colis et ne sera payé qu'à la réception de votre marchandise.",
+          duration: 8000,
         });
 
         return { success: true, commande };
 
       } else {
-        throw new Error("Paiement refusé par l'opérateur.");
+        throw new Error("La transaction a été refusée par votre opérateur mobile.");
       }
     } catch (err: any) {
-      const msg = err.message || "Erreur de flux inconnue";
+      const msg = err.message || "Une erreur est survenue lors du processus";
       setError(msg);
       
-      toast.error("ÉCHEC DE L'OPÉRATION", {
+      toast.error("OPÉRATION ANNULÉE", {
+        id: "pay-step",
         description: msg,
-        className: "bg-red-950 border-red-500 text-white font-black uppercase italic text-[10px]"
       });
 
       return { success: false, error: msg };

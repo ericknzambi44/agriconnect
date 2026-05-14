@@ -18,7 +18,6 @@ export function useAgencyTerminalAccess() {
       }
 
       try {
-        // 1. RÉCUPÉRER LA LIAISON AGENT (On trie par date pour éviter l'erreur multi-lignes)
         const { data: agentLink, error: linkErr } = await supabase
           .from('agents_agence')
           .select('agence_id')
@@ -32,8 +31,6 @@ export function useAgencyTerminalAccess() {
           return;
         }
 
-        // 2. RÉCUPÉRER L'AGENCE ET L'ABONNEMENT
-        // Note: On simplifie la jointure pour éviter les erreurs de mapping PostgREST
         const [agencyRes, subRes] = await Promise.all([
           supabase
             .from('agence')
@@ -52,7 +49,7 @@ export function useAgencyTerminalAccess() {
               )
             `)
             .eq('id_utilisateur', profile.id)
-            .eq('statut', 'ACTIF') // On filtre ici pour être plus performant
+            .eq('statut', 'ACTIF')
             .order('date_fin', { ascending: false })
             .limit(1)
             .maybeSingle()
@@ -60,11 +57,8 @@ export function useAgencyTerminalAccess() {
 
         if (agencyRes.data) setAgencyDetails(agencyRes.data);
 
-        // 3. VÉRIFICATION ET CALCUL DE L'ABONNEMENT
         if (subRes.data && subRes.data.plans) {
           const planData = subRes.data.plans;
-          
-          // Sécurité: Si plans est un tableau (parfois le cas selon la config FK)
           const actualPlan = Array.isArray(planData) ? planData[0] : planData;
 
           if (actualPlan?.code_plan === PLAN_AGENCE_PRO) {
@@ -75,7 +69,7 @@ export function useAgencyTerminalAccess() {
 
             setSubscription({ 
               ...subRes.data,
-              plans: actualPlan, // On s'assure que c'est l'objet plat
+              plans: actualPlan,
               daysRemaining: diffDays > 0 ? diffDays : 0 
             });
           }
@@ -84,7 +78,7 @@ export function useAgencyTerminalAccess() {
         }
 
       } catch (err) {
-        console.error("❌ Erreur Hook Access:", err);
+        console.error("Erreur Hook Access:", err);
       } finally {
         setIsLoading(false);
       }
@@ -95,20 +89,79 @@ export function useAgencyTerminalAccess() {
 
   const isAuthorized = useMemo(() => {
     if (!subscription || !subscription.plans) return false;
-
-    // Vérification propre
     const isStatutValide = subscription.statut?.toUpperCase() === 'ACTIF';
     const hasTimeLeft = subscription.daysRemaining > 0;
     const isCorrectPlan = subscription.plans.code_plan === PLAN_AGENCE_PRO;
-
     return isStatutValide && hasTimeLeft && isCorrectPlan;
   }, [subscription]);
+
+  const fetchExpeditionContacts = async (expeditionId: string) => {
+    try {
+      const { data: expedition, error: expError } = await supabase
+        .from('expedition')
+        .select('commande_id, agence_id')
+        .eq('id', expeditionId)
+        .single();
+
+      if (expError || !expedition) return null;
+
+      const { data: commande, error: cmdError } = await supabase
+        .from('commande')
+        .select('acheteur_id, annonce_id')
+        .eq('id', expedition.commande_id)
+        .single();
+
+      if (cmdError || !commande) return null;
+
+      const { data: annonce, error: annError } = await supabase
+        .from('annonce')
+        .select('user_id')
+        .eq('id', commande.annonce_id)
+        .single();
+
+      if (annError || !annonce) return null;
+
+      const acheteurId = commande.acheteur_id;
+      const vendeurId = annonce.user_id;
+      if (!acheteurId || !vendeurId) return null;
+
+      const { data: users, error: usersError } = await supabase
+        .from('users')
+        .select('id, numero_tel, nom, prenom')
+        .in('id', [acheteurId, vendeurId]);
+
+      if (usersError) return null;
+
+      const acheteur = users?.find(u => u.id === acheteurId);
+      const vendeur = users?.find(u => u.id === vendeurId);
+
+      return {
+        acheteur: {
+          id: acheteurId,
+          nom: acheteur?.nom,
+          prenom: acheteur?.prenom,
+          numero_tel: acheteur?.numero_tel || null,
+        },
+        vendeur: {
+          id: vendeurId,
+          nom: vendeur?.nom,
+          prenom: vendeur?.prenom,
+          numero_tel: vendeur?.numero_tel || null,
+        },
+        agence_id: expedition.agence_id,
+      };
+    } catch (err) {
+      console.error("Erreur récupération contacts expédition:", err);
+      return null;
+    }
+  };
 
   return { 
     isAuthorized, 
     subscription, 
     agency: agencyDetails, 
     isLoading: authLoading || isLoading, 
-    profile 
+    profile,
+    fetchExpeditionContacts,
   };
 }

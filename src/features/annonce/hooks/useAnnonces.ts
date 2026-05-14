@@ -14,7 +14,7 @@ export function useAnnonces() {
   }) => {
     setLoading(true);
     
-    console.log("🚀 [PiedZyne_Engine] Initialisation publication annonce...");
+    console.log("🚀 Initialisation publication annonce...");
 
     try {
       const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -33,13 +33,13 @@ export function useAnnonces() {
 
       if (subError) {
         console.error("❌ [Sub_Check_Error]:", subError);
-        throw new Error("Erreur lors de la vérification du node_abonnement");
+        throw new Error("Erreur lors de la vérification d'abonnement");
       }
 
       // 2. LOGIQUE DE BLOCAGE ET REDIRECTION
       if (!subscription) {
         toast.error("ACCÈS REFUSÉ", {
-          description: "Protocole de sécurité : Licence Pied Zyne active requise pour publier.",
+          description: "Protocole de sécurité : L'Abonnement est requise pour publier.",
           className: "bg-secondary border-2 border-primary text-foreground font-tech uppercase italic font-black",
         });
         

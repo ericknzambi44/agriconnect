@@ -9,7 +9,7 @@ import Overview from './view/dashboard/Overview';
 import Recoltes from './features/recolte/view/Recoltes';
 import ProfileView from './features/profile/view/ProfileView';
 import SubscriptionView from './features/abonnenent/view/SubscriptionView';
-import MarketView from './features/marcher/view/MarketView';
+
 import { AgencyTerminalView } from './features/transport/view/AgencyTerminalView';
 import { NotificationCenterView } from './features/notifications/components/NotificationCenterView';
 import { WalletView } from './features/portefeuille/components/WalletView';
@@ -23,6 +23,7 @@ import AdminAgencies from './features/admin/pages/AdminAgencies';
 import { Toaster } from "@/components/ui/sonner"; 
 import { useAuthSession } from '@/features/auth/hooks/use-auth-session';
 import AdminLogin from './features/admin/pages/AdminLogin';
+import { MarketplaceView } from './features/marcher/view/MarketplaceView';
 
 export default function App() {
   const { profile, isLoading } = useAuthSession();
@@ -55,7 +56,7 @@ export default function App() {
           <Route path="settings" element={<div className="p-8 text-white">Paramètres...</div>} />
           
           <Route path="recoltes" element={<Recoltes />} />
-          <Route path="marche" element={<MarketView />} />
+          <Route path="marche" element={<MarketplaceView />} />
 
           <Route 
             path="missions" 

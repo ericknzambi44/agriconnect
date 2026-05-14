@@ -1,43 +1,56 @@
 import { Card } from "@/components/ui/card";
+import { ShieldCheck, Package, Users, MapPin } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export function ExpeditionDetailDrawer({ exp, agence }: any) {
   if (!exp) return null;
 
   return (
-    <Card className="bg-[#0b0b0b] border-white/5 p-6 rounded-3xl space-y-3">
+    <Card className="relative overflow-hidden bg-gradient-to-b from-white/[0.02] to-black/40 border border-white/10 p-6 rounded-2xl md:rounded-3xl space-y-4 backdrop-blur-sm shadow-2xl group">
+      
+      {/* Lueur au survol */}
+      <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
 
-      <div className="text-emerald-500 text-[10px] uppercase font-tech">
-        DÉTAIL_EXPÉDITION
+      {/* En-tête */}
+      <div className="flex items-center gap-2 text-primary text-[10px] uppercase font-tech font-black tracking-wider">
+        <ShieldCheck size={14} className="drop-shadow-[0_0_4px_rgba(var(--primary),0.6)]" />
+        Détail expédition
       </div>
 
-      {/* AGENCE CONTEXT */}
-      <div className="text-[9px] text-white/40">
-        Agence: <span className="text-emerald-500">{agence?.nom_agence || "N/A"}</span>
+      {/* Agence */}
+      <div className="flex items-center gap-2 text-[9px] text-white/50 font-tech uppercase tracking-wider">
+        <MapPin size={12} className="text-primary/70" />
+        Agence: <span className="text-primary font-bold">{agence?.nom_agence || "Non assignée"}</span>
       </div>
 
-      {/* COMMANDE */}
-      <div className="text-white text-sm">
+      {/* Commande */}
+      <div className="flex items-center gap-2 text-white text-sm md:text-base font-black italic tracking-tight">
+        <Package size={14} className="text-primary" />
         Commande #{exp.commande?.id}
       </div>
 
-      <div className="text-[9px] text-white/40">
-        Quantité: {exp.commande?.quantite_commandee} | Prix: {exp.commande?.prix_total_commande}$
+      {/* Quantité / Prix */}
+      <div className="text-[9px] text-white/40 font-tech uppercase tracking-wider pl-6">
+        Quantité: {exp.commande?.quantite_commandee} | Prix: {exp.commande?.prix_total_commande} USD
       </div>
 
-      {/* ACTEURS */}
-      <div className="text-[9px] text-white/40">
-        Vendeur: {exp.vendeur?.nom} {exp.vendeur?.prenom} ({exp.vendeur?.numero_tel})
+      {/* Vendeur */}
+      <div className="text-[9px] text-white/40 font-tech uppercase tracking-wider border-l-2 border-primary/30 pl-3">
+        Vendeur: {exp.vendeur?.nom} {exp.vendeur?.prenom || ""} {exp.vendeur?.numero_tel ? `(${exp.vendeur.numero_tel})` : "(N° non renseigné)"}
       </div>
 
-      <div className="text-[9px] text-white/40">
-        Acheteur: {exp.acheteur?.nom} {exp.acheteur?.prenom} ({exp.acheteur?.numero_tel})
+      {/* Acheteur */}
+      <div className="text-[9px] text-white/40 font-tech uppercase tracking-wider border-l-2 border-primary/30 pl-3">
+        Acheteur: {exp.acheteur?.nom} {exp.acheteur?.prenom || ""} {exp.acheteur?.numero_tel ? `(${exp.acheteur.numero_tel})` : "(N° non renseigné)"}
       </div>
 
-      {/* STATUT */}
-      <div className="text-emerald-400 text-[9px] uppercase">
-        {exp.statut_expedition}
+      {/* Statut */}
+      <div className="flex items-center gap-2 pt-2">
+        <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_6px_rgba(16,185,129,0.8)]" />
+        <span className="text-emerald-400 text-[10px] uppercase font-tech font-black tracking-wider">
+          {exp.statut_expedition}
+        </span>
       </div>
-
     </Card>
   );
 }

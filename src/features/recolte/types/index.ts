@@ -25,6 +25,7 @@ export interface Produit {
   categorie_id?: string;
   created_at: string;
   image?: string ;
+  lieu_culture?: string;
   // Relations jointes
   annonce?: Annonce[];
   categorie?: Categorie; 

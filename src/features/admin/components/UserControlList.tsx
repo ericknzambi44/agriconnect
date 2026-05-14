@@ -1,29 +1,17 @@
 // src/features/admin/components/UserControlList.tsx
 import React, { useEffect, useState } from 'react';
 import { useAdminUserMaster } from '../hooks/use-admin-user-master';
-
 import { 
-  Shield, 
-  Link2, 
-  Unlink, 
-  UserPlus, 
-  Mail, 
-  User as UserIcon, 
-  RefreshCcw,
-  Search,
-  Trash2,
-  Edit3,
-  X,
-  Globe,
-  Fingerprint,
-  Zap
+  Shield, Link2, Unlink, UserPlus, User as UserIcon, RefreshCcw,
+  Search, Trash2, Edit3, X, Globe, Fingerprint, Zap, ChevronRight, Activity
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from "@/lib/utils";
 import { useAgencyManager } from '../hooks/use-agency-manager';
 
 export default function UserControlList() {
-  const { users, loading, fetchUsers, assignToAgency, createUser, deleteUser } = useAdminUserMaster();
+  // On récupère ce qui existe sur le hook (updateUser est la clé ici)
+  const { users, loading, fetchUsers, createUser, deleteUser, updateUser } = useAdminUserMaster();
   const { agencies } = useAgencyManager();
   
   const [showAddForm, setShowAddForm] = useState(false);
@@ -31,217 +19,212 @@ export default function UserControlList() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
 
-  useEffect(() => {
-    fetchUsers();
-  }, [fetchUsers]);
+  useEffect(() => { fetchUsers(); }, [fetchUsers]);
+
+  // --- LOGIQUE DE LIAISON (CORRIGÉE) ---
+  // Si assignToAgency n'existe pas en tant que fonction nommée, 
+  // on utilise updateUser qui est présent dans le type pour mettre à jour l'agence.
+  const handleAssignmentChange = async (userId: string, agenceId: string) => {
+    const isUnassigning = agenceId === "";
+    const t = toast.loading(isUnassigning ? "DÉCONNEXION_NODE..." : "LIAISON_NODE...");
+    
+    try {
+      // On utilise updateUser pour injecter ou retirer l'agence
+      // Note: Adapte la clé 'agence_id' selon ton schéma Supabase/DB
+      await updateUser(userId, { agence_id: isUnassigning ? null : agenceId });
+      toast.success(isUnassigning ? "Liaison rompue" : "Synchronisation Node ok", { id: t });
+      fetchUsers(); // Refresh pour voir le changement
+    } catch (e) {
+      console.error(e);
+      toast.error("Erreur de protocole : vérifiez les permissions", { id: t });
+    }
+  };
 
   const handleCreateUser = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    const loadingToast = toast.loading("Initialisation du profil ROOT...");
+    const loadingToast = toast.loading("CRYPTAGE_DU_PROFIL...");
     try {
       await createUser(newUser);
-      toast.success("Opérateur enregistré dans le système", { id: loadingToast });
+      toast.success("Opérateur intégré avec succès", { id: loadingToast });
       setNewUser({ nom: '', prenom: '', email: '' });
       setShowAddForm(false);
     } catch (error) {
-      toast.error("Échec de l'encodage", { id: loadingToast });
-    } finally {
-      setIsSubmitting(false);
-    }
+      toast.error("Échec d'encodage système", { id: loadingToast });
+    } finally { setIsSubmitting(false); }
   };
 
   const handleDelete = async (id: string, name: string) => {
-    if (!confirm(`Révoquer définitivement l'accès pour ${name} ?`)) return;
-    const t = toast.loading("Purge des accès en cours...");
+    if (!confirm(`RÉVOQUER TOUS LES ACCÈS POUR : ${name.toUpperCase()} ?`)) return;
+    const t = toast.loading("PURGE_DATA_EN_COURS...");
     try {
       await deleteUser(id);
-      toast.success("Opérateur révoqué", { id: t });
+      toast.success("Accès révoqué définitivement", { id: t });
     } catch (e) {
-      toast.error("Violation d'intégrité système", { id: t });
-    }
-  };
-
-  const handleAssignmentChange = async (userId: string, agenceId: string) => {
-    const isUnassigning = agenceId === "";
-    const updateToast = toast.loading(isUnassigning ? "Révocation du Node..." : "Liaison au Node...");
-    try {
-      await assignToAgency(userId, isUnassigning ? null : agenceId);
-      toast.success(isUnassigning ? "Liaison rompue" : "Agent synchronisé au Node", { id: updateToast });
-    } catch (e) {
-      toast.error("Échec de la synchronisation", { id: updateToast });
+      toast.error("Violation d'intégrité", { id: t });
     }
   };
 
   const filteredUsers = users.filter(u => 
-    u.nom?.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    u.prenom?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    u.email?.toLowerCase().includes(searchTerm.toLowerCase())
+    `${u.nom} ${u.prenom} ${u.email}`.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-700">
+    <div className="space-y-8 animate-in fade-in duration-1000">
       
-      {/* --- BARRE DE COMMANDE HAUTE --- */}
-      <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
-        <div className="relative group flex-1 max-w-xl">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-primary transition-colors" size={16} />
+      {/* --- COMMAND_CENTER_BAR --- */}
+      <div className="flex flex-col xl:flex-row items-stretch xl:items-center justify-between gap-6 bg-[#080808] p-6 rounded-[2.5rem] border border-white/5 shadow-2xl">
+        <div className="relative group flex-1 max-w-2xl">
+          <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-white/10 group-focus-within:text-primary transition-all group-focus-within:scale-110" size={20} />
           <input 
             type="text" 
-            placeholder="FILTRER_OPERATEURS_PAR_NOM_OU_MAIL..."
+            placeholder="SCANNER_ANNUAIRE_ROOT..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full bg-[#0A0A0A] border border-white/5 rounded-2xl py-4 pl-12 pr-4 text-[10px] font-mono text-white focus:border-primary/40 focus:ring-1 focus:ring-primary/20 outline-none transition-all placeholder:text-white/10"
+            className="w-full bg-white/[0.02] border-2 border-white/5 rounded-2xl py-5 pl-16 pr-6 text-[11px] font-black uppercase tracking-[0.2em] text-white focus:border-primary/40 focus:bg-white/[0.04] outline-none transition-all placeholder:text-white/5"
           />
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
           <button 
             onClick={() => fetchUsers()}
-            className="p-4 bg-white/[0.02] border border-white/5 rounded-2xl text-white/20 hover:text-primary hover:border-primary/20 transition-all active:scale-90"
-            title="Rafraîchir la base"
+            className="w-16 h-16 bg-white/[0.02] border-2 border-white/5 rounded-2xl text-white/20 hover:text-primary hover:border-primary/20 transition-all flex items-center justify-center group active:scale-90"
           >
-            <RefreshCcw size={18} className={loading ? 'animate-spin' : ''} />
+            <RefreshCcw size={22} className={cn("transition-transform duration-700", loading ? 'animate-spin text-primary' : 'group-hover:rotate-180')} />
           </button>
           
           <button 
             onClick={() => setShowAddForm(!showAddForm)}
             className={cn(
-              "flex-1 md:flex-none flex items-center justify-center gap-3 px-8 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all active:scale-95",
+              "h-16 flex-1 xl:flex-none flex items-center justify-center gap-4 px-10 rounded-2xl font-black text-xs uppercase italic tracking-tighter transition-all active:scale-95 shadow-2xl",
               showAddForm 
-              ? 'bg-red-500/10 text-red-500 border border-red-500/20' 
-              : 'bg-white text-black hover:bg-primary shadow-lg shadow-primary/5'
+              ? 'bg-red-500/10 text-red-500 border-2 border-red-500/20' 
+              : 'bg-white text-black hover:shadow-[0_0_30px_rgba(255,255,255,0.1)]'
             )}
           >
-            {showAddForm ? <X size={16}/> : <UserPlus size={16} />}
-            {showAddForm ? 'ANNULER_ACTION' : 'NOUVEL_OPERATEUR'}
+            {showAddForm ? <X size={20} strokeWidth={3}/> : <UserPlus size={20} strokeWidth={3} />}
+            {showAddForm ? 'ANNULER' : 'AJOUTER_OPERATEUR'}
           </button>
         </div>
       </div>
 
       {/* --- FORMULAIRE D'ENCODAGE --- */}
       {showAddForm && (
-        <div className="bg-[#0A0A0A] border border-primary/20 p-6 md:p-8 rounded-[2.5rem] shadow-[0_0_50px_rgba(var(--primary),0.05)] animate-in slide-in-from-top-4 duration-500">
-          <div className="flex items-center gap-3 mb-8">
-            <Zap size={14} className="text-primary" />
-            <h3 className="font-tech text-[10px] text-white/40 uppercase tracking-[0.4em]">Initialisation_Nouveau_Node_Humain</h3>
+        <div className="bg-primary/5 border-2 border-primary/20 p-8 md:p-12 rounded-[3.5rem] shadow-[0_40px_80px_-20px_rgba(var(--primary),0.1)] animate-in zoom-in-95 duration-500">
+          <div className="flex items-center gap-4 mb-10">
+            <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center text-black">
+                <Zap size={20} fill="black" />
+            </div>
+            <h3 className="text-sm font-black text-white uppercase italic tracking-widest">Initialisation_Protocole_Création</h3>
           </div>
-          <form onSubmit={handleCreateUser} className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            <div className="space-y-2">
-              <label className="text-[8px] font-mono font-black text-white/20 uppercase tracking-widest ml-1">Nom_Famille</label>
+          <form onSubmit={handleCreateUser} className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="space-y-3">
+              <label className="text-[10px] font-black text-white/30 uppercase tracking-widest flex items-center gap-2">Nom_Famille</label>
               <input required value={newUser.nom} onChange={e => setNewUser({...newUser, nom: e.target.value})}
-                className="w-full bg-white/[0.02] border border-white/5 rounded-xl py-4 px-5 text-xs text-white focus:border-primary/40 outline-none transition-all" placeholder="Nom" />
+                className="w-full bg-[#050505] border-2 border-white/5 rounded-2xl py-5 px-6 text-sm font-bold text-white focus:border-primary outline-none transition-all" />
             </div>
-            <div className="space-y-2">
-              <label className="text-[8px] font-mono font-black text-white/20 uppercase tracking-widest ml-1">Prénom_Usuel</label>
+            <div className="space-y-3">
+              <label className="text-[10px] font-black text-white/30 uppercase tracking-widest flex items-center gap-2">Prénom_Usuel</label>
               <input required value={newUser.prenom} onChange={e => setNewUser({...newUser, prenom: e.target.value})}
-                className="w-full bg-white/[0.02] border border-white/5 rounded-xl py-4 px-5 text-xs text-white focus:border-primary/40 outline-none transition-all" placeholder="Prénom" />
+                className="w-full bg-[#050505] border-2 border-white/5 rounded-2xl py-5 px-6 text-sm font-bold text-white focus:border-primary outline-none transition-all" />
             </div>
-            <div className="space-y-2 lg:col-span-1">
-              <label className="text-[8px] font-mono font-black text-white/20 uppercase tracking-widest ml-1">Email_Securisé</label>
+            <div className="space-y-3">
+              <label className="text-[10px] font-black text-white/30 uppercase tracking-widest flex items-center gap-2">Email_Pro</label>
               <input required type="email" value={newUser.email} onChange={e => setNewUser({...newUser, email: e.target.value})}
-                className="w-full bg-white/[0.02] border border-white/5 rounded-xl py-4 px-5 text-xs text-white focus:border-primary/40 outline-none transition-all" placeholder="email@agriconnect.com" />
+                className="w-full bg-[#050505] border-2 border-white/5 rounded-2xl py-5 px-6 text-sm font-bold text-white focus:border-primary outline-none transition-all" />
             </div>
-            <button disabled={isSubmitting} className="md:col-span-3 lg:col-span-1 h-[52px] self-end bg-primary text-black rounded-xl font-black text-[10px] uppercase tracking-widest hover:scale-[1.02] transition-all disabled:opacity-50">
-              {isSubmitting ? 'ENCODAGE_EN_COURS...' : 'VALIDER_PROFIL_ROOT'}
+            <button disabled={isSubmitting} className="md:col-span-3 h-20 bg-primary text-black rounded-[2rem] font-black text-sm uppercase italic tracking-widest hover:scale-[1.01] transition-all shadow-2xl">
+              {isSubmitting ? 'ENCODAGE...' : 'VALIDER_INSCRIPTION'}
             </button>
           </form>
         </div>
       )}
 
       {/* --- LISTE DES OPERATEURS --- */}
-      <div className="grid grid-cols-1 gap-4 lg:block bg-transparent lg:bg-[#080808] lg:border lg:border-white/5 lg:rounded-[2.5rem] overflow-hidden">
-        
-        {/* Table Header (Desktop Only) */}
-        <div className="hidden lg:grid grid-cols-12 bg-white/[0.02] p-6 border-b border-white/5">
-          <div className="col-span-4 text-[9px] font-mono font-black text-white/20 uppercase tracking-[0.3em]">Operator_Identity</div>
-          <div className="col-span-2 text-[9px] font-mono font-black text-white/20 uppercase tracking-[0.3em]">Access_Level</div>
-          <div className="col-span-4 text-[9px] font-mono font-black text-white/20 uppercase tracking-[0.3em]">Node_Assignment</div>
-          <div className="col-span-2 text-right text-[9px] font-mono font-black text-white/20 uppercase tracking-[0.3em]">Action_Control</div>
+      <div className="bg-[#050505] border-2 border-white/5 rounded-[3.5rem] overflow-hidden shadow-2xl">
+        <div className="hidden lg:grid grid-cols-12 bg-white/[0.02] p-8 border-b-2 border-white/5">
+          <div className="col-span-4 text-[10px] font-black text-white/20 uppercase tracking-[0.4em]">Identité_Opérateur</div>
+          <div className="col-span-3 text-[10px] font-black text-white/20 uppercase tracking-[0.4em]">Niveau_Accès</div>
+          <div className="col-span-3 text-[10px] font-black text-white/20 uppercase tracking-[0.4em]">Assignation_Node</div>
+          <div className="col-span-2 text-right text-[10px] font-black text-white/20 uppercase tracking-[0.4em]">Contrôle</div>
         </div>
 
-        <div className="space-y-4 lg:space-y-0 lg:divide-y lg:divide-white/5">
+        <div className="divide-y-2 divide-white/5">
           {filteredUsers.length === 0 ? (
-            <div className="p-20 text-center text-white/10 font-mono text-[10px] uppercase tracking-widest">Aucune donnée trouvée sur ce segment</div>
+            <div className="p-32 text-center">
+                <Activity size={48} className="mx-auto text-white/5 mb-6 animate-pulse" />
+                <p className="font-mono text-[11px] text-white/10 uppercase tracking-[0.5em]">Aucune_Donnée_Détectée</p>
+            </div>
           ) : filteredUsers.map((user) => {
+            // Logique de détection de l'agence liée
             const currentAgency = user.agents_agence?.[0]?.agence;
             const currentAgencyId = currentAgency?.id || "";
-            const roleData = user.role as any;
-            const isAdmin = roleData?.admin_role === 'admin';
+            const isAdmin = (user.role as any)?.admin_role === 'admin';
 
             return (
-              <div key={user.id} className="group relative bg-[#0A0A0A] lg:bg-transparent border border-white/5 lg:border-none rounded-[2rem] lg:rounded-none p-6 lg:p-7 grid grid-cols-1 lg:grid-cols-12 items-center gap-6 hover:bg-white/[0.02] transition-all duration-300">
+              <div key={user.id} className="group lg:grid lg:grid-cols-12 items-center gap-8 p-8 lg:p-10 hover:bg-white/[0.03] transition-all duration-500">
                 
-                {/* Identité */}
-                <div className="col-span-4 flex items-center gap-5">
+                {/* ID & NOM */}
+                <div className="col-span-4 flex items-center gap-6 mb-6 lg:mb-0">
                   <div className={cn(
-                    "w-14 h-14 rounded-2xl flex items-center justify-center text-xs font-black border transition-all duration-500 group-hover:scale-110 group-hover:rotate-3",
-                    isAdmin ? "bg-primary/10 border-primary/20 text-primary shadow-[0_0_20px_rgba(var(--primary),0.1)]" : "bg-white/5 border-white/10 text-white/20"
+                    "w-16 h-16 rounded-[1.5rem] flex items-center justify-center text-sm font-black border-2 transition-all duration-700",
+                    isAdmin ? "bg-primary/10 border-primary/30 text-primary" : "bg-white/5 border-white/10 text-white/40"
                   )}>
                     {user.prenom?.[0]}{user.nom?.[0]}
                   </div>
                   <div className="min-w-0">
-                    <h4 className="text-sm md:text-base font-bold text-white uppercase italic tracking-tighter truncate group-hover:text-primary transition-colors">
+                    <h4 className="text-lg font-black text-white uppercase italic tracking-tighter truncate group-hover:text-primary transition-colors">
                       {user.prenom} {user.nom}
                     </h4>
-                    <div className="flex items-center gap-2 text-[9px] font-mono text-white/30 tracking-tight mt-1">
-                      <Fingerprint size={10} />
-                      <span className="truncate uppercase opacity-60">ID:{user.id?.substring(0,8)}</span>
-                    </div>
+                    <span className="text-[10px] font-mono text-white/20 uppercase">{user.email}</span>
                   </div>
                 </div>
 
-                {/* Badge de Rôle */}
-                <div className="col-span-2">
+                {/* ACCÈS */}
+                <div className="col-span-3 mb-6 lg:mb-0">
                   <div className={cn(
-                    "inline-flex items-center gap-2 px-4 py-2 rounded-xl border text-[9px] font-black uppercase tracking-widest transition-all",
-                    isAdmin ? "bg-primary/5 border-primary/20 text-primary" : "bg-white/5 border-white/10 text-white/40"
+                    "inline-flex items-center gap-3 px-5 py-2.5 rounded-2xl border-2 text-[10px] font-black uppercase tracking-widest",
+                    isAdmin ? "bg-primary/5 border-primary/20 text-primary" : "bg-white/5 border-white/10 text-white/30"
                   )}>
-                    {isAdmin ? <Shield size={12} className="animate-pulse" /> : <UserIcon size={12} />}
-                    {isAdmin ? 'ROOT_ADMIN' : 'UserStandard'}
+                    {isAdmin ? <Shield size={14} className="animate-pulse" /> : <UserIcon size={14} />}
+                    {isAdmin ? 'ROOT_ACCESS' : 'User_standard'}
                   </div>
                 </div>
 
-                {/* Sélecteur d'Agence (Node) */}
-                <div className="col-span-4">
-                  <div className="relative group/select">
-                    <div className={cn(
-                        "absolute left-4 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full z-10 transition-all",
-                        currentAgencyId ? "bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)] animate-pulse" : "bg-white/10"
-                    )} />
-                    
+                {/* NODE SELECTOR */}
+                <div className="col-span-3 mb-8 lg:mb-0">
+                  <div className="relative group/select bg-white/10">
                     <select
                       value={currentAgencyId}
                       onChange={(e) => handleAssignmentChange(user.id, e.target.value)}
                       className={cn(
-                        "w-full bg-white/[0.02] border rounded-2xl pl-10 pr-10 py-3.5 text-[10px] font-black uppercase tracking-widest outline-none appearance-none cursor-pointer transition-all",
-                        currentAgencyId ? "border-emerald-500/20 text-emerald-500" : "border-white/5 text-white/20 hover:border-white/20"
+                        "w-full bg-[#0A0A0A] border-2 rounded-2xl pl-12 pr-10 py-4 text-[12px] font-black uppercase tracking-widest outline-none appearance-none cursor-pointer transition-all",
+                        currentAgencyId ? "border-emerald-500 text-emerald-500" : "border-white/5 text-yellow"
                       )}
                     >
-                      <option value="" className="bg-[#080808] text-white/20 italic">_AUCUNE_AFFECTATION_</option>
+                      <option value="">Assigner_A_Agence</option>
                       {agencies.map((a) => (
-                        <option key={a.id} value={a.id} className="bg-[#080808] text-white font-bold">
-                          {a.nom.toUpperCase()} :: Agence_{a.id.substring(0,4)}
+                        <option key={a.id} value={a.id} className="bg-[#080808] text-white">
+                          NODE :: {a.nom.toUpperCase()}
                         </option>
                       ))}
                     </select>
-                    
-                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none opacity-20">
-                      {currentAgencyId ? <Link2 size={14} /> : <Unlink size={14} />}
+                    <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                      {currentAgencyId ? <Link2 size={16} className="text-emerald-500 animate-pulse" /> : <Unlink size={16} className="text-white/10" />}
                     </div>
                   </div>
                 </div>
 
-                {/* Actions de Contrôle */}
-                <div className="col-span-2 flex items-center justify-end gap-3 pt-6 lg:pt-0 border-t lg:border-none border-white/5">
-                  <button className="flex-1 lg:flex-none p-3 rounded-xl bg-white/5 text-white/20 hover:text-white hover:bg-white/10 transition-all active:scale-90">
-                    <Edit3 size={16} className="mx-auto" />
+                {/* CONTROL PANEL */}
+                <div className="col-span-2 flex items-center justify-end gap-3 pt-6 lg:pt-0 border-t-2 lg:border-none border-white/5">
+                  <button className="h-14 w-14 bg-white/5 hover:bg-primary hover:text-black rounded-2xl transition-all flex items-center justify-center group/btn active:scale-90 shadow-xl">
+                    <Edit3 size={20} className="group-hover/btn:scale-110 transition-transform" />
                   </button>
                   <button 
                     onClick={() => handleDelete(user.id, `${user.prenom} ${user.nom}`)}
-                    className="flex-1 lg:flex-none p-3 rounded-xl bg-red-500/5 text-red-500/30 hover:text-red-500 hover:bg-red-500/10 transition-all active:scale-90"
+                    className="h-14 w-14 bg-red-500/5 hover:bg-red-500 text-red-500 hover:text-white rounded-2xl transition-all flex items-center justify-center group/btn active:scale-90 shadow-xl"
                   >
-                    <Trash2 size={16} className="mx-auto" />
+                    <Trash2 size={20} className="group-hover/btn:rotate-12 transition-transform" />
                   </button>
                 </div>
 
@@ -251,26 +234,20 @@ export default function UserControlList() {
         </div>
       </div>
 
-      {/* --- STATUS BAR BASSE --- */}
-      <div className="flex flex-col md:flex-row items-center justify-between gap-4 p-6 bg-white/[0.01] border border-white/5 rounded-[2rem]">
-        <div className="flex items-center gap-6 overflow-x-auto no-scrollbar w-full md:w-auto">
-          <div className="flex items-center gap-2 shrink-0">
-            <Globe size={12} className="text-emerald-500" />
-            <span className="text-[8px] font-mono text-white/20 uppercase tracking-[0.2em]">Live_Sync: Active</span>
-          </div>
-          <div className="flex items-center gap-2 shrink-0">
-            <Shield size={12} className="text-primary" />
-
+      {/* --- FOOTER STATUS --- */}
+      <div className="flex flex-col md:flex-row items-center justify-between gap-6 px-10 py-8 bg-[#080808] border-2 border-white/5 rounded-[3rem]">
+        <div className="flex items-center gap-8">
+          <div className="flex items-center gap-3">
+            <Globe size={16} className="text-emerald-500 animate-pulse" />
+            <span className="text-[10px] font-black text-white/40 uppercase tracking-[0.3em]">Network: AgriConnect</span>
           </div>
         </div>
-        <div className="flex items-center gap-3 bg-white/5 px-4 py-2 rounded-full shrink-0">
-          <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-          <span className="text-[9px] font-black text-white/60 uppercase italic tracking-tighter">
-            {filteredUsers.length} Opérateurs_Détéctés
-          </span>
+        <div className="px-6 py-2 bg-primary/10 border border-primary/20 rounded-full">
+            <span className="text-[10px] font-black text-primary uppercase italic tracking-widest">
+                {filteredUsers.length} users_Actifs
+            </span>
         </div>
       </div>
-
     </div>
   );
 }

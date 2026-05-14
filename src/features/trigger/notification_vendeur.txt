@@ -1,0 +1,21 @@
+
+CREATE OR REPLACE FUNCTION public.handle_expedition_notifications2()
+RETURNS TRIGGER AS $$
+DECLARE
+  v_commande RECORD;
+  v_annonce RECORD;
+  v_produit RECORD;
+  v_acheteur_id UUID;
+  v_vendeur_id UUID;
+  v_message_acheteur TEXT;
+  v_message_vendeur TEXT;
+  v_titre TEXT;
+BEGIN
+  -- Récupérer les informations liées à l'expédition
+  SELECT * INTO v_commande FROM public.commande WHERE id = NEW.commande_id;
+  IF v_commande.id IS NULL THEN
+    RETURN NEW;
+  END IF;
+  
+  SELECT * INTO v_annonce FROM public.annonce WHERE id = v_commande.annonce_id;
+ 

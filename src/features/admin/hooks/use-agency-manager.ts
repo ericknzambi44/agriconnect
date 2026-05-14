@@ -1,5 +1,5 @@
 // src/features/admin/hooks/use-agency-manager.ts
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/supabase';
 import { toast } from 'sonner';
 
@@ -14,19 +14,18 @@ export const useAgencyManager = () => {
   const [roles, setRoles] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchAgencies = async () => {
+  const fetchAgencies = useCallback(async () => {
     setLoading(true);
     try {
-      // 1. Récupération des agences avec compteurs d'agents
+      // Récupération avec compteurs d'agents
       const { data: agencyData, error: agencyError } = await supabase
         .from('agence')
         .select('*, agents_count:agents_agence(count)')
-        .order('created_at', { ascending: false });
+        .order('nom', { ascending: true });
       
       if (agencyError) throw agencyError;
       setAgencies(agencyData || []);
 
-      // 2. Récupération des rôles (pour UserControlList)
       const { data: roleData, error: roleError } = await supabase
         .from('role')
         .select('*')
@@ -36,17 +35,12 @@ export const useAgencyManager = () => {
       setRoles(roleData || []);
 
     } catch (error: any) {
-      toast.error("Échec de la synchronisation");
-      console.error("Fetch Error:", error.message);
+      toast.error("Erreur de synchronisation");
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  /**
-   * Crée une nouvelle agence dans la base de données
-   * Les champs id et created_at sont gérés par Supabase
-   */
   const createAgency = async (agencyData: AgencyInput) => {
     try {
       const { data, error } = await supabase
@@ -55,25 +49,38 @@ export const useAgencyManager = () => {
         .select();
 
       if (error) throw error;
-
-      // Mise à jour locale pour une réactivité instantanée
-      if (data) {
-        const newAgency = { ...data[0], agents_count: [{ count: 0 }] };
-        setAgencies(prev => [newAgency, ...prev]);
-      }
-      
+      toast.success("Agence créée avec succès");
+      await fetchAgencies(); // Rechargement complet pour garantir l'intégrité
       return data;
     } catch (error: any) {
-      console.error("Create Error:", error.message);
+      toast.error("Impossible de créer l'agence");
       throw error;
     }
   };
 
-  /**
-   * Supprime une agence par son UUID
-   */
+  const updateAgency = async (id: string, updates: Partial<AgencyInput>) => {
+    try {
+      const { error } = await supabase
+        .from('agence')
+        .update(updates)
+        .eq('id', id);
+
+      if (error) throw error;
+      toast.success("Informations mises à jour");
+      await fetchAgencies();
+    } catch (error: any) {
+      toast.error("Échec de la modification");
+      throw error;
+    }
+  };
+
   const deleteAgency = async (id: string) => {
     try {
+      // 1. On libère d'abord les agents liés (on met leur agence_id à null ou on supprime la liaison)
+      // Si ta table agents_agence est une table de liaison :
+      await supabase.from('agents_agence').delete().eq('agence_id', id);
+
+      // 2. On supprime l'agence
       const { error } = await supabase
         .from('agence')
         .delete()
@@ -82,22 +89,21 @@ export const useAgencyManager = () => {
       if (error) throw error;
       
       setAgencies(prev => prev.filter(a => a.id !== id));
-      toast.success("Node supprimé avec succès");
+      toast.success("Agence supprimée définitivement");
     } catch (error: any) {
-      toast.error("Erreur lors de la suppression");
-      throw error;
+      console.error(error);
+      toast.error("Erreur : Cette agence possède peut-être des données liées");
     }
   };
 
-  useEffect(() => { 
-    fetchAgencies(); 
-  }, []);
+  useEffect(() => { fetchAgencies(); }, [fetchAgencies]);
 
   return { 
     agencies, 
     roles, 
     loading, 
     createAgency, 
+    updateAgency, 
     deleteAgency, 
     refresh: fetchAgencies 
   };

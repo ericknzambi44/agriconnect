@@ -1,3 +1,4 @@
+// hooks/useMarketSearch.ts
 import { useMemo } from 'react';
 import { MarketAnnonce } from './useMarketplace';
 
