@@ -13,11 +13,11 @@ export const useAgencyManager = () => {
   const [agencies, setAgencies] = useState<any[]>([]);
   const [roles, setRoles] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [agentsList, setAgentsList] = useState<any[]>([]); // pour une agence sélectionnée
 
   const fetchAgencies = useCallback(async () => {
     setLoading(true);
     try {
-      // Récupération avec compteurs d'agents
       const { data: agencyData, error: agencyError } = await supabase
         .from('agence')
         .select('*, agents_count:agents_agence(count)')
@@ -50,7 +50,7 @@ export const useAgencyManager = () => {
 
       if (error) throw error;
       toast.success("Agence créée avec succès");
-      await fetchAgencies(); // Rechargement complet pour garantir l'intégrité
+      await fetchAgencies();
       return data;
     } catch (error: any) {
       toast.error("Impossible de créer l'agence");
@@ -76,23 +76,58 @@ export const useAgencyManager = () => {
 
   const deleteAgency = async (id: string) => {
     try {
-      // 1. On libère d'abord les agents liés (on met leur agence_id à null ou on supprime la liaison)
-      // Si ta table agents_agence est une table de liaison :
+      // Supprimer les liaisons agents
       await supabase.from('agents_agence').delete().eq('agence_id', id);
-
-      // 2. On supprime l'agence
-      const { error } = await supabase
-        .from('agence')
-        .delete()
-        .eq('id', id);
-
+      const { error } = await supabase.from('agence').delete().eq('id', id);
       if (error) throw error;
-      
       setAgencies(prev => prev.filter(a => a.id !== id));
       toast.success("Agence supprimée définitivement");
     } catch (error: any) {
-      console.error(error);
       toast.error("Erreur : Cette agence possède peut-être des données liées");
+    }
+  };
+
+  // Gestion des agents d'une agence
+  const fetchAgentsForAgency = async (agenceId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('agents_agence')
+        .select('user_id, utilisateur:user_id(id, nom, prenom, email, numero_tel)')
+        .eq('agence_id', agenceId);
+      if (error) throw error;
+      setAgentsList(data || []);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const addAgentToAgency = async (agenceId: string, userId: string) => {
+    try {
+      const { error } = await supabase
+        .from('agents_agence')
+        .insert([{ agence_id: agenceId, user_id: userId }]);
+      if (error) throw error;
+      toast.success("Agent ajouté à l'agence");
+      await fetchAgentsForAgency(agenceId);
+      await fetchAgencies(); // pour rafraîchir le compteur
+    } catch (err: any) {
+      toast.error("Erreur lors de l'ajout");
+    }
+  };
+
+  const removeAgentFromAgency = async (agenceId: string, userId: string) => {
+    try {
+      const { error } = await supabase
+        .from('agents_agence')
+        .delete()
+        .eq('agence_id', agenceId)
+        .eq('user_id', userId);
+      if (error) throw error;
+      toast.success("Agent retiré de l'agence");
+      await fetchAgentsForAgency(agenceId);
+      await fetchAgencies();
+    } catch (err: any) {
+      toast.error("Erreur lors du retrait");
     }
   };
 
@@ -105,6 +140,10 @@ export const useAgencyManager = () => {
     createAgency, 
     updateAgency, 
     deleteAgency, 
-    refresh: fetchAgencies 
+    refresh: fetchAgencies,
+    agentsList,
+    fetchAgentsForAgency,
+    addAgentToAgency,
+    removeAgentFromAgency
   };
 };

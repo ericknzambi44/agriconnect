@@ -1,0 +1,344 @@
+ok merci. passons a administrateur.  les fichiers existants sont: hooks:   use-admin-activity.ts  use-admin-stats.ts        use-agency-manager.ts
+use-admin-core.ts      use-admin-user-master.ts   et components: AdminActivityTable.tsx  AdminSidebar.tsx  AdminStatGrid.tsx  AgencyNetworkMap.tsx  UserControlList.tsx   et pages :  AdminAgencies.tsx  AdminDashboard.tsx  AdminLogin.tsx  AdminOverview.tsx  AdminUsers.tsx.       NB: il avait deja du code on doit ameliorer. cette fois admin doit faire tout ce qu'il faisait deja dans le hook et arranger bien cette fois, il dois creer un utilisaateurs, creer agence, supprimer agence, utilisateurs au complet, rechercher , filtrer,  il dois modifier,    NB:  lier un utilisateurs a une agence vie agents_agence delier,   voir les mouvement des colis, voir le portefeuille l'argent sequesre avec  solde_bloque, voir solde_disponible et combien appartient a qui et qui voir leur numero etc... et tout ce que tu va trouver necessaire pour admin, il doit creer plans abonnement via plans, crud etc... statistique .  nb: voici forme des hooks pour voir des champs:      // src/features/admin/hooks/use-agency-manager.ts
+import { useState, useEffect, useCallback } from 'react';
+import { supabase } from '@/supabase';
+import { toast } from 'sonner';
+
+export interface AgencyInput {
+  nom: string;
+  ville_territoire: string;
+  telephone_responsable?: string;
+}
+
+export const useAgencyManager = () => {
+  const [agencies, setAgencies] = useState<any[]>([]);
+  const [roles, setRoles] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchAgencies = useCallback(async () => {
+    setLoading(true);
+    try {
+      // Récupération avec compteurs d'agents
+      const { data: agencyData, error: agencyError } = await supabase
+        .from('agence')
+        .select('*, agents_count:agents_agence(count)')
+        .order('nom', { ascending: true });
+      
+      if (agencyError) throw agencyError;
+      setAgencies(agencyData || []);
+
+      const { data: roleData, error: roleError } = await supabase
+        .from('role')
+        .select('*')
+        .order('titre_role', { ascending: true });
+
+      if (roleError) throw roleError;
+      setRoles(roleData || []);
+
+    } catch (error: any) {
+      toast.error("Erreur de synchronisation");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const createAgency = async (agencyData: AgencyInput) => {
+    try {
+      const { data, error } = await supabase
+        .from('agence')
+        .insert([agencyData])
+        .select();
+
+      if (error) throw error;
+      toast.success("Agence créée avec succès");
+      await fetchAgencies(); // Rechargement complet pour garantir l'intégrité
+      return data;
+    } catch (error: any) {
+      toast.error("Impossible de créer l'agence");
+      throw error;
+    }
+  };
+
+  const updateAgency = async (id: string, updates: Partial<AgencyInput>) => {
+    try {
+      const { error } = await supabase
+        .from('agence')
+        .update(updates)
+        .eq('id', id);
+
+      if (error) throw error;
+      toast.success("Informations mises à jour");
+      await fetchAgencies();
+    } catch (error: any) {
+      toast.error("Échec de la modification");
+      throw error;
+    }
+  };
+
+  const deleteAgency = async (id: string) => {
+    try {
+      // 1. On libère d'abord les agents liés (on met leur agence_id à null ou on supprime la liaison)
+      // Si ta table agents_agence est une table de liaison :
+      await supabase.from('agents_agence').delete().eq('agence_id', id);
+
+      // 2. On supprime l'agence
+      const { error } = await supabase
+        .from('agence')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+      
+      setAgencies(prev => prev.filter(a => a.id !== id));
+      toast.success("Agence supprimée définitivement");
+    } catch (error: any) {
+      console.error(error);
+      toast.error("Erreur : Cette agence possède peut-être des données liées");
+    }
+  };
+
+  useEffect(() => { fetchAgencies(); }, [fetchAgencies]);
+
+  return { 
+    agencies, 
+    roles, 
+    loading, 
+    createAgency, 
+    updateAgency, 
+    deleteAgency, 
+    refresh: fetchAgencies 
+  };
+};            et   // src/features/admin/hooks/use-admin-user-master.ts
+import { useState, useCallback } from 'react';
+import { supabase } from '@/supabase';
+
+export interface UserMasterData {
+  id: string;
+  nom: string;
+  prenom: string;
+  email: string;
+  role?: { admin_role: string } | null;
+  agents_agence?: { agence: { id: string; nom: string } | null }[];
+}
+
+export const useAdminUserMaster = () => {
+  const [users, setUsers] = useState<UserMasterData[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  const fetchUsers = useCallback(async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('utilisateurs')
+        .select(`
+          id, nom, prenom, email, 
+          role:role_id(admin_role),
+          agents_agence(agence:agence_id(id, nom))
+        `)
+        .order('nom', { ascending: true });
+      
+      if (error) throw error;
+      setUsers((data as unknown as UserMasterData[]) || []);
+    } catch (err) {
+      console.error("Erreur Fetch:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const createUser = async (userData: any) => {
+    // On s'assure d'envoyer uniquement les colonnes réelles
+    const { data, error } = await supabase
+      .from('utilisateurs')
+      .insert([{
+        nom: userData.nom,
+        prenom: userData.prenom,
+        email: userData.email,
+        role_id: userData.role_id // On passe l'ID, pas l'objet
+      }])
+      .select();
+    
+    if (error) throw error;
+    await fetchUsers();
+    return data?.[0];
+  };
+
+  const updateUser = async (userId: string, updates: any) => {
+    // FIX CRITIQUE : Supprimer les données de jointure avant l'update
+    const cleanUpdates = { ...updates };
+    delete cleanUpdates.role;
+    delete cleanUpdates.agents_agence;
+    delete cleanUpdates.id;
+
+    const { error } = await supabase
+      .from('utilisateurs')
+      .update(cleanUpdates)
+      .eq('id', userId);
+    
+    if (error) throw error;
+    await fetchUsers();
+  };
+
+  const deleteUser = async (userId: string) => {
+   
+    await supabase.from('agents_agence').delete().eq('user_id', userId);
+    const { error } = await supabase.from('utilisateurs').delete().eq('id', userId);
+    if (error) throw error;
+    setUsers(prev => prev.filter(u => u.id !== userId));
+  };
+
+  return { users, loading, fetchUsers, createUser, updateUser, deleteUser };
+};  et  // src/features/admin/hooks/use-admin-stats.ts
+import { useState, useEffect } from 'react';
+import { supabase } from '@/supabase';
+
+export const useAdminStats = () => {
+  const [stats, setStats] = useState({
+    usersCount: 0,
+    agenciesCount: 0,
+    activeExpeditions: 0,
+    totalVolume: 0,
+  });
+  const [loading, setLoading] = useState(true);
+
+  const fetchStats = async () => {
+    setLoading(true);
+    try {
+      // 1. Compte des utilisateurs et agences
+      const { count: uCount } = await supabase.from('utilisateurs').select('*', { count: 'exact', head: true });
+      const { count: aCount } = await supabase.from('agence').select('*', { count: 'exact', head: true });
+
+      // 2. Expéditions critiques (EN_TRANSIT)
+      const { count: eCount } = await supabase
+        .from('expedition')
+        .select('*', { count: 'exact', head: true })
+        .eq('statut', 'EN_TRANSIT');
+
+      // 3. Volume financier total (Somme des portefeuilles ou transactions)
+      const { data: walletData } = await supabase.from('portefeuille').select('solde_disponible');
+      const total = walletData?.reduce((acc, curr) => acc + (curr.solde_disponible || 0), 0) || 0;
+
+      setStats({
+        usersCount: uCount || 0,
+        agenciesCount: aCount || 0,
+        activeExpeditions: eCount || 0,
+        totalVolume: total,
+      });
+    } catch (error) {
+      console.error("Stats_Fetch_Error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { fetchStats(); }, []);
+
+  return { stats, loading, refresh: fetchStats };
+};  et  // src/features/admin/hooks/use-admin-core.ts
+import { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/supabase';
+import { toast } from 'sonner';
+
+export const useAdminCore = () => {
+  const [admin, setAdmin] = useState<any | null>(null);
+  const [isSyncing, setIsSyncing] = useState(true);
+  const navigate = useNavigate();
+
+  const verifyProtocol = useCallback(async () => {
+    setIsSyncing(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        setAdmin(null);
+        setIsSyncing(false);
+        return;
+      }
+
+      // Tentative de récupération du rôle
+      const { data, error } = await supabase
+        .from('utilisateurs')
+        .select(`id, email, nom, prenom, role:role_id ( admin_role )`)
+        .eq('id', session.user.id)
+        .single();
+
+      if (error) {
+        // C'est ici que l'erreur CORS ou RLS est captée
+        console.error("Erreur de protocole :", error);
+        throw new Error("Impossible de vérifier vos privilèges.");
+      }
+
+      const roleData = Array.isArray(data?.role) ? data.role[0] : data?.role;
+
+      if (roleData?.admin_role === 'admin') {
+        setAdmin({ ...data, role: roleData });
+        // REDIRECTION SEULEMENT SI ON EST SUR LE LOGIN
+        if (window.location.pathname === '/admin/login') {
+          navigate('/admin/overview');
+        }
+      } else {
+        // C'EST UN CLIENT, ON L'EXPULSE DE LA ZONE ADMIN
+        toast.error("ACCÈS REFUSÉ : Privilèges insuffisants.");
+        await supabase.auth.signOut();
+        setAdmin(null);
+        navigate('/admin/login');
+      }
+    } catch (err) {
+      setAdmin(null);
+      // Ne pas rediriger en boucle si c'est une erreur réseau
+    } finally {
+      setIsSyncing(false);
+    }
+  }, [navigate]);
+
+  useEffect(() => {
+    verifyProtocol();
+    const { data: authListener } = supabase.auth.onAuthStateChange(async (event) => {
+      if (event === 'SIGNED_IN') await verifyProtocol();
+      if (event === 'SIGNED_OUT') {
+        setAdmin(null);
+        navigate('/admin/login');
+      }
+    });
+    return () => authListener.subscription.unsubscribe();
+  }, [verifyProtocol, navigate]);
+
+  return { admin, isSyncing, isAuthenticated: !!admin, logout: () => supabase.auth.signOut() };
+};    et  // src/features/admin/hooks/use-admin-activity.ts
+import { useState, useEffect } from 'react';
+import { supabase } from '@/supabase';
+
+export const useAdminActivity = () => {
+  const [activities, setActivities] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchActivity = async () => {
+    setLoading(true);
+    // On récupère les 5 dernières expéditions comme "activité"
+    const { data } = await supabase
+      .from('expedition')
+      .select('id, tracking_number, statut, created_at, utilisateurs(nom, prenom)')
+      .order('created_at', { ascending: false })
+      .limit(5);
+
+    setActivities(data || []);
+    setLoading(false);
+  };
+
+  useEffect(() => { fetchActivity(); }, []);
+
+  return { activities, loading };
+};     et plans a ca:    id_plans,
+                code_plan,
+                nom      a partir de tout ca tu as la vision des tables et champs.  alors creer des hooks complet et fonctionnel des sans rien oublier
+
+
+
+
+
+
+
+                /////////////////
+
+                un probleme a resoudre encore sur agence tu sais celui qui manupule agence c'est  un utilisateurs comme les autres il voit l'interface d'agence si il est lie a une agence via table agents_agence. donc lui aussi se connecte avec email ou numero et mot de passe dans le meme page login d'autres utilisateurs , le probleme ici est que l'admin cree l'utilisateurs pas avec mot de passe ca sera difficile qu'il se connecte sur page de login de global tu vois, donc faut trouver un pouvoir qui va creer un mot  de passe a l'utilisateurs que admin cree surtout priorite pour qu'il se connect pour piloter son agence auquel l'admin l'a lie tu comprend. t'as besoin de modifier quel hook d'admin et composant ou view? aussi la champs qui montre qu'un utilisateurs est lie a une agence montre aucun dans le table des utilisateurs d'admin. faut ressoudre tout ca . 

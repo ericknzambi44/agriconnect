@@ -15,15 +15,16 @@ import { NotificationCenterView } from './features/notifications/components/Noti
 import { WalletView } from './features/portefeuille/components/WalletView';
 
 import AdminTerminal from './features/admin/layouts/AdminTerminal';
-import AdminOverview from './features/admin/pages/AdminOverview';
-import AdminUsers from './features/admin/pages/AdminUsers';
-import AdminAgencies from './features/admin/pages/AdminAgencies';
+import AdminOverview from './features/admin/views/AdminOverview';
+import AdminUsers from './features/admin/views/AdminUsers';
+import AdminAgencies from './features/admin/views/AdminAgencies';
 
 // COMPOSANTS UI
 import { Toaster } from "@/components/ui/sonner"; 
 import { useAuthSession } from '@/features/auth/hooks/use-auth-session';
-import AdminLogin from './features/admin/pages/AdminLogin';
+import AdminLogin from './features/admin/views/AdminLogin';
 import { MarketplaceView } from './features/marcher/view/MarketplaceView';
+import AdminPlans from './features/admin/views/AdminPlans';
 
 export default function App() {
   const { profile, isLoading } = useAuthSession();
@@ -85,6 +86,7 @@ export default function App() {
           <Route path="overview" element={<AdminOverview />} />
           <Route path="users" element={<AdminUsers />} />
           <Route path="agencies" element={<AdminAgencies />} />
+          <Route path="/admin/plans" element={<AdminPlans />} />
           
           {/* Route pour la gestion globale des expéditions (A créer après) */}
           <Route path="expeditions" element={<div className="p-10 text-white font-tech uppercase">Terminal_Expeditions_Global</div>} />

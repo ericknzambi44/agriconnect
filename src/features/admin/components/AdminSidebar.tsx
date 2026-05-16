@@ -4,13 +4,14 @@ import { NavLink } from 'react-router-dom';
 import { 
   LayoutDashboard, 
   Users, 
-  MapPin, 
+  Building2, 
   LogOut, 
   ShieldCheck, 
   X, 
   Terminal,
   Cpu,
-  Fingerprint
+  Fingerprint,
+  CreditCard
 } from 'lucide-react';
 import { useAdminCore } from '../hooks/use-admin-core';
 import { cn } from "@/lib/utils";
@@ -24,9 +25,10 @@ export const AdminSidebar = ({ isOpen, onClose }: AdminSidebarProps) => {
   const { admin, logout } = useAdminCore();
 
   const links = [
-    { to: "/admin/overview", label: "Vue d'ensemble", icon: <LayoutDashboard size={18} />, code: "0x01" },
-    { to: "/admin/agencies", label: "Réseau Agences", icon: <MapPin size={18} />, code: "0x02" },
-    { to: "/admin/users", label: "Contrôle Users", icon: <Users size={18} />, code: "0x03" },
+    { to: "/admin/overview", label: "Tableau de bord", icon: <LayoutDashboard size={18} />, code: "0x01" },
+    { to: "/admin/agencies", label: "Agences", icon: <Building2 size={18} />, code: "" },
+    { to: "/admin/users", label: "Utilisateurs", icon: <Users size={18} />, code: "" },
+    { to: "/admin/plans", label: "Plans", icon: <CreditCard size={18} />, code: "" },
   ];
 
   return (
@@ -40,46 +42,46 @@ export const AdminSidebar = ({ isOpen, onClose }: AdminSidebarProps) => {
       )}
 
       <aside className={cn(
-        "fixed inset-y-0 left-0 z-[150] w-[300px] bg-[#050505] border-r-2 border-white/5 flex flex-col transition-all duration-500 ease-in-out lg:translate-x-0 lg:static lg:h-screen lg:shrink-0 shadow-[20px_0_50px_rgba(0,0,0,0.5)]",
+        "fixed inset-y-0 left-0 z-[150] w-[280px] bg-gradient-to-b from-[#0a0a0a] via-[#050505] to-black border-r border-white/10 flex flex-col transition-all duration-500 ease-in-out lg:translate-x-0 lg:static lg:h-screen lg:shrink-0 shadow-2xl",
         isOpen ? "translate-x-0" : "-translate-x-full"
       )}>
         
         {/* BOUTON FERMER (MOBILE) */}
         <button 
           onClick={onClose}
-          className="absolute top-6 right-6 p-2 bg-white/5 rounded-xl text-white/20 hover:text-white lg:hidden active:scale-90 transition-all border border-white/5"
+          className="absolute top-4 right-4 p-2 bg-white/5 rounded-xl text-white hover:text-white hover:bg-primary/20 lg:hidden active:scale-90 transition-all border border-white/10 z-20"
         >
           <X size={18} />
         </button>
 
-        {/* HEADER : ROOT IDENTITY */}
-        <div className="relative p-10 border-b-2 border-white/5 shrink-0 overflow-hidden group">
-          <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-primary/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+        {/* HEADER */}
+        <div className="relative p-6 pb-4 border-b border-white/10 shrink-0 overflow-hidden group">
+          <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-primary to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
           
-          <div className="flex items-center gap-2 text-primary mb-5">
-            <Cpu size={14} className="animate-pulse" />
-            <span className="font-mono text-[9px] font-black uppercase tracking-[0.5em] opacity-50">
-              Kernel_Agri_v1.0
+          <div className="flex items-center gap-2 text-primary mb-4">
+            <Cpu size={12} className="animate-pulse" />
+            <span className="font-tech text-[8px] font-black uppercase tracking-[0.4em] text-white/50">
+              Terminal Admin
             </span>
           </div>
           
-          <h1 className="font-display font-black text-3xl uppercase italic text-white tracking-tighter leading-none mb-4">
-            AGRI<span className="text-primary text-glow">ADMIN</span>
+          <h1 className="font-display font-black text-2xl uppercase italic text-white tracking-tighter leading-none">
+            AGRI<span className="bg-gradient-to-r from-primary to-orange-400 bg-clip-text text-transparent">ADMIN</span>
           </h1>
           
-          <div className="flex items-center gap-2">
-            <div className="h-6 px-3 flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 rounded-md">
-              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-[8px] font-black text-emerald-500 uppercase tracking-widest">System_Active</span>
+          <div className="flex items-center gap-2 mt-4">
+            <div className="px-3 py-1 flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/30 rounded-full backdrop-blur-sm">
+              <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_6px_rgba(16,185,129,0.8)]" />
+              <span className="text-[8px] font-black text-emerald-400 uppercase tracking-wider">Système actif</span>
             </div>
           </div>
         </div>
 
-        {/* NAVIGATION : SYSTEM LINKS */}
-        <nav className="flex-1 p-6 space-y-2 overflow-y-auto no-scrollbar">
-          <div className="text-[9px] font-mono text-white/20 uppercase tracking-[0.4em] mb-6 px-4 flex items-center justify-between">
-            <span>Main_Protocols</span>
-            <Terminal size={10} />
+        {/* NAVIGATION */}
+        <nav className="flex-1 p-4 space-y-1 overflow-y-auto no-scrollbar">
+          <div className="text-[9px] font-tech text-white uppercase tracking-[0.4em] mb-4 px-3 flex items-center justify-between">
+            <span>Menu principal</span>
+            <Terminal size={10} className="text-primary/50" />
           </div>
           
           {links.map((link) => (
@@ -88,58 +90,56 @@ export const AdminSidebar = ({ isOpen, onClose }: AdminSidebarProps) => {
               to={link.to}
               onClick={onClose}
               className={({ isActive }) => cn(
-                "flex items-center gap-4 px-5 py-4 rounded-2xl transition-all duration-500 group relative overflow-hidden border",
+                "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 group relative overflow-hidden",
                 isActive 
-                  ? "bg-primary/5 text-primary border-primary/30 shadow-[0_0_30px_-10px_rgba(var(--primary),0.3)]" 
-                  : "text-white/30 border-transparent hover:bg-white/[0.02] hover:text-white/80 hover:border-white/5"
+                  ? "bg-gradient-to-r from-primary/20 to-transparent text-primary shadow-[inset_0_0_15px_rgba(var(--primary),0.1)]" 
+                  : "text-white/50 hover:text-white hover:bg-white/[0.02]"
               )}
             >
-              {/* Actif Layer */}
+              {/* Barre latérale active */}
               <div className={cn(
-                "absolute inset-0 bg-gradient-to-r from-primary/10 via-transparent to-transparent opacity-0 transition-opacity duration-500",
-                "group-[.active]:opacity-100"
+                "absolute left-0 top-1/4 bottom-1/4 w-[3px] bg-gradient-to-b from-primary to-orange-400 rounded-r-full transition-all duration-300",
+                "group-[.active]:opacity-100 group-[.active]:shadow-[0_0_8px_rgba(var(--primary),0.8)]",
+                "opacity-0 group-hover:opacity-60"
               )} />
 
-              <div className="relative z-10 shrink-0 group-hover:rotate-[10deg] transition-transform duration-500">
+              <div className="relative z-10 shrink-0 transition-transform duration-300 group-hover:scale-110 group-hover:text-primary">
                 {link.icon}
               </div>
               
-              <div className="relative z-10 flex flex-col">
-                <span className="text-[11px] font-black uppercase italic tracking-wider leading-none">
+              <div className="relative z-10 flex-1">
+                <span className="text-[11px] font-display font-black uppercase italic tracking-tight">
                   {link.label}
                 </span>
-                <span className="text-[7px] font-mono opacity-40 uppercase mt-1 group-hover:text-primary transition-colors">
-                  Protocol_{link.code}
-                </span>
+                <div className="text-[7px] font-mono text-white/40 uppercase mt-0.5 group-hover:text-primary/70 transition-colors">
+                  {link.code}
+                </div>
               </div>
-              
-              {/* Ligne d'accentuation */}
-              <div className="absolute right-0 top-0 bottom-0 w-[2px] bg-primary scale-y-0 group-[.active]:scale-y-100 transition-transform duration-700 origin-bottom" />
             </NavLink>
           ))}
         </nav>
 
-        {/* FOOTER : SECURE USER LOGOUT */}
-        <div className="p-6 mt-auto">
-          <div className="bg-[#0A0A0A] border-2 border-white/5 rounded-[2rem] p-5 mb-4 relative overflow-hidden group/card">
-            <div className="absolute inset-0 bg-primary/5 translate-y-full group-hover/card:translate-y-0 transition-transform duration-700" />
+        {/* FOOTER */}
+        <div className="p-4 mt-auto border-t border-white/10">
+          <div className="bg-black/40 backdrop-blur-sm border border-white/10 rounded-2xl p-4 mb-3 relative overflow-hidden group">
+            <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
             
-            <div className="relative z-10 flex items-center gap-4">
+            <div className="relative z-10 flex items-center gap-3">
               <div className="relative">
-                <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden">
-                  <Fingerprint className="text-primary/40 group-hover/card:text-primary transition-colors" size={24} />
+                <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/20 flex items-center justify-center">
+                  <Fingerprint className="text-primary/60 group-hover:text-primary transition-colors" size={20} />
                 </div>
-                <div className="absolute -top-1 -right-1 w-4 h-4 bg-primary border-4 border-[#0A0A0A] rounded-full" />
+                <div className="absolute -top-1 -right-1 w-3 h-3 bg-emerald-500 border-2 border-black rounded-full" />
               </div>
               
               <div className="min-w-0 flex-1">
-                <p className="text-[10px] font-black text-white uppercase italic truncate">
-                  {admin?.prenom || 'Root'}_{admin?.nom || 'Admin'}
+                <p className="text-[11px] font-display font-black uppercase italic text-white truncate">
+                  {admin?.prenom || 'Root'} {admin?.nom || 'Admin'}
                 </p>
-                <div className="flex items-center gap-2 mt-1">
+                <div className="flex items-center gap-1.5 mt-0.5">
                   <ShieldCheck size={10} className="text-primary" />
-                  <span className="text-[8px] font-mono text-white/30 uppercase tracking-tighter">
-                    Auth_Level: 04
+                  <span className="text-[7px] font-mono text-white/40 uppercase tracking-wider">
+                    Niveau 4
                   </span>
                 </div>
               </div>
@@ -148,19 +148,18 @@ export const AdminSidebar = ({ isOpen, onClose }: AdminSidebarProps) => {
 
           <button 
             onClick={logout}
-            className="w-full flex items-center justify-between px-6 py-5 rounded-[1.5rem] bg-red-500/5 border-2 border-red-500/10 text-red-500/50 hover:text-white hover:bg-red-500 hover:border-red-500 transition-all duration-500 group active:scale-95"
+            className="w-full flex items-center justify-between px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 hover:text-white hover:bg-red-500 hover:border-red-500 transition-all duration-300 group active:scale-95"
           >
             <span className="text-[10px] font-black uppercase italic tracking-[0.2em]">
-              Log_Out
+              Déconnexion
             </span>
-            <LogOut size={16} className="group-hover:translate-x-1 transition-transform" />
+            <LogOut size={14} className="group-hover:translate-x-1 transition-transform" />
           </button>
         </div>
 
         <style>{`
           .no-scrollbar::-webkit-scrollbar { display: none; }
           .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-          .text-glow { text-shadow: 0 0 15px rgba(var(--primary), 0.6); }
         `}</style>
       </aside>
     </>

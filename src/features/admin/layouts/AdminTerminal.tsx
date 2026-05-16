@@ -19,7 +19,7 @@ export default function AdminTerminal() {
             <Shield className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-primary/20" size={20} />
         </div>
         <p className="font-tech text-[10px] text-white/20 uppercase tracking-[0.5em] animate-pulse">
-            Establishing_Secure_Link...
+            Chargement...
         </p>
       </div>
     );
@@ -73,11 +73,9 @@ export default function AdminTerminal() {
                 <div className="mb-8 hidden lg:block">
                     <div className="flex items-center gap-2 text-[10px] font-mono text-white/20 uppercase tracking-[0.3em] mb-1">
                         <span className="w-8 h-[1px] bg-primary/30"></span>
-                        Terminal_Output
+                        zone administration
                     </div>
-                    <h2 className="text-xs font-mono text-white/40 italic">
-                        root@agriconnect:~$ <span className="text-white/60 animate-pulse font-bold tracking-widest">SYSTEM_READY</span>
-                    </h2>
+                    
                 </div>
 
                 {/* Injection des pages (Overview, Users, etc.) */}

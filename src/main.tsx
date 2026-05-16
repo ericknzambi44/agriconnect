@@ -7,7 +7,7 @@ import App from "./App";
 
 import { BrowserRouter } from "react-router-dom";
 
-import AdminDashboard from "./features/admin/pages/AdminDashboard";
+import AdminDashboard from "./features/admin/views/AdminDashboard";
 
 
 

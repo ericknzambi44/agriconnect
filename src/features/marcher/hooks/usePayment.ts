@@ -80,7 +80,7 @@ export const usePayment = () => {
         toast.success("PAIEMENT RÉUSSI !", {
           id: "pay-step",
           description: "Argent sécurisé sous séquestre. Le vendeur préparera votre colis et ne sera payé qu'à la réception de votre marchandise.",
-          duration: 8000,
+          duration: 10000,
         });
 
         return { success: true, commande };

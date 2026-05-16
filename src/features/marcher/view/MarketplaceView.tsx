@@ -6,9 +6,11 @@ import { usePayment } from '../hooks/usePayment';
 import { MarketFilterBar } from '../components/MarketFilterBar';
 import { MarketRadar } from '../components/MarketRadar';
 import { OrderAnnonceModal } from '../components/OrderAnnonceModal';
+import { AchatSuiviView } from '../components/AchatSuiviView'; // ✅ Nouvel import
 import { toast } from 'sonner';
 import { useAuthSession } from '@/features/auth/hooks/use-auth-session';
 import { MarketAnnonce } from '../hooks/useMarketplace';
+import { cn } from "@/lib/utils";
 
 export function MarketplaceView() {
   const { profile } = useAuthSession();
@@ -17,6 +19,7 @@ export function MarketplaceView() {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedAnnonce, setSelectedAnnonce] = useState<MarketAnnonce | null>(null);
   const [orderLoading, setOrderLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState<'market' | 'suivi'>('market'); // ✅ Onglet
 
   const { executeOrderAndPayment } = usePayment();
 
@@ -73,37 +76,70 @@ export function MarketplaceView() {
       {/* Bandeau dégradé supérieur */}
       <div className="w-full h-2 bg-gradient-to-r from-primary via-pink-500 to-primary animate-gradient-x" />
       
-      {/* Contenu pleine largeur avec un padding léger mais sans max-width */}
       <div className="w-full px-4 sm:px-6 md:px-8 py-4 sm:py-6">
         {/* Header */}
         <div className="mb-6 md:mb-8 text-center">
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-black uppercase italic bg-gradient-to-r from-primary via-white to-primary bg-clip-text text-transparent tracking-tighter">
-            MarketPlace Pro
+            MarketPlace
           </h1>
           <p className="text-white/40 text-xs sm:text-sm mt-2 font-mono">
             Produits frais • Paiement sécurisé sous séquestre
           </p>
         </div>
 
-        <MarketFilterBar
-          onSearch={setSearchQuery}
-          onCategoryChange={setSelectedCategory}
-          categories={categories}
-          loading={loading}
-        />
+        {/* ✅ Onglets de navigation */}
+        <div className="flex justify-center gap-4 mb-8">
+          <button
+            onClick={() => setActiveTab('market')}
+            className={cn(
+              "px-6 py-2 rounded-full font-tech text-[10px] font-black uppercase tracking-wider transition-all",
+              activeTab === 'market'
+                ? "bg-gradient-to-r from-primary to-orange-400 text-black shadow-lg"
+                : "bg-white/5 text-white/60 hover:text-white hover:bg-white/10"
+            )}
+          >
+            Explorer
+          </button>
+          <button
+            onClick={() => setActiveTab('suivi')}
+            className={cn(
+              "px-6 py-2 rounded-full font-tech text-[10px] font-black uppercase tracking-wider transition-all",
+              activeTab === 'suivi'
+                ? "bg-gradient-to-r from-primary to-orange-400 text-black shadow-lg"
+                : "bg-white/5 text-white/60 hover:text-white hover:bg-white/10"
+            )}
+          >
+            Mes achats
+          </button>
+        </div>
 
-        <MarketRadar
-          annonces={searchedAnnonces}
-          loading={loading}
-          onOrderStart={setSelectedAnnonce}
-        />
+        {/* Contenu conditionnel */}
+        {activeTab === 'market' ? (
+          <>
+            <MarketFilterBar
+              onSearch={setSearchQuery}
+              onCategoryChange={setSelectedCategory}
+              categories={categories}
+              loading={loading}
+            />
 
-        {selectedAnnonce && (
-          <OrderAnnonceModal
-            annonce={selectedAnnonce}
-            onOrder={handleOrder}
-            loading={orderLoading}
-          />
+            <MarketRadar
+              annonces={searchedAnnonces}
+              loading={loading}
+              onOrderStart={setSelectedAnnonce}
+            />
+
+            {selectedAnnonce && (
+              <OrderAnnonceModal
+                annonce={selectedAnnonce}
+                onOrder={handleOrder}
+                loading={orderLoading}
+                onClose={() => setSelectedAnnonce(null)}
+              />
+            )}
+          </>
+        ) : (
+          <AchatSuiviView />
         )}
       </div>
     </div>

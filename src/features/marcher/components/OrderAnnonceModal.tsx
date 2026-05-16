@@ -14,9 +14,10 @@ interface OrderAnnonceModalProps {
   onOrder: (annonce: MarketAnnonce, quantite: number, deliveryDetails: any) => Promise<boolean>;
   loading: boolean;
   trigger?: React.ReactNode;
+  onClose?: () => void; // ✅ nouvelle prop pour notifier la fermeture au parent
 }
 
-export function OrderAnnonceModal({ annonce, onOrder, loading, trigger }: OrderAnnonceModalProps) {
+export function OrderAnnonceModal({ annonce, onOrder, loading, trigger, onClose }: OrderAnnonceModalProps) {
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState(1);
   const [qty, setQty] = useState<number>(1);
@@ -29,12 +30,18 @@ export function OrderAnnonceModal({ annonce, onOrder, loading, trigger }: OrderA
   const resetModal = () => {
     setStep(1);
     setOpen(false);
+    if (onClose) onClose(); // ✅ notifier le parent
+  };
+
+  const handleOpenChange = (newOpen: boolean) => {
+    setOpen(newOpen);
+    if (!newOpen && onClose) onClose(); // ✅ fermeture par clic extérieur
   };
 
   const displayPrice = annonce.prix_total || (annonce.quantite_vendre * annonce.produit?.prix_prod);
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         {trigger || (
           <Button className="w-full bg-gradient-to-r from-primary to-orange-400 hover:from-primary/80 hover:to-orange-500 text-black font-black uppercase italic rounded-xl h-12 transition-all shadow-lg shadow-primary/20">
