@@ -25,7 +25,7 @@ export const AdminSidebar = ({ isOpen, onClose }: AdminSidebarProps) => {
   const { admin, logout } = useAdminCore();
 
   const links = [
-    { to: "/admin/overview", label: "Tableau de bord", icon: <LayoutDashboard size={18} />, code: "0x01" },
+    { to: "/admin/overview", label: "Tableau de bord", icon: <LayoutDashboard size={18} />, code: "" },
     { to: "/admin/agencies", label: "Agences", icon: <Building2 size={18} />, code: "" },
     { to: "/admin/users", label: "Utilisateurs", icon: <Users size={18} />, code: "" },
     { to: "/admin/plans", label: "Plans", icon: <CreditCard size={18} />, code: "" },
@@ -139,7 +139,7 @@ export const AdminSidebar = ({ isOpen, onClose }: AdminSidebarProps) => {
                 <div className="flex items-center gap-1.5 mt-0.5">
                   <ShieldCheck size={10} className="text-primary" />
                   <span className="text-[7px] font-mono text-white/40 uppercase tracking-wider">
-                    Niveau 4
+                    
                   </span>
                 </div>
               </div>

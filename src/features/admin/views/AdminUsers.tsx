@@ -21,8 +21,8 @@ export default function AdminUsers() {
   const [dialogMode, setDialogMode] = useState<'create' | 'edit' | 'link'>('create');
   const [formData, setFormData] = useState({ 
     nom: '', prenom: '', email: '', numero_tel: '', role_id: '',
-    password: '',           // pour la création
-    agence_id: ''           // pour lier à la création
+    password: '',
+    agence_id: undefined as string | undefined
   });
 
   useEffect(() => {
@@ -64,7 +64,7 @@ export default function AdminUsers() {
   };
 
   const resetForm = () => {
-    setFormData({ nom: '', prenom: '', email: '', numero_tel: '', role_id: '', password: '', agence_id: '' });
+    setFormData({ nom: '', prenom: '', email: '', numero_tel: '', role_id: '', password: '', agence_id: undefined });
     setSelectedUser(null);
   };
 
@@ -103,10 +103,9 @@ export default function AdminUsers() {
                     ))}
                   </SelectContent>
                 </Select>
-                <Select value={formData.agence_id} onValueChange={v => setFormData({...formData, agence_id: v})}>
+                <Select value={formData.agence_id || undefined} onValueChange={v => setFormData({...formData, agence_id: v})}>
                   <SelectTrigger className="bg-white/5 border-white/10"><SelectValue placeholder="Lier à une agence (optionnel)" /></SelectTrigger>
                   <SelectContent className="bg-black border-white/10">
-                    <SelectItem value="">Aucune</SelectItem>
                     {agencies.map(a => (
                       <SelectItem key={a.id} value={a.id}>{a.nom}</SelectItem>
                     ))}
@@ -197,7 +196,7 @@ export default function AdminUsers() {
                             numero_tel: user.numero_tel || '', 
                             role_id: roleId,
                             password: '',
-                            agence_id: user.agence?.id || ''
+                            agence_id: user.agence?.id || undefined
                           }); 
                           setDialogMode('edit'); 
                           setOpenDialog(true); 
