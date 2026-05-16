@@ -34,3 +34,5 @@ CREATE TRIGGER tr_notify_retrait
 AFTER UPDATE ON public.expedition
 FOR EACH ROW
 EXECUTE FUNCTION handle_notification_retrait();
+
+const searchDebounce = useRef<number | undefined>(undefined);

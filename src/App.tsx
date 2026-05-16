@@ -25,6 +25,7 @@ import { useAuthSession } from '@/features/auth/hooks/use-auth-session';
 import AdminLogin from './features/admin/views/AdminLogin';
 import { MarketplaceView } from './features/marcher/view/MarketplaceView';
 import AdminPlans from './features/admin/views/AdminPlans';
+import { ChatView } from './features/chat/components/ChatView';
 
 export default function App() {
   const { profile, isLoading } = useAuthSession();
@@ -55,7 +56,7 @@ export default function App() {
           <Route path="subscription" element={<SubscriptionView userId={profile?.id || ''} />} />
           <Route path="portefeuille" element={<WalletView />} />
           <Route path="settings" element={<div className="p-8 text-white">Paramètres...</div>} />
-          
+          <Route path="chat" element={<ChatView />} />
           <Route path="recoltes" element={<Recoltes />} />
           <Route path="marche" element={<MarketplaceView />} />
 

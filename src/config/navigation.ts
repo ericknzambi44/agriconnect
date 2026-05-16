@@ -1,27 +1,26 @@
 // src/config/navigation.ts
-// configuration de chemin de navigation dashboard
 import { 
   LayoutDashboard, 
   UserCog, 
   CreditCard, 
   Settings, 
-  //Truck, 
   ShoppingCart, 
   Leaf, 
   Building2, 
   LayoutDashboardIcon,
   Bell,
-  Wallet
+  Wallet,
+  MessageCircle 
 } from "lucide-react";
 
 // 1. On définit les liens communs à tout le monde
 export const COMMON_ROUTES = [
   { name: "Vue d'ensemble", href: "/dashboard", icon: LayoutDashboardIcon },
-  { name: "Notifications", href: "/dashboard/notifications", icon: Bell }, // AJOUT ICI
+  { name: "Notifications", href: "/dashboard/notifications", icon: Bell },
+  { name: "Messagerie", href: "/dashboard/chat", icon: MessageCircle }, 
   { name: "Gestion Profil", href: "/dashboard/profile", icon: UserCog },
   { name: "Abonnement", href: "/dashboard/subscription", icon: CreditCard },
-   { name:"Portefeuille", href: "/dashboard/portefeuille", icon: Wallet },
-
+  { name:"Portefeuille", href: "/dashboard/portefeuille", icon: Wallet },
   { name: "Paramètres", href: "/dashboard/settings", icon: Settings },
 ];
 
