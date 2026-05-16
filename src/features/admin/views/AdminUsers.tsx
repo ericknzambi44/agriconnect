@@ -1,4 +1,4 @@
-// features/admin/views/AdminUsers.tsx
+// src/features/admin/views/AdminUsers.tsx
 import React, { useState, useEffect } from 'react';
 import { useAdminUserMaster } from '../hooks/use-admin-user-master';
 import { useAgencyManager } from '../hooks/use-agency-manager';
@@ -21,7 +21,8 @@ export default function AdminUsers() {
   const [dialogMode, setDialogMode] = useState<'create' | 'edit' | 'link'>('create');
   const [formData, setFormData] = useState({ 
     nom: '', prenom: '', email: '', numero_tel: '', role_id: '',
-    password: ''  // ✅ mot de passe pour la création
+    password: '',           // pour la création
+    agence_id: ''           // pour lier à la création
   });
 
   useEffect(() => {
@@ -63,7 +64,7 @@ export default function AdminUsers() {
   };
 
   const resetForm = () => {
-    setFormData({ nom: '', prenom: '', email: '', numero_tel: '', role_id: '', password: '' });
+    setFormData({ nom: '', prenom: '', email: '', numero_tel: '', role_id: '', password: '', agence_id: '' });
     setSelectedUser(null);
   };
 
@@ -99,6 +100,15 @@ export default function AdminUsers() {
                   <SelectContent className="bg-black border-white/10">
                     {roles.filter(r => r.id && r.id.trim() !== '').map(r => (
                       <SelectItem key={r.id} value={r.id}>{r.titre_role}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Select value={formData.agence_id} onValueChange={v => setFormData({...formData, agence_id: v})}>
+                  <SelectTrigger className="bg-white/5 border-white/10"><SelectValue placeholder="Lier à une agence (optionnel)" /></SelectTrigger>
+                  <SelectContent className="bg-black border-white/10">
+                    <SelectItem value="">Aucune</SelectItem>
+                    {agencies.map(a => (
+                      <SelectItem key={a.id} value={a.id}>{a.nom}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -168,9 +178,11 @@ export default function AdminUsers() {
                     <TableCell className="text-white/80">{user.numero_tel || '-'}</TableCell>
                     <TableCell><Badge variant="outline" className="bg-primary/10 text-primary border-primary/30">{user.role?.admin_role || 'utilisateur'}</Badge></TableCell>
                     <TableCell className="text-white/80">
-                      {user.agents_agence?.[0]?.agence?.nom || 'Aucune'}
-                      {user.agents_agence?.[0]?.agence && (
-                        <button onClick={() => handleUnlink(user.id)} className="ml-2 text-red-400 hover:text-red-300 transition"><Unlink size={14} /></button>
+                      {user.agence?.nom || 'Aucune'}
+                      {user.agence && (
+                        <button onClick={() => handleUnlink(user.id)} className="ml-2 text-red-400 hover:text-red-300 transition">
+                          <Unlink size={14} />
+                        </button>
                       )}
                     </TableCell>
                     <TableCell>
@@ -184,7 +196,8 @@ export default function AdminUsers() {
                             email: user.email, 
                             numero_tel: user.numero_tel || '', 
                             role_id: roleId,
-                            password: ''
+                            password: '',
+                            agence_id: user.agence?.id || ''
                           }); 
                           setDialogMode('edit'); 
                           setOpenDialog(true); 

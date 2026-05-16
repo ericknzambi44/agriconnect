@@ -9,8 +9,8 @@ export interface UserMasterData {
   prenom: string;
   email: string;
   numero_tel?: string;
-  role?: { id: string; admin_role: string } | null;
-  agents_agence?: { agence: { id: string; nom: string } | null }[];
+  role?: { admin_role: string; id: string } | null;
+  agence?: { id: string; nom: string } | null;
 }
 
 export const useAdminUserMaster = () => {
@@ -26,29 +26,62 @@ export const useAdminUserMaster = () => {
   const fetchUsers = useCallback(async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
+      // 1. Récupérer tous les utilisateurs avec leur rôle
+      const { data: utilisateurs, error: usersError } = await supabase
         .from('utilisateurs')
         .select(`
           id, nom, prenom, email, numero_tel,
-          role:role_id ( id, admin_role ),
-          agents_agence (
-            agence:agence_id ( id, nom )
-          )
+          role:role_id ( id, admin_role )
         `)
         .order('nom', { ascending: true });
-      if (error) throw error;
-      setUsers(data as unknown as UserMasterData[]);
+      if (usersError) throw usersError;
+
+      // 2. Récupérer les liaisons agence
+      const { data: agents, error: agentsError } = await supabase
+        .from('agents_agence')
+        .select(`
+          user_id,
+          agence:agence_id ( id, nom )
+        `);
+      if (agentsError) throw agentsError;
+
+      // 3. Construire un map user_id -> agence
+      const agencyMap = new Map();
+      agents?.forEach(agent => {
+        if (!agencyMap.has(agent.user_id) && agent.agence) {
+          agencyMap.set(agent.user_id, agent.agence);
+        }
+      });
+
+      // 4. Normaliser les données (Supabase peut retourner un tableau pour une relation 1-1)
+      const normalized = utilisateurs.map(user => {
+        // Extraire le premier élément du tableau 'role' si c'est un tableau
+        let roleObj = null;
+        if (user.role) {
+          if (Array.isArray(user.role) && user.role.length > 0) {
+            roleObj = user.role[0];
+          } else if (!Array.isArray(user.role)) {
+            roleObj = user.role;
+          }
+        }
+        return {
+          ...user,
+          role: roleObj,
+          agence: agencyMap.get(user.id) || null,
+        };
+      });
+
+      setUsers(normalized as UserMasterData[]);
     } catch (err) {
       console.error("Erreur fetchUsers:", err);
+      toast.error("Impossible de charger les utilisateurs");
     } finally {
       setLoading(false);
     }
   }, []);
 
-  // Création d'utilisateur avec mot de passe
   const createUser = async (userData: any, password: string) => {
     try {
-      // 1. Créer l'utilisateur dans Auth
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: userData.email,
         password: password,
@@ -58,7 +91,6 @@ export const useAdminUserMaster = () => {
 
       const userId = authData.user.id;
 
-      // 2. Mettre à jour les informations dans la table utilisateurs (si le trigger ne l'a pas fait)
       const { error: updateError } = await supabase
         .from('utilisateurs')
         .update({
@@ -68,22 +100,8 @@ export const useAdminUserMaster = () => {
           role_id: userData.role_id,
         })
         .eq('id', userId);
-      if (updateError) {
-        // Si l'utilisateur n'existe pas, on l'insère
-        const { error: insertError } = await supabase
-          .from('utilisateurs')
-          .insert({
-            id: userId,
-            email: userData.email,
-            nom: userData.nom,
-            prenom: userData.prenom,
-            numero_tel: userData.numero_tel,
-            role_id: userData.role_id,
-          });
-        if (insertError) throw insertError;
-      }
+      if (updateError) throw updateError;
 
-      // 3. Lier à une agence si demandé
       if (userData.agence_id) {
         await supabase.from('agents_agence').insert([{
           user_id: userId,
@@ -91,7 +109,7 @@ export const useAdminUserMaster = () => {
         }]);
       }
 
-      toast.success(`Utilisateur créé. Email : ${userData.email}, Mot de passe : ${password}`);
+      toast.success(`Utilisateur créé. Mot de passe : ${password}`);
       await fetchUsers();
       return authData.user;
     } catch (error: any) {
@@ -104,9 +122,9 @@ export const useAdminUserMaster = () => {
   const updateUser = async (userId: string, updates: any) => {
     const cleanUpdates = { ...updates };
     delete cleanUpdates.role;
-    delete cleanUpdates.agents_agence;
+    delete cleanUpdates.agence;
     delete cleanUpdates.id;
-    delete cleanUpdates.email; // l'email ne se modifie pas via cette méthode (à gérer avec Auth si besoin)
+    delete cleanUpdates.email;
 
     const { error } = await supabase
       .from('utilisateurs')
@@ -126,6 +144,7 @@ export const useAdminUserMaster = () => {
   };
 
   const linkUserToAgency = async (userId: string, agenceId: string) => {
+    await supabase.from('agents_agence').delete().eq('user_id', userId);
     const { error } = await supabase.from('agents_agence').insert([{ user_id: userId, agence_id: agenceId }]);
     if (error) throw error;
     toast.success("Utilisateur lié à l'agence");
