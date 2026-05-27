@@ -42,7 +42,7 @@ export function AddressForm({ profile, onUpdate, loading }: any) {
             Géo Localisation
           </h3>
           <p className="font-tech text-[clamp(7px,1.5vw,9px)] text-white/40 uppercase tracking-[0.3em] mt-1 italic">
-            Hub Logistique Terminal
+            Logistique
           </p>
         </div>
       </div>
@@ -52,7 +52,7 @@ export function AddressForm({ profile, onUpdate, loading }: any) {
         {/* VILLE - prend 2 colonnes sur tablette/desktop */}
         <div className="sm:col-span-2 space-y-2 group">
           <label className="font-tech text-[9px] uppercase tracking-widest text-primary font-black italic ml-1">
-            Ville Territoire Hub
+            Ville Territoire
           </label>
           <div className="relative">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-primary/50" />

@@ -157,7 +157,7 @@ export function IdentityForm({ profile, onUpdate, loading }: any) {
               <Scan className="w-5 h-5 md:w-6 md:h-6 group-hover:rotate-90 transition-transform duration-500" />
               <span className="text-xs md:text-base tracking-[0.2em] md:tracking-[0.5em]">
                 <span className="xs:hidden">Confirmer</span>
-                <span className="hidden xs:inline">SCELLER L'IDENTITÉ SÉCURISÉE</span>
+                <span className="hidden xs:inline">Valider</span>
               </span>
             </div>
           )}

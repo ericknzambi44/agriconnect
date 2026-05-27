@@ -137,7 +137,7 @@ export default function ProfileView() {
               <div className="absolute top-0 right-0 p-12 opacity-5 md:opacity-10 pointer-events-none">
                 <ShieldAlert className="w-24 h-24 md:w-32 md:h-32 text-red-500" />
               </div>
-              <div className="max-w-xl space-y-6 md:space-y-8 relative z-10">
+              {/* <div className="max-w-xl space-y-6 md:space-y-8 relative z-10">
                 <h3 className="text-red-400 font-display font-black uppercase italic text-xl md:text-3xl tracking-tighter">Protocole de rupture</h3>
                 <p className="font-tech text-[9px] md:text-[11px] text-white/70 leading-relaxed uppercase tracking-[0.1em] font-bold italic">
                   ATTENTION : Cette action supprimera vos <span className="text-red-400 underline">contrats intelligents</span> et vos accès au Hub de Bunia. Aucune récupération possible.
@@ -145,7 +145,7 @@ export default function ProfileView() {
                 <button className="w-full sm:w-auto px-8 md:px-12 py-5 md:py-6 bg-gradient-to-r from-red-600 to-red-800 text-white font-display font-black uppercase italic text-[10px] md:text-sm tracking-[0.3em] rounded-xl md:rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-lg shadow-red-500/30">
                   DÉTRUIRE LA MATRICE
                 </button>
-              </div>
+              </div> */}
             </Card>
           </TabsContent>
 
